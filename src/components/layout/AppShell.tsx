@@ -6,29 +6,34 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import {
-  IconLayoutDashboard,
-  IconBarbell,
-  IconBook,
-  IconChecks,
-  IconSparkles,
-  IconUserCircle,
-} from "@tabler/icons-react";
+  LayoutGrid,
+  Calendar,
+  Apple,
+  Dumbbell,
+  Target,
+  LineChart,
+  BookOpenText,
+  Brain,
+  Settings
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabaseClient";
+import { useEffect } from "react";
 
 const Logo = () => {
   return (
     <Link
       href="/dashboard"
-      className="relative z-20 flex items-center space-x-3 py-1 font-normal"
+      className="relative z-20 flex items-center space-x-3 py-2 px-1 font-normal"
     >
-      <div className="relative h-8 w-8 shrink-0 overflow-hidden">
+      <div className="relative h-7 w-7 shrink-0 overflow-hidden">
         <Image src="/AGENTS.png" alt="Agents Logo" fill className="object-contain" />
       </div>
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-semibold text-2xl tracking-tight"
+        className="font-bold text-xl tracking-tight"
       >
         <span className="text-white">momen</span>
         <span className="text-[#6068F0]">tum</span>
@@ -41,9 +46,9 @@ const LogoIcon = () => {
   return (
     <Link
       href="/dashboard"
-      className="relative z-20 flex items-center space-x-3 py-1 font-normal"
+      className="relative z-20 flex items-center space-x-3 py-2 px-1 font-normal"
     >
-      <div className="relative h-8 w-8 shrink-0 overflow-hidden">
+      <div className="relative h-7 w-7 shrink-0 overflow-hidden">
         <Image src="/AGENTS.png" alt="Agents Logo" fill className="object-contain" />
       </div>
     </Link>
@@ -54,61 +59,167 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  useEffect(() => {
+    async function ensureDefaultProfile() {
+      try {
+        // Ensure default test profile exists
+        await supabase
+          .from("profiles")
+          .upsert({
+            id: "alex_chen",
+            name: "Alex Chen"
+          }, { onConflict: "id" });
+
+        // Ensure currently logged-in auth user's profile exists
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const nameVal = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
+          await supabase
+            .from("profiles")
+            .upsert({
+              id: user.id,
+              name: nameVal
+            }, { onConflict: "id" });
+        }
+      } catch (err) {
+        console.error("Global profiles initialization failed:", err);
+      }
+    }
+    ensureDefaultProfile();
+  }, []);
+
   const links = [
     {
       label: "Dashboard",
       title: "Dashboard",
       href: "/dashboard",
-      icon: <IconLayoutDashboard className="h-5 w-5 shrink-0 text-neutral-400" />,
+      icon: <LayoutGrid className="h-5 w-5 shrink-0 text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
-      label: "Gym",
-      title: "Gym",
-      href: "/gym",
-      icon: <IconBarbell className="h-5 w-5 shrink-0 text-neutral-400" />,
+      label: "Planner",
+      title: "Planner",
+      href: "/planner",
+      icon: <Calendar className="h-5 w-5 shrink-0 text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
-      label: "Study",
-      title: "Study",
-      href: "/study",
-      icon: <IconBook className="h-5 w-5 shrink-0 text-neutral-400" />,
+      label: "Food",
+      title: "Food",
+      href: "/food",
+      icon: <Apple className="h-5 w-5 shrink-0 text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
-      label: "Tasks",
-      title: "Tasks",
-      href: "/tasks",
-      icon: <IconChecks className="h-5 w-5 shrink-0 text-neutral-400" />,
+      label: "Workout",
+      title: "Workout",
+      href: "/workout",
+      icon: <Dumbbell className="h-5 w-5 shrink-0 text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
-      label: "Meditation",
-      title: "Meditation",
-      href: "/meditation",
-      icon: <IconSparkles className="h-5 w-5 shrink-0 text-neutral-400" />,
+      label: "Goals",
+      title: "Goals",
+      href: "/goals",
+      icon: <Target className="h-5 w-5 shrink-0 text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
-      label: "Profile",
-      title: "Profile",
-      href: "/profile",
-      icon: <IconUserCircle className="h-5 w-5 shrink-0 text-neutral-400" />,
+      label: "Analytics",
+      title: "Analytics",
+      href: "/analytics",
+      icon: <LineChart className="h-5 w-5 shrink-0 text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+    },
+    {
+      label: "Journal",
+      title: "Journal",
+      href: "/journal",
+      icon: <BookOpenText className="h-5 w-5 shrink-0 text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+    },
+    {
+      label: "AI Coach",
+      title: "AI Coach",
+      href: "/ai-coach",
+      icon: <Brain className="h-5 w-5 shrink-0 text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
   ];
 
   return (
     <div className={cn("mx-auto flex h-screen w-full flex-col overflow-hidden bg-black text-neutral-300 relative md:flex-row")}>
       
-      {/* Background Orbs to create depth for glassmorphism */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-[#6068F0]/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#6068F0]/10 blur-[120px] pointer-events-none" />
+      {/* Background Orbs simulating 3D spheres for black glassmorphism */}
+      {/* Top Left Indigo Sphere */}
+      <motion.div 
+        animate={{
+          x: [0, 20, -10, 0],
+          y: [0, -30, 20, 0],
+        }}
+        transition={{
+          duration: 25,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="absolute top-[5%] left-[5%] w-[150px] h-[150px] md:w-[320px] md:h-[320px] rounded-full bg-[radial-gradient(circle_at_30%_30%,_rgba(96,104,240,0.5),_rgba(0,0,0,0.95))] shadow-[0_0_60px_rgba(96,104,240,0.25)] pointer-events-none" 
+      />
+      {/* Bottom Right Fuchsia Sphere */}
+      <motion.div 
+        animate={{
+          x: [0, -30, 15, 0],
+          y: [0, 20, -20, 0],
+        }}
+        transition={{
+          duration: 30,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="absolute bottom-[5%] right-[5%] w-[180px] h-[180px] md:w-[400px] md:h-[400px] rounded-full bg-[radial-gradient(circle_at_30%_30%,_rgba(217,70,239,0.4),_rgba(0,0,0,0.95))] shadow-[0_0_60px_rgba(217,70,239,0.15)] pointer-events-none" 
+      />
+      {/* Top Right Cyan Sphere */}
+      <motion.div 
+        animate={{
+          x: [0, 15, -20, 0],
+          y: [0, 30, -15, 0],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="absolute top-[15%] right-[25%] w-[100px] h-[100px] md:w-[200px] md:h-[200px] rounded-full bg-[radial-gradient(circle_at_30%_30%,_rgba(6,182,212,0.5),_rgba(0,0,0,0.95))] shadow-[0_0_40px_rgba(6,182,212,0.25)] pointer-events-none" 
+      />
+      {/* Desktop-only Violet Sphere sitting in the middle area */}
+      <motion.div 
+        animate={{
+          x: [0, -20, 25, 0],
+          y: [0, 15, -25, 0],
+        }}
+        transition={{
+          duration: 22,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+        className="hidden md:block absolute top-[45%] left-[40%] w-[220px] h-[220px] rounded-full bg-[radial-gradient(circle_at_30%_30%,_rgba(139,92,246,0.4),_rgba(0,0,0,0.95))] shadow-[0_0_50px_rgba(139,92,246,0.2)] pointer-events-none" 
+      />
 
       {/* Desktop Sidebar (Aceternity) */}
       <div className="hidden md:flex flex-none z-20">
         <Sidebar open={open} setOpen={setOpen}>
-          <SidebarBody className="justify-between gap-10 bg-[#0D0D0E]/80 backdrop-blur-3xl border-r border-white/5 shadow-2xl">
+          <SidebarBody className={cn(
+            "justify-between gap-10 bg-[#0D0D0E]/80 backdrop-blur-3xl border-r border-white/5 shadow-2xl transition-all duration-300",
+            open ? "px-4" : "px-2"
+          )}>
             <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
               {open ? <Logo /> : <LogoIcon />}
               <div className="mt-8 flex flex-col gap-2">
                 {links.map((link, idx) => (
-                  <SidebarLink key={idx} link={link} className={pathname === link.href ? "bg-white/10 rounded-lg backdrop-blur-md border border-white/5" : ""} />
+                  <SidebarLink
+                    key={idx}
+                    link={link}
+                    className={cn(
+                      "transition-all duration-300 border border-transparent flex items-center group/sidebar",
+                      open 
+                        ? "px-3 py-2.5 rounded-xl gap-3 w-full justify-start" 
+                        : "p-2 rounded-full justify-center w-9 h-9 mx-auto",
+                      pathname === link.href
+                        ? "bg-white/10 text-white border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-md"
+                        : "hover:bg-white/5 hover:text-neutral-200"
+                    )}
+                  />
                 ))}
               </div>
             </div>
@@ -117,8 +228,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 link={{
                   label: "Settings",
                   href: "/profile",
-                  icon: <IconUserCircle className="h-5 w-5 shrink-0 text-neutral-400" />,
+                  icon: <Settings className="h-5 w-5 shrink-0 text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
                 }}
+                className={cn(
+                  "transition-all duration-300 border border-transparent flex items-center group/sidebar",
+                  open 
+                    ? "px-3 py-2.5 rounded-xl gap-3 w-full justify-start" 
+                    : "p-2 rounded-full justify-center w-9 h-9 mx-auto",
+                  pathname === "/profile"
+                    ? "bg-white/10 text-white border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-md"
+                    : "hover:bg-white/5 hover:text-neutral-200"
+                )}
               />
             </div>
           </SidebarBody>
