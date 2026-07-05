@@ -23,7 +23,7 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 
 // Styling constants
-const glassCardClass = "bg-[#0d0d0e]/60 backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-white/15";
+const glassCardClass = "bg-[#0d0d0e]/[var(--glass-opacity,0.42)] backdrop-blur-[var(--glass-blur,20px)] border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-white/15";
 
 const PROFILE_ID = "alex_chen";
 
@@ -46,6 +46,18 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function loadProfile() {
+      // Load appearance from local storage
+      const savedAppearance = localStorage.getItem("momentum_appearance");
+      if (savedAppearance) {
+        const val = Number(savedAppearance);
+        setAppearance(val);
+        document.documentElement.style.setProperty('--glass-opacity', String((val / 100) * 0.4 + 0.1));
+        document.documentElement.style.setProperty('--glass-blur', `${(val / 100) * 20 + 8}px`);
+      } else {
+        document.documentElement.style.setProperty('--glass-opacity', '0.42');
+        document.documentElement.style.setProperty('--glass-blur', '20px');
+      }
+
       // First try loading from Supabase
       try {
         const { data, error } = await supabase
@@ -74,6 +86,7 @@ export default function ProfilePage() {
   const handleSave = async () => {
     localStorage.setItem("momentum_groq_key", groqKey);
     localStorage.setItem("momentum_name", name);
+    localStorage.setItem("momentum_appearance", String(appearance));
 
     // Save to Supabase profiles table
     try {
@@ -251,19 +264,26 @@ export default function ProfilePage() {
           <Card className={`${glassCardClass} p-6 space-y-6`}>
             <div className="border-b border-white/10 pb-3 flex items-center gap-2.5">
               <SunMoon className="h-4.5 w-4.5 text-[#6068F0]" />
-              <span className="text-xs font-bold text-white uppercase tracking-wider">Appearance</span>
+              <span className="text-xs font-bold text-white uppercase tracking-wider">Appearance Sensitivity</span>
             </div>
             <div className="space-y-4">
-              <div className="flex justify-between text-xs text-neutral-400">
-                <span>Dark</span>
-                <span className="text-white font-bold">Ultra-Dark</span>
+              <div className="flex justify-between text-[10px] text-neutral-500 font-bold uppercase tracking-wider">
+                <span>Transparency Sensitivity</span>
+                <span className="text-[#6068F0] font-bold">
+                  {appearance < 30 ? "Solid Panels" : appearance < 75 ? "Translucent Glass" : "Frosted / Specular"}
+                </span>
               </div>
               <input 
                 type="range" 
-                min="0" 
+                min="5" 
                 max="100" 
                 value={appearance}
-                onChange={(e) => setAppearance(Number(e.target.value))}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setAppearance(val);
+                  document.documentElement.style.setProperty('--glass-opacity', String((val / 100) * 0.4 + 0.1));
+                  document.documentElement.style.setProperty('--glass-blur', `${(val / 100) * 20 + 8}px`);
+                }}
                 className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#6068F0]" 
               />
             </div>
