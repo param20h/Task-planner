@@ -57,6 +57,17 @@ export default function Home() {
   // Scroll tracking for navbar shrink
   const [scrollY, setScrollY] = useState(0);
 
+  // Mouse position for cursor glow spotlight effect
+  const [mousePos, setMousePos] = useState({ x: -999, y: -999 });
+
+  useEffect(() => {
+    const handleMouse = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouse, { passive: true });
+    return () => window.removeEventListener("mousemove", handleMouse);
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -223,14 +234,33 @@ export default function Home() {
       {/* ── Background Grid & volumetric light ── */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         
-        {/* Faint blueprint grid overlay */}
-        <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.02] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+        {/* Mouse-following purple spotlight glow */}
+        <div
+          className="absolute pointer-events-none transition-opacity duration-300"
+          style={{
+            left: mousePos.x,
+            top: mousePos.y,
+            transform: "translate(-50%, -50%)",
+            width: "600px",
+            height: "600px",
+            borderRadius: "50%",
+            background: theme === "dark"
+              ? "radial-gradient(circle, rgba(167,139,250,0.12) 0%, rgba(196,181,253,0.05) 40%, transparent 70%)"
+              : "radial-gradient(circle, rgba(167,139,250,0.08) 0%, rgba(196,181,253,0.03) 40%, transparent 70%)",
+            filter: "blur(30px)",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
 
-        {/* Ambient top soft purple/pink glow */}
-        <div className="absolute -top-[300px] left-1/2 -translate-x-1/2 w-[1200px] h-[600px] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.06)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse,rgba(196,181,253,0.15)_0%,rgba(249,168,212,0.05)_50%,transparent_75%)] blur-[80px]" />
+        {/* Faint blueprint grid overlay */}
+        <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.035] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+
+        {/* Ambient top soft purple/pink glow - boosted for dark mode */}
+        <div className="absolute -top-[300px] left-1/2 -translate-x-1/2 w-[1400px] h-[700px] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.07)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse,rgba(196,181,253,0.22)_0%,rgba(249,168,212,0.08)_50%,transparent_75%)] blur-[80px]" />
         
-        {/* Soft volumetric center light ray */}
-        <div className="absolute top-[20%] left-1/3 w-[500px] h-[500px] rounded-full light:hidden dark:bg-[radial-gradient(circle,rgba(253,186,116,0.02)_0%,transparent_65%)] blur-[60px]" />
+        {/* Soft volumetric center light ray - brighter dark mode */}
+        <div className="absolute top-[20%] left-1/3 w-[500px] h-[500px] rounded-full light:hidden dark:bg-[radial-gradient(circle,rgba(167,139,250,0.06)_0%,transparent_65%)] blur-[60px]" />
 
         {/* Perspective grid lines canvas */}
         <div className="absolute bottom-[-15%] left-1/2 -translate-x-1/2 w-[220%] h-[75%] opacity-50 dark:opacity-70" style={{ perspective: "600px" }}>
@@ -337,19 +367,19 @@ export default function Home() {
             <div className="lg:col-span-6 space-y-8 text-left">
               
               {/* Beta Badge Tag */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#A78BFA] animate-pulse"></span>
-                <span className="text-[10px] font-bold tracking-widest text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500 uppercase">Intelligent Workspace v2.0</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] dark:shadow-[0_0_12px_rgba(167,139,250,0.15)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#A78BFA] animate-pulse shadow-[0_0_6px_rgba(167,139,250,0.8)]"></span>
+                <span className="text-[10px] font-bold tracking-widest text-[#A1A1AA] dark:text-[#C4B5FD] light:text-slate-500 uppercase">Intelligent Workspace v2.0</span>
               </div>
 
               {/* Headings: Editorial Instrument Serif */}
-              <h1 className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out font-serif font-bold text-[68px] md:text-[92px] leading-[0.9] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-[#09090B] via-[#09090B] to-slate-700 dark:from-white dark:via-white dark:to-white">
+              <h1 className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out font-serif font-bold text-[68px] md:text-[92px] leading-[0.9] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-[#09090B] via-[#09090B] to-slate-700 dark:from-white dark:via-neutral-100 dark:to-neutral-300">
                 Master Your <br />
-                <span className="font-serif italic font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#C4B5FD] via-[#A78BFA] to-[#FDBA74] pr-2 filter drop-shadow-[0_2px_15px_rgba(167,139,250,0.1)]">ZenithFlow.</span>
+                <span className="font-serif italic font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#C4B5FD] via-[#A78BFA] to-[#FDBA74] pr-2 filter drop-shadow-[0_2px_20px_rgba(167,139,250,0.45)]">ZenithFlow.</span>
               </h1>
 
               {/* Sub-text Description */}
-              <p className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl leading-relaxed">
+              <p className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out text-sm md:text-base text-slate-500 dark:text-neutral-300 light:text-slate-600 max-w-xl leading-relaxed">
                 AI-powered productivity meets intelligent fitness tracking, habit building, deep analytics, and personal growth in one immersive digital workspace. 
               </p>
 
