@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist_Mono, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
+const outfit = Outfit({
   variable: "--font-serif",
-  weight: "400",
-  style: "normal",
   subsets: ["latin"],
 });
 
@@ -20,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Momentum",
+  title: "ZenithFlow",
   description: "Your AI-powered personal productivity OS.",
 };
 
@@ -32,7 +30,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrumentSerif.variable} ${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${outfit.variable} ${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -10,7 +10,11 @@ import {
   TrendingUp, 
   Brain,
   Send,
-  Plus
+  Plus,
+  Check,
+  Flame,
+  X,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -18,27 +22,33 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 
-// Responsive Glassmorphism Styles
-const glassCardClass = "bg-white dark:bg-[#0d0d0e]/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
+// Responsive Glassmorphism Styles using CSS variables for live appearance adjustments
+const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
 const glassIconWrapperClass = "p-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg flex items-center justify-center";
 
-const PROFILE_ID = "alex_chen";
-
 export default function DashboardPage() {
+  const [profileId, setProfileId] = useState("alex_chen");
   const [userName, setUserName] = useState("Alex");
   const [groqKey, setGroqKey] = useState("");
   const [aiMessage, setAiMessage] = useState("Based on your focus, try a 20-minute meditation session now to boost productivity.");
   const [userChatInput, setUserChatInput] = useState("");
   const [isSending, setIsSending] = useState(false);
 
+  // Quick Dashboard Todo states
+  const [showAddTodo, setShowAddTodo] = useState(false);
+  const [newTodoTitle, setNewTodoTitle] = useState("");
+
   // Dynamic aggregates
   const [caloriesConsumed, setCaloriesConsumed] = useState(0);
   const [workoutMinutes, setWorkoutMinutes] = useState(0);
   const [waterConsumed, setWaterConsumed] = useState(0);
-  const [todoList, setTodoList] = useState<{ title: string; time: string }[]>([]);
+  const [todoList, setTodoList] = useState<{ id: any; title: string; completed: boolean }[]>([]);
   const [todayScore, setTodayScore] = useState(0);
   const [contributionMap, setContributionMap] = useState<Record<string, number>>({});
   const [weeklyScores, setWeeklyScores] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+
+  // Refresh trigger to reload aggregates
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -47,6 +57,7 @@ export default function DashboardPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           activeProfileId = user.id;
+          setProfileId(user.id);
           const nameVal = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
           setUserName(nameVal);
         } else {
@@ -105,7 +116,7 @@ export default function DashboardPage() {
         // Fetch tasks
         const { data: tasksData, error: tasksError } = await supabase
           .from("tasks")
-          .select("title, status, created_at")
+          .select("id, title, status, created_at")
           .eq("profile_id", activeProfileId);
 
         let completedTasks = 0;
@@ -117,8 +128,9 @@ export default function DashboardPage() {
           
           const activeTasks = tasksData.filter(t => t.status !== "completed").slice(0, 3);
           setTodoList(activeTasks.map(t => ({
+            id: t.id,
             title: t.title,
-            time: "45m"
+            completed: false
           })));
         } else {
           setTodoList([]);
@@ -168,7 +180,49 @@ export default function DashboardPage() {
       }
     }
     loadDashboardData();
-  }, []);
+  }, [refreshCounter]);
+
+  const handleToggleTaskDashboard = async (id: any) => {
+    // Optimistically update
+    setTodoList(prev => prev.filter(t => t.id !== id));
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: "completed" })
+        .eq("id", id);
+
+      if (!error) {
+        setRefreshCounter(prev => prev + 1);
+      }
+    } catch (err) {
+      console.error("Failed to complete task:", err);
+    }
+  };
+
+  const handleCreateTodoDashboard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTodoTitle.trim()) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .insert({
+          profile_id: profileId,
+          title: newTodoTitle,
+          status: "pending"
+        })
+        .select()
+        .single();
+
+      if (data && !error) {
+        setRefreshCounter(prev => prev + 1);
+        setNewTodoTitle("");
+        setShowAddTodo(false);
+      }
+    } catch (err) {
+      console.error("Failed to add task from dashboard:", err);
+    }
+  };
 
   const getPerformancePath = () => {
     const maxVal = Math.max(...weeklyScores, 1);
@@ -178,11 +232,14 @@ export default function DashboardPage() {
       return { x, y };
     });
 
-    const pathD = coords.reduce((acc, coord, idx) => {
-      return acc + `${idx === 0 ? 'M' : 'L'} ${coord.x.toFixed(1)} ${coord.y.toFixed(1)} `;
-    }, "");
+    if (coords.length === 0) return { pathD: "", areaD: "" };
 
-    const areaD = pathD + ` L 100 40 L 0 40 Z`;
+    let pathD = `M ${coords[0].x} ${coords[0].y}`;
+    for (let i = 1; i < coords.length; i++) {
+      pathD += ` L ${coords[i].x} ${coords[i].y}`;
+    }
+
+    const areaD = `${pathD} L 100 40 L 0 40 Z`;
     return { pathD, areaD };
   };
 
@@ -217,7 +274,7 @@ export default function DashboardPage() {
           messages: [
             {
               role: "system",
-              content: "You are Momentum AI, a premium personal productivity and health coach. Provide extremely concise, encouraging, and smart advice based on user metrics: 1850kcal food, 45min workout, 2.5L water, and 92% today's score."
+              content: `You are ZenithFlow AI, a premium personal productivity and health coach. Provide extremely concise, encouraging, and smart advice based on user metrics: ${caloriesConsumed} kcal food, ${workoutMinutes} min workout, ${waterConsumed}L water, and ${todayScore}% today's score.`
             },
             {
               role: "user",
@@ -348,24 +405,20 @@ export default function DashboardPage() {
 
             {/* Quick Metrics Grid (7 cols) */}
             <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-6">
+              
               {/* Calories card */}
               <Card className={glassCardClass}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Calories</span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Nutrition</span>
                   <Apple className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                 </CardHeader>
-                <CardContent className="pt-2">
-                  <div className="text-xl font-bold text-slate-900 dark:text-white">{caloriesConsumed.toLocaleString()}</div>
-                  <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 2,500 kcal</div>
-                  {/* Micro Bar Chart */}
-                  <div className="flex items-end gap-1.5 h-12 mt-4">
-                    {[35, 55, 45, 65, 80, 50, 74].map((h, i) => (
-                      <div 
-                        key={i} 
-                        style={{ height: `${h}%` }} 
-                        className={`w-full rounded-t-sm ${i === 6 ? "bg-[#6068F0]" : "bg-slate-200 dark:bg-neutral-800"}`}
-                      />
-                    ))}
+                <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
+                  <div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white">{caloriesConsumed} kcal</div>
+                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 2,500 goal</div>
+                  </div>
+                  <div className="flex items-center justify-center p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl mt-6">
+                    <Flame className="h-6 w-6 text-[#6068F0] animate-pulse" />
                   </div>
                 </CardContent>
               </Card>
@@ -373,7 +426,7 @@ export default function DashboardPage() {
               {/* Workout card */}
               <Card className={glassCardClass}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Workout</span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Training</span>
                   <Dumbbell className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                 </CardHeader>
                 <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
@@ -449,7 +502,7 @@ export default function DashboardPage() {
                   <path 
                     d={areaD} 
                     fill="url(#chartGrad)" 
-                  />
+                    />
                   {/* Dynamic Stroke line */}
                   <path 
                     d={pathD} 
@@ -470,22 +523,63 @@ export default function DashboardPage() {
           <Card className={`${glassCardClass} p-6 flex-1 flex flex-col`}>
             <CardHeader className="px-0 pt-0 pb-4 flex flex-row items-center justify-between border-b border-slate-200 dark:border-white/10">
               <span className="text-sm font-bold text-slate-900 dark:text-white tracking-wide">Upcoming Tasks</span>
-              <Link 
-                href="/planner"
+              <button 
+                onClick={() => setShowAddTodo(!showAddTodo)}
                 className="h-7 w-7 rounded-full text-slate-400 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-white/5 transition-all duration-300"
               >
-                <Plus className="h-4 w-4" />
-              </Link>
+                {showAddTodo ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              </button>
             </CardHeader>
             <CardContent className="px-0 py-4 flex-1 space-y-4">
+              {showAddTodo && (
+                <form onSubmit={handleCreateTodoDashboard} className="flex gap-2 p-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 transition-all">
+                  <input 
+                    type="text"
+                    placeholder="Add task title..."
+                    value={newTodoTitle}
+                    onChange={(e) => setNewTodoTitle(e.target.value)}
+                    className="flex-1 bg-transparent border-none text-xs text-slate-800 dark:text-white focus:outline-none placeholder-slate-400 dark:placeholder-neutral-500"
+                    required
+                    autoFocus
+                  />
+                  <Button type="submit" className="bg-[#6068F0] hover:bg-[#4d55d0] text-white text-[10px] px-3 py-1 h-auto rounded-lg">
+                    Add
+                  </Button>
+                </form>
+              )}
+
               {todoList.length > 0 ? (
-                todoList.map((task, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/10 transition-all duration-300">
+                todoList.map((task) => (
+                  <div 
+                    key={task.id} 
+                    onClick={() => handleToggleTaskDashboard(task.id)}
+                    className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:bg-white/10 transition-all duration-300 cursor-pointer group"
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="h-2 w-2 rounded-full bg-[#6068F0]" />
+                      <div className="h-4 w-4 rounded border border-slate-300 dark:border-white/30 flex items-center justify-center transition-all duration-300 group-hover:border-[#6068F0]">
+                        <Check className="h-3 w-3 text-transparent group-hover:text-[#6068F0] transition-colors" />
+                      </div>
                       <span className="text-xs font-medium text-slate-700 dark:text-neutral-200">{task.title}</span>
                     </div>
-                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-semibold">{task.time}</span>
+                    
+                    <div className="flex items-center">
+                      <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-semibold group-hover:hidden">Active</span>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          setTodoList(prev => prev.filter(t => t.id !== task.id));
+                          try {
+                            await supabase.from("tasks").delete().eq("id", task.id);
+                            setRefreshCounter(prev => prev + 1);
+                          } catch (err) {
+                            console.error(err);
+                          }
+                        }}
+                        className="hidden group-hover:flex h-5 w-5 text-slate-400 hover:text-red-500 rounded p-1 transition-all duration-300"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -518,7 +612,7 @@ export default function DashboardPage() {
                 type="submit" 
                 size="icon" 
                 disabled={isSending || !userChatInput.trim()}
-                className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg shadow-[#6068F0]/20 transition-all duration-300"
+                className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg shadow-[#6068F0]/20 p-2 h-auto"
               >
                 <Send className="h-3.5 w-3.5" />
               </Button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   Triangle, 
   ArrowRight, 
@@ -64,7 +65,7 @@ export default function PricingPage() {
   const elitePrice = isYearly ? "$290" : "$29";
   const elitePeriod = isYearly ? "/yr" : "/mo";
 
-  const glassCardClass = "bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-[24px] p-8 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] hover:border-white/20 shadow-2xl relative overflow-hidden";
+  const glassCardClass = "bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] hover:border-white/20 shadow-2xl relative overflow-hidden";
 
   // Perspective grid + light beams animation
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -154,45 +155,45 @@ export default function PricingPage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#09090B] dark:bg-[#09090B] light:bg-[#FAFAFA] text-[#FAFAFA] dark:text-[#FAFAFA] light:text-[#09090B] antialiased overflow-x-hidden transition-colors duration-500 font-sans">
+    <div className="relative min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] antialiased overflow-x-hidden transition-colors duration-500 font-sans">
       
       {/* ── Background Grid & volumetric light ── */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Faint blueprint grid overlay */}
-        <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.02] light:opacity-[0.04] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+        <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.02] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:32px_32px]"></div>
 
         {/* Ambient top soft purple/pink glow */}
-        <div className="absolute -top-[300px] left-1/2 -translate-x-1/2 w-[1200px] h-[600px] rounded-full bg-[radial-gradient(ellipse,rgba(196,181,253,0.15)_0%,rgba(249,168,212,0.05)_50%,transparent_75%)] dark:bg-[radial-gradient(ellipse,rgba(196,181,253,0.15)_0%,rgba(249,168,212,0.05)_50%,transparent_75%)] light:bg-[radial-gradient(ellipse,rgba(167,139,250,0.06)_0%,transparent_60%)] blur-[80px]" />
+        <div className="absolute -top-[300px] left-1/2 -translate-x-1/2 w-[1200px] h-[600px] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.06)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse,rgba(196,181,253,0.15)_0%,rgba(249,168,212,0.05)_50%,transparent_75%)] blur-[80px]" />
         
         {/* Perspective grid lines canvas */}
-        <div className="absolute bottom-[-15%] left-1/2 -translate-x-1/2 w-[220%] h-[75%] opacity-70 dark:opacity-70 light:opacity-50" style={{ perspective: "600px" }}>
+        <div className="absolute bottom-[-15%] left-1/2 -translate-x-1/2 w-[220%] h-[75%] opacity-50 dark:opacity-70" style={{ perspective: "600px" }}>
           <canvas ref={gridCanvasRef} className="absolute inset-0 w-full h-full" />
         </div>
 
         {/* Film grain layer */}
-        <div className="absolute -inset-1/2 w-[200%] h-[200%] opacity-[0.015] dark:opacity-[0.015] light:opacity-[0.005] animate-[grain-anim_0.08s_steps(1)_infinite] pointer-events-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "256px 256px" }} />
+        <div className="absolute -inset-1/2 w-[200%] h-[200%] opacity-[0.005] dark:opacity-[0.015] animate-[grain-anim_0.08s_steps(1)_infinite] pointer-events-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "256px 256px" }} />
       </div>
 
       {/* ── Center Navigation Bar ── */}
       <header className="sticky top-0 w-full z-50 transition-all duration-300">
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-5">
-          <nav className="flex justify-between items-center bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white/70 backdrop-blur-2xl border border-white/[0.06] dark:border-white/[0.06] light:border-slate-200/50 px-8 py-3.5 rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.3)] light:shadow-[0_10px_30px_rgba(0,0,0,0.05)] w-full">
+          <nav className="flex justify-between items-center bg-white/70 dark:bg-[#111114]/65 backdrop-blur-2xl border border-slate-200/50 dark:border-white/[0.06] px-8 py-3.5 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.3)] w-full">
             
             {/* Left Brand Logo */}
-            <Link href="/" className="font-sans font-bold text-lg tracking-tighter flex items-center gap-2 group text-white dark:text-white light:text-[#09090B]">
-              <div className="relative h-5 w-5 bg-gradient-to-tr from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] rounded-md flex items-center justify-center p-0.5 shadow-sm group-hover:scale-105 transition-all duration-300">
-                <Triangle className="h-3.5 w-3.5 text-black fill-black rotate-180" />
+            <Link href="/" className="font-sans font-bold text-lg tracking-tighter flex items-center gap-2 group text-[#09090B] dark:text-white">
+              <div className="relative h-5 w-5 rounded-md overflow-hidden flex items-center justify-center border border-slate-200 dark:border-white/10 shadow-sm group-hover:scale-105 transition-all duration-300">
+                <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="20px" className="object-cover" />
               </div>
-              <span className="font-extrabold text-base tracking-tight">Momentum</span>
+              <span className="font-extrabold text-base tracking-tight">ZenithFlow</span>
             </Link>
 
             {/* Mid Links */}
             <ul className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
-              <li><Link href="/#features" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">Features</Link></li>
-              <li><Link href="/pricing" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">Pricing</Link></li>
-              <li><Link href="/#coach" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">AI Coach</Link></li>
-              <li><Link href="/#analytics" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">Analytics</Link></li>
-              <li><Link href="/#about" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">About</Link></li>
+              <li><Link href="/#features" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Features</Link></li>
+              <li><Link href="/pricing" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Pricing</Link></li>
+              <li><Link href="/#coach" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">AI Coach</Link></li>
+              <li><Link href="/#analytics" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Analytics</Link></li>
+              <li><Link href="/#about" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">About</Link></li>
             </ul>
 
             {/* Actions & Theme Swapper */}
@@ -201,14 +202,14 @@ export default function PricingPage() {
               {/* Light/Dark Toggle */}
               <button 
                 onClick={toggleTheme} 
-                className="h-8 w-8 rounded-full border border-white/10 dark:border-white/10 light:border-slate-200 bg-white/5 dark:bg-white/5 light:bg-slate-100 flex items-center justify-center hover:bg-white/10 dark:hover:bg-white/10 light:hover:bg-slate-200 transition-colors text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600"
+                className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600"
                 aria-label="Toggle Theme"
               >
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
               <Link href="/login">
-                <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 hover:text-white dark:hover:text-white light:hover:text-[#09090B] px-3 py-1">
+                <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 hover:text-[#09090B] dark:hover:text-white px-3 py-1">
                   Login
                 </Button>
               </Link>
@@ -220,7 +221,7 @@ export default function PricingPage() {
               </Link>
 
               {/* Mobile hamburger menu */}
-              <button className="lg:hidden text-neutral-400 dark:text-neutral-400 light:text-slate-600 ml-1" onClick={() => setMenuOpen(!menuOpen)}>
+              <button className="lg:hidden text-slate-600 dark:text-neutral-400 ml-1" onClick={() => setMenuOpen(!menuOpen)}>
                 <Menu className="h-5 w-5" />
               </button>
             </div>
@@ -252,13 +253,13 @@ export default function PricingPage() {
         {/* Pricing Grid Section */}
         <section className="relative py-24 max-w-[1280px] mx-auto px-6 md:px-10">
           <div className="text-center mb-16 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
-            <h1 className="text-5xl md:text-6.5xl font-serif tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-white dark:from-white dark:via-white light:from-[#09090B] light:via-[#09090B] light:to-slate-700 mb-6">Choose Your Velocity</h1>
+            <h1 className="text-5xl md:text-6.5xl font-serif tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-[#09090B] via-[#09090B] to-slate-700 dark:from-white dark:via-white dark:to-white mb-6">Choose Your Velocity</h1>
             <p className="text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl mx-auto mb-10 leading-relaxed">
               Invest in your potential. Select the protocol that aligns with your performance goals.
             </p>
 
             {/* Monthly / Yearly Toggle */}
-            <div className="inline-flex items-center gap-4 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-slate-100 border border-white/5 dark:border-white/5 light:border-slate-200 px-3.5 py-1.5 rounded-full backdrop-blur-xl">
+            <div className="inline-flex items-center gap-4 bg-slate-100 dark:bg-neutral-900/60 border border-white/5 dark:border-white/5 light:border-slate-200 px-3.5 py-1.5 rounded-full backdrop-blur-xl">
               <button 
                 onClick={() => setIsYearly(false)}
                 className={cn(
@@ -288,9 +289,9 @@ export default function PricingPage() {
             {/* Base Tier */}
             <div className={cn(glassCardClass, "reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out")}>
               <div className="mb-8">
-                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-800 mb-2">Starter</h3>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Starter</h3>
                 <p className="text-xs text-neutral-400 mb-6 h-10">Core tracking for habits and simple workouts.</p>
-                <span className="text-3xl font-black text-white dark:text-white light:text-slate-800">{basePrice}</span>
+                <span className="text-3xl font-black text-slate-800 dark:text-white">{basePrice}</span>
               </div>
               <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-neutral-300 dark:text-neutral-300 light:text-slate-600">
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Basic workout logging</li>
@@ -298,7 +299,7 @@ export default function PricingPage() {
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Standard metrics</li>
               </ul>
               <Link href="/register">
-                <button className="w-full bg-white/5 dark:bg-white/5 light:bg-slate-100 border border-white/10 dark:border-white/10 light:border-slate-200 text-white dark:text-white light:text-slate-700 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
+                <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-white dark:text-white light:text-slate-700 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
                   Start Free
                 </button>
               </Link>
@@ -306,20 +307,20 @@ export default function PricingPage() {
 
             {/* Pro Tier (Highlighted + glowing purple ambient lighting) */}
             <div className={cn(
-              "relative bg-[#111114]/80 dark:bg-[#111114]/80 light:bg-white border border-[#A78BFA]/30 dark:border-[#A78BFA]/30 light:border-[#A78BFA]/50 rounded-[24px] p-8 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] md:-translate-y-4 shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] dark:shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] light:shadow-[0_20px_40px_rgba(167,139,250,0.15)]",
+              "relative bg-white dark:bg-[#111114]/80 border border-[#A78BFA]/30 dark:border-[#A78BFA]/30 light:border-[#A78BFA]/50 rounded-[24px] p-8 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] md:-translate-y-4 shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] dark:shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] light:shadow-[0_20px_40px_rgba(167,139,250,0.15)]",
               "reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out"
             )}>
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#A78BFA] to-[#F9A8D4] text-black text-[9px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full border border-white/20">
                 Recommended
               </div>
               <div className="mb-8">
-                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-800 mb-2 flex items-center gap-2">
-                  Momentum Pro 
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                  ZenithFlow Pro 
                   <Bolt className="h-5 w-5 text-[#A78BFA] fill-[#A78BFA]/20 animate-pulse" />
                 </h3>
                 <p className="text-xs text-neutral-400 mb-6 h-10">Advanced analytics and unlimited logging.</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-white dark:text-white light:text-slate-800 transition-all duration-300">{proPrice}</span>
+                  <span className="text-3xl font-black text-slate-800 dark:text-white transition-all duration-300">{proPrice}</span>
                   <span className="text-xs text-neutral-400">{proPeriod}</span>
                 </div>
               </div>
@@ -339,10 +340,10 @@ export default function PricingPage() {
             {/* Enterprise Tier */}
             <div className={cn(glassCardClass, "reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-300 ease-out")}>
               <div className="mb-8">
-                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-800 mb-2">Enterprise</h3>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Enterprise</h3>
                 <p className="text-xs text-neutral-400 mb-6 h-10">Personalized protocols and 1-on-1 integrations.</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-white dark:text-white light:text-slate-800 transition-all duration-300">{elitePrice}</span>
+                  <span className="text-3xl font-black text-slate-800 dark:text-white transition-all duration-300">{elitePrice}</span>
                   <span className="text-xs text-neutral-400">{elitePeriod}</span>
                 </div>
               </div>
@@ -353,7 +354,7 @@ export default function PricingPage() {
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Priority human support</li>
               </ul>
               <Link href="/register">
-                <button className="w-full bg-white/5 dark:bg-white/5 light:bg-slate-100 border border-white/10 dark:border-white/10 light:border-slate-200 text-white dark:text-white light:text-slate-700 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
+                <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-white dark:text-white light:text-slate-700 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
                   Get Enterprise
                 </button>
               </Link>
@@ -364,19 +365,19 @@ export default function PricingPage() {
 
         {/* Feature Comparison Table Section */}
         <section className="w-full max-w-[1280px] mx-auto px-6 md:px-10 mb-24 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
-          <div className="bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-[24px] p-8 shadow-2xl overflow-hidden">
-            <h2 className="text-xl font-bold text-white dark:text-white light:text-slate-800 mb-8">Compare Features</h2>
+          <div className="bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 shadow-2xl overflow-hidden">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-8">Compare Features</h2>
             <div className="w-full overflow-x-auto">
               <table className="w-full text-left text-xs md:text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 dark:border-b-white/10 light:border-b-slate-100 text-neutral-400 dark:text-neutral-400 light:text-slate-500 font-bold uppercase tracking-wider">
+                  <tr className="border-b border-white/10 dark:border-b-white/10 light:border-b-slate-100 text-slate-500 dark:text-neutral-400 font-bold uppercase tracking-wider">
                     <th className="py-4 font-semibold">Feature</th>
                     <th className="py-4 font-semibold">Base</th>
                     <th className="py-4 font-semibold text-[#A78BFA]">Pro</th>
                     <th className="py-4 font-semibold">Enterprise</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 dark:divide-white/5 light:divide-slate-100 text-neutral-300 dark:text-neutral-300 light:text-slate-700">
+                <tbody className="divide-y divide-white/5 dark:divide-white/5 light:divide-slate-100 text-slate-700 dark:text-neutral-300">
                   <tr>
                     <td className="py-4 font-medium">Workout Logging</td>
                     <td className="py-4 text-neutral-400">Basic</td>
@@ -403,7 +404,7 @@ export default function PricingPage() {
 
         {/* FAQs Section */}
         <section className="w-full max-w-3xl mx-auto px-6 md:px-0 mb-24 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
-          <h2 className="text-2xl font-black text-white dark:text-white light:text-slate-800 text-center mb-10">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-black text-slate-800 dark:text-white text-center mb-10">Frequently Asked Questions</h2>
           <div className="flex flex-col gap-4">
             {[
               {
@@ -412,12 +413,12 @@ export default function PricingPage() {
               },
               {
                 q: "Is there a contract?",
-                a: "No contracts. Momentum is billed month-to-month or annually. You can cancel your subscription at any time without penalty."
+                a: "No contracts. ZenithFlow is billed month-to-month or annually. You can cancel your subscription at any time without penalty."
               }
             ].map((faq, idx) => (
               <div 
                 key={idx} 
-                className="bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-2xl overflow-hidden cursor-pointer transition-colors duration-300 hover:border-white/20 shadow-xl"
+                className="bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden cursor-pointer transition-colors duration-300 hover:border-white/20 shadow-xl"
                 onClick={() => toggleFaq(idx)}
               >
                 <div className="p-6 flex justify-between items-center select-none">
@@ -445,44 +446,44 @@ export default function PricingPage() {
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
           
           <div>
-            <div className="font-bold text-xl text-white dark:text-white light:text-[#09090B] flex items-center gap-2">
-              <div className="h-5 w-5 bg-gradient-to-tr from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] rounded-md flex items-center justify-center p-0.5">
-                <Triangle className="h-3.5 w-3.5 text-black fill-black rotate-180" />
+            <div className="font-bold text-xl text-[#09090B] dark:text-white flex items-center gap-2">
+              <div className="relative h-5 w-5 rounded-md overflow-hidden flex items-center justify-center border border-slate-200 dark:border-white/10">
+                <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="20px" className="object-cover" />
               </div>
-              <span>Momentum</span>
+              <span>ZenithFlow</span>
             </div>
             <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500 mt-4 max-w-sm leading-relaxed">
               High-performance systems for individuals who refuse to stagnate.
             </p>
             <p className="text-xs text-[#A1A1AA]/50 mt-8">
-              © 2026 Momentum AI. All rights reserved.
+              © 2026 ZenithFlow AI. All rights reserved.
             </p>
           </div>
 
           <div>
-            <h4 className="text-[10px] font-bold text-white dark:text-white light:text-[#09090B] uppercase tracking-widest mb-6">Legal</h4>
+            <h4 className="text-[10px] font-bold text-[#09090B] dark:text-white uppercase tracking-widest mb-6">Legal</h4>
             <ul className="space-y-3 text-xs text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
-              <li><a className="hover:text-white dark:hover:text-white light:hover:text-black transition-colors" href="#">Privacy Policy</a></li>
-              <li><a className="hover:text-white dark:hover:text-white light:hover:text-black transition-colors" href="#">Terms of Service</a></li>
-              <li><a className="hover:text-white dark:hover:text-white light:hover:text-black transition-colors" href="#">Sitemap</a></li>
+              <li><a className="hover:text-black dark:hover:text-white transition-colors" href="#">Privacy Policy</a></li>
+              <li><a className="hover:text-black dark:hover:text-white transition-colors" href="#">Terms of Service</a></li>
+              <li><a className="hover:text-black dark:hover:text-white transition-colors" href="#">Sitemap</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-[10px] font-bold text-white dark:text-white light:text-[#09090B] uppercase tracking-widest mb-6">Connect</h4>
+            <h4 className="text-[10px] font-bold text-[#09090B] dark:text-white uppercase tracking-widest mb-6">Connect</h4>
             <ul className="space-y-3 text-xs text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
               <li>
-                <a className="hover:text-white dark:hover:text-white light:hover:text-black transition-colors flex items-center gap-2" href="#">
+                <a className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-2" href="#">
                   <MessageSquare className="h-4 w-4" /> Contact Support
                 </a>
               </li>
               <li>
-                <a className="hover:text-white dark:hover:text-white light:hover:text-black transition-colors flex items-center gap-2" href="#">
+                <a className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-2" href="#">
                   <Globe className="h-4 w-4" /> Twitter
                 </a>
               </li>
               <li>
-                <a className="hover:text-white dark:hover:text-white light:hover:text-black transition-colors flex items-center gap-2" href="#">
+                <a className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-2" href="#">
                   <Camera className="h-4 w-4" /> Instagram
                 </a>
               </li>

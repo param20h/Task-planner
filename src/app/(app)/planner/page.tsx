@@ -2,65 +2,89 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Check, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 
 // Styling constants
-const glassCardClass = "bg-white/70 dark:bg-[#0d0d0e]/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
-const glassIconWrapperClass = "p-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg flex items-center justify-center";
-
-const PROFILE_ID = "alex_chen";
+const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
 
 export default function PlannerPage() {
+  const [profileId, setProfileId] = useState("alex_chen");
   const [plannerTasks, setPlannerTasks] = useState<{ id: any; title: string; completed: boolean }[]>([]);
   const [scheduleSlots, setScheduleSlots] = useState<{ time: string; event: string; desc: string; duration: string }[]>([]);
-  const [selectedDay, setSelectedDay] = useState(29); // Mon 28 to Sun 03
+  const [selectedDay, setSelectedDay] = useState(new Date().getDate()); 
   const [showAddModal, setShowAddModal] = useState(false);
+  
+  // Modal tabs & form state
+  const [addMode, setAddMode] = useState<"task" | "event">("task");
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [eventTimeSlot, setEventTimeSlot] = useState("09:00 AM");
+  const [eventDesc, setEventDesc] = useState("");
+  const [eventDuration, setEventDuration] = useState("1h 00m");
+  const [eventDay, setEventDay] = useState(new Date().getDate());
 
   useEffect(() => {
-    async function loadData() {
+    setEventDay(selectedDay);
+  }, [selectedDay]);
+
+  // Load session user and load data
+  useEffect(() => {
+    async function loadSession() {
+      let activeId = "alex_chen";
       try {
-        // Fetch tasks
-        const { data: tasksData, error: tasksError } = await supabase
-          .from("tasks")
-          .select("id, title, status")
-          .eq("profile_id", PROFILE_ID);
-
-        if (tasksData && !tasksError) {
-          setPlannerTasks(tasksData.map(t => ({
-            id: t.id,
-            title: t.title,
-            completed: t.status === "completed"
-          })));
-        }
-
-        // Fetch planner events for selected day
-        const { data: eventsData, error: eventsError } = await supabase
-          .from("planner_events")
-          .select("time_slot, event_title, description, duration")
-          .eq("profile_id", PROFILE_ID)
-          .eq("day_date", selectedDay);
-
-        if (eventsData && !eventsError && eventsData.length > 0) {
-          setScheduleSlots(eventsData.map(e => ({
-            time: e.time_slot,
-            event: e.event_title,
-            desc: e.description || "",
-            duration: e.duration || ""
-          })));
-        } else {
-          setScheduleSlots([]);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          activeId = user.id;
+          setProfileId(user.id);
         }
       } catch (err) {
-        console.error("Failed to load planner data:", err);
+        console.error("Failed to load session:", err);
       }
+      await loadPlannerData(activeId);
     }
-    loadData();
+    loadSession();
   }, [selectedDay]);
+
+  const loadPlannerData = async (uid: string) => {
+    try {
+      // Fetch tasks
+      const { data: tasksData, error: tasksError } = await supabase
+        .from("tasks")
+        .select("id, title, status")
+        .eq("profile_id", uid);
+
+      if (tasksData && !tasksError) {
+        setPlannerTasks(tasksData.map(t => ({
+          id: t.id,
+          title: t.title,
+          completed: t.status === "completed"
+        })));
+      }
+
+      // Fetch planner events for selected day
+      const { data: eventsData, error: eventsError } = await supabase
+        .from("planner_events")
+        .select("time_slot, event_title, description, duration")
+        .eq("profile_id", uid)
+        .eq("day_date", selectedDay);
+
+      if (eventsData && !eventsError && eventsData.length > 0) {
+        setScheduleSlots(eventsData.map(e => ({
+          time: e.time_slot,
+          event: e.event_title,
+          desc: e.description || "",
+          duration: e.duration || ""
+        })));
+      } else {
+        setScheduleSlots([]);
+      }
+    } catch (err) {
+      console.error("Failed to load planner data:", err);
+    }
+  };
 
   const toggleTask = async (id: any) => {
     const task = plannerTasks.find(t => t.id === id);
@@ -79,44 +103,101 @@ export default function PlannerPage() {
     }
   };
 
-  const handleAddTask = async (e: React.FormEvent) => {
+  const deleteTask = async (id: any) => {
+    setPlannerTasks(prev => prev.filter(t => t.id !== id));
+    try {
+      await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", id);
+    } catch (err) {
+      console.error("Failed to delete task in Supabase:", err);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskTitle.trim()) return;
 
-    try {
-      const { data, error } = await supabase
-        .from("tasks")
-        .insert({
-          profile_id: PROFILE_ID,
-          title: newTaskTitle,
-          status: "pending"
-        })
-        .select()
-        .single();
+    if (addMode === "task") {
+      try {
+        const { data, error } = await supabase
+          .from("tasks")
+          .insert({
+            profile_id: profileId,
+            title: newTaskTitle,
+            status: "pending"
+          })
+          .select()
+          .single();
 
-      if (data && !error) {
-        setPlannerTasks([
-          ...plannerTasks,
-          { id: data.id, title: data.title, completed: false }
-        ]);
+        if (data && !error) {
+          setPlannerTasks(prev => [
+            ...prev,
+            { id: data.id, title: data.title, completed: false }
+          ]);
+        }
+      } catch (err) {
+        console.error("Failed to add task to Supabase:", err);
       }
-    } catch (err) {
-      console.error("Failed to add task to Supabase:", err);
+    } else {
+      try {
+        const { data, error } = await supabase
+          .from("planner_events")
+          .insert({
+            profile_id: profileId,
+            time_slot: eventTimeSlot,
+            event_title: newTaskTitle,
+            description: eventDesc,
+            duration: eventDuration,
+            day_date: eventDay
+          })
+          .select()
+          .single();
+
+        if (data && !error) {
+          if (eventDay === selectedDay) {
+            setScheduleSlots(prev => [
+              ...prev,
+              {
+                time: data.time_slot,
+                event: data.event_title,
+                desc: data.description || "",
+                duration: data.duration || ""
+              }
+            ]);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to schedule planner event:", err);
+      }
     }
 
     setNewTaskTitle("");
+    setEventDesc("");
     setShowAddModal(false);
   };
 
-  const days = [
-    { name: "Mon", date: 28 },
-    { name: "Tue", date: 29 },
-    { name: "Wed", date: 30 },
-    { name: "Thu", date: 31 },
-    { name: "Fri", date: 1 },
-    { name: "Sat", date: 2 },
-    { name: "Sun", date: 3 }
-  ];
+  // Generate responsive week day labels (matching static Oct 28 - Nov 3 format)
+  const getWeekDays = () => {
+    const daysList = [];
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = Sun, 6 = Sat
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - ((currentDay + 6) % 7)); // Force Mon start
+    
+    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(startOfWeek.getDate() + i);
+      daysList.push({
+        name: dayNames[i],
+        date: d.getDate()
+      });
+    }
+    return daysList;
+  };
+  const days = getWeekDays();
 
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -173,7 +254,7 @@ export default function PlannerPage() {
                 className={cn(
                   "flex flex-col items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-300 border border-transparent",
                   selectedDay === day.date 
-                    ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-white shadow-lg shadow-[#6068F0]/5" 
+                    ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-[#6068F0] dark:text-white shadow-lg shadow-[#6068F0]/5" 
                     : "hover:bg-slate-200 dark:hover:bg-white/5 text-slate-500 dark:text-neutral-400"
                 )}
               >
@@ -185,7 +266,7 @@ export default function PlannerPage() {
             {/* Timetable view representing dynamic days items */}
             <div className="col-span-7 mt-6 space-y-4">
               <div className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-2 pb-1 border-b border-slate-200 dark:border-white/5">
-                Active Timeline — {now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                Active Timeline — day {selectedDay}
               </div>
               
               {scheduleSlots.length > 0 ? (
@@ -203,7 +284,7 @@ export default function PlannerPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-slate-400 dark:text-neutral-500 italic py-6 text-center">No schedule events logged for this day.</p>
+                <p className="text-xs text-slate-400 dark:text-neutral-500 italic py-6 text-center">No schedule events logged for this day. Click Quick Add to log one!</p>
               )}
             </div>
           </div>
@@ -222,20 +303,33 @@ export default function PlannerPage() {
                 <div 
                   key={task.id} 
                   onClick={() => toggleTask(task.id)}
-                  className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-300"
+                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-300 group"
                 >
-                  <div className={cn(
-                    "h-4 w-4 rounded border border-slate-300 dark:border-white/30 flex items-center justify-center transition-all duration-300",
-                    task.completed ? "bg-[#6068F0] border-[#6068F0]" : ""
-                  )}>
-                    {task.completed && <Check className="h-3 w-3 text-white stroke-[3px]" />}
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "h-4 w-4 rounded border border-slate-300 dark:border-white/30 flex items-center justify-center transition-all duration-300",
+                      task.completed ? "bg-[#6068F0] border-[#6068F0]" : ""
+                    )}>
+                      {task.completed && <Check className="h-3 w-3 text-white stroke-[3px]" />}
+                    </div>
+                    <span className={cn(
+                      "text-xs font-medium transition-all duration-300",
+                      task.completed ? "line-through text-slate-400 dark:text-neutral-600" : "text-slate-700 dark:text-neutral-200"
+                    )}>
+                      {task.title}
+                    </span>
                   </div>
-                  <span className={cn(
-                    "text-xs font-medium transition-all duration-300",
-                    task.completed ? "line-through text-slate-400 dark:text-neutral-600" : "text-slate-700 dark:text-neutral-200"
-                  )}>
-                    {task.title}
-                  </span>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteTask(task.id);
+                    }}
+                    className="h-6 w-6 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg p-1 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               ))}
             </CardContent>
@@ -279,16 +373,107 @@ export default function PlannerPage() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <Card className="bg-white dark:bg-[#0d0d0e] border border-slate-200 dark:border-white/10 p-6 w-full max-w-md shadow-2xl rounded-2xl relative">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Add Weekly Task</h3>
-            <form onSubmit={handleAddTask} className="space-y-4">
-              <input 
-                type="text" 
-                placeholder="Task title..." 
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
-                autoFocus
-              />
+            <button 
+              onClick={() => setShowAddModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white rounded-full p-1"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Quick Add Planner item</h3>
+            
+            {/* Modal tab selector */}
+            <div className="flex bg-slate-100 dark:bg-black/60 p-1 rounded-xl mb-4 border border-slate-200 dark:border-white/5">
+              <button 
+                type="button"
+                onClick={() => setAddMode("task")}
+                className={cn(
+                  "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300",
+                  addMode === "task" ? "bg-white dark:bg-neutral-800 text-slate-900 dark:text-white shadow-sm" : "text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200"
+                )}
+              >
+                📝 Task
+              </button>
+              <button 
+                type="button"
+                onClick={() => setAddMode("event")}
+                className={cn(
+                  "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300",
+                  addMode === "event" ? "bg-white dark:bg-neutral-800 text-slate-900 dark:text-white shadow-sm" : "text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200"
+                )}
+              >
+                ⏰ Timeline Event
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Title</label>
+                <input 
+                  type="text" 
+                  placeholder={addMode === "task" ? "e.g. Wrap up marketing mockup" : "e.g. Synchronization Meeting"} 
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                  required
+                  autoFocus
+                />
+              </div>
+
+              {addMode === "event" && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Time Slot</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. 09:00 AM" 
+                        value={eventTimeSlot}
+                        onChange={(e) => setEventTimeSlot(e.target.value)}
+                        className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3.5 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Duration</label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. 1h 30m" 
+                        value={eventDuration}
+                        onChange={(e) => setEventDuration(e.target.value)}
+                        className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3.5 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Description</label>
+                    <textarea 
+                      placeholder="e.g. Scope project details and targets" 
+                      value={eventDesc}
+                      onChange={(e) => setEventDesc(e.target.value)}
+                      rows={2}
+                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300 resize-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Date / Day</label>
+                    <select
+                      value={eventDay}
+                      onChange={(e) => setEventDay(Number(e.target.value))}
+                      className="w-full bg-slate-100 dark:bg-[#111112] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                    >
+                      {days.map((d, i) => (
+                        <option key={i} value={d.date} className="bg-white dark:bg-[#0d0d0e] text-slate-800 dark:text-white">
+                          {d.name} — Day {d.date}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
               <div className="flex justify-end gap-2 mt-6">
                 <Button 
                   type="button" 
@@ -300,9 +485,9 @@ export default function PlannerPage() {
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-[#6068F0] hover:bg-[#4d55d0] text-white"
+                  className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg shadow-[#6068F0]/20"
                 >
-                  Add Task
+                  {addMode === "task" ? "Add Task" : "Schedule Event"}
                 </Button>
               </div>
             </form>

@@ -3,12 +3,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  Check, 
   Plus, 
   Trash2, 
   Apple, 
   Flame, 
-  ChevronRight, 
   Coffee, 
   Utensils, 
   Salad, 
@@ -21,16 +19,23 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 
 // Styling constants
-const glassCardClass = "bg-white/70 dark:bg-[#0d0d0e]/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
+const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
 const glassIconWrapperClass = "p-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg flex items-center justify-center";
 
-const PROFILE_ID = "alex_chen";
-
 export default function FoodPage() {
+  const [profileId, setProfileId] = useState("alex_chen");
   const [caloriesConsumed, setCaloriesConsumed] = useState(0);
   const [macros, setMacros] = useState({ protein: 0, carbs: 0, fats: 0 });
   const [waterIntake, setWaterIntake] = useState(0); // Liters
   
+  // Custom Food Form states
+  const [customName, setCustomName] = useState("");
+  const [customMeal, setCustomMeal] = useState("Breakfast");
+  const [customCal, setCustomCal] = useState("");
+  const [customProt, setCustomProt] = useState("");
+  const [customCarb, setCustomCarb] = useState("");
+  const [customFat, setCustomFat] = useState("");
+
   // Dynamic week days generation
   const getWeekDays = () => {
     const daysList = [];
@@ -57,7 +62,22 @@ export default function FoodPage() {
   
   const [foodItems, setFoodItems] = useState<{ id: any; name: string; meal: string; calories: number; protein: number; carbs: number; fats: number }[]>([]);
 
-  // Reload data whenever selected day updates
+  // Load user session
+  useEffect(() => {
+    async function getSession() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setProfileId(user.id);
+        }
+      } catch (err) {
+        console.error("Failed to load session:", err);
+      }
+    }
+    getSession();
+  }, []);
+
+  // Reload data whenever selected day or profileId updates
   useEffect(() => {
     async function loadNutrition() {
       const selectedDay = days[selectedDayIndex].fullDate;
@@ -71,7 +91,7 @@ export default function FoodPage() {
         const { data: foodData, error: foodError } = await supabase
           .from("food_logs")
           .select("id, food_name, meal_type, calories, protein, carbs, fats")
-          .eq("profile_id", PROFILE_ID)
+          .eq("profile_id", profileId)
           .gte("created_at", startOfDay.toISOString())
           .lte("created_at", endOfDay.toISOString());
 
@@ -103,7 +123,7 @@ export default function FoodPage() {
         const { data: waterData, error: waterError } = await supabase
           .from("water_logs")
           .select("amount_liters")
-          .eq("profile_id", PROFILE_ID)
+          .eq("profile_id", profileId)
           .gte("created_at", startOfDay.toISOString())
           .lte("created_at", endOfDay.toISOString());
 
@@ -118,7 +138,7 @@ export default function FoodPage() {
       }
     }
     loadNutrition();
-  }, [selectedDayIndex]);
+  }, [selectedDayIndex, profileId]);
 
   const handleAddWater = async () => {
     const increment = 0.25;
@@ -139,7 +159,7 @@ export default function FoodPage() {
       await supabase
         .from("water_logs")
         .insert({
-          profile_id: PROFILE_ID,
+          profile_id: profileId,
           amount_liters: increment,
           created_at: logTime.toISOString()
         });
@@ -161,7 +181,7 @@ export default function FoodPage() {
       const { data, error } = await supabase
         .from("food_logs")
         .insert({
-          profile_id: PROFILE_ID,
+          profile_id: profileId,
           meal_type: meal.toLowerCase(),
           food_name: name,
           calories: cal,
@@ -194,6 +214,24 @@ export default function FoodPage() {
     } catch (err) {
       console.error("Failed to add food to Supabase:", err);
     }
+  };
+
+  const handleLogCustomFood = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customName.trim()) return;
+
+    const cal = parseInt(customCal) || 0;
+    const prot = parseInt(customProt) || 0;
+    const carb = parseInt(customCarb) || 0;
+    const fat = parseInt(customFat) || 0;
+
+    await handleAddFoodItem(customMeal, customName, cal, prot, carb, fat);
+
+    setCustomName("");
+    setCustomCal("");
+    setCustomProt("");
+    setCustomCarb("");
+    setCustomFat("");
   };
 
   const handleDeleteFoodItem = async (id: any) => {
@@ -240,7 +278,7 @@ export default function FoodPage() {
             className={cn(
               "flex flex-col items-center justify-center px-6 py-3 rounded-xl border cursor-pointer min-w-[100px] transition-all duration-300",
               selectedDayIndex === idx 
-                ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-white shadow-lg shadow-[#6068F0]/5" 
+                ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-[#6068F0] dark:text-white shadow-lg shadow-[#6068F0]/5" 
                 : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-white/10"
             )}
           >
@@ -387,32 +425,128 @@ export default function FoodPage() {
           </div>
         </div>
 
-        {/* Right column - Quick suggestions list */}
+        {/* Right column - Quick suggestions list & Custom Food Form */}
         <div className="lg:col-span-4 space-y-8">
+          
+          {/* Quick Suggestions Card */}
           <Card className={`${glassCardClass} p-6`}>
             <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4">
               <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Quick Suggestions</CardTitle>
             </CardHeader>
             <CardContent className="px-0 space-y-4">
               {[
-                { title: "Boiled Eggs (x3)", cal: 210, desc: "P: 18g | C: 1g | F: 15g" },
-                { title: "Whey Protein Shake", cal: 140, desc: "P: 25g | C: 3g | F: 2g" },
-                { title: "Mixed Nuts (30g)", cal: 170, desc: "P: 6g | C: 5g | F: 16g" },
-                { title: "Banana (Medium)", cal: 105, desc: "P: 1g | C: 27g | F: 0g" }
+                { title: "Boiled Eggs (x3)", cal: 210, p: 18, c: 1, f: 15 },
+                { title: "Whey Protein Shake", cal: 140, p: 25, c: 3, f: 2 },
+                { title: "Mixed Nuts (30g)", cal: 170, p: 6, c: 5, f: 16 },
+                { title: "Banana (Medium)", cal: 105, p: 1, c: 27, f: 0 }
               ].map((item, idx) => (
                 <div key={idx} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl hover:border-slate-200 dark:hover:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-300">
                   <div>
                     <h5 className="text-xs font-bold text-slate-900 dark:text-white">{item.title}</h5>
-                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5 block">{item.desc}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5 block">
+                      P: {item.p}g | C: {item.c}g | F: {item.f}g
+                    </span>
                   </div>
                   <Button 
-                    onClick={() => handleAddFoodItem("Snacks", item.title, item.cal, 20, 10, 5)}
+                    onClick={() => handleAddFoodItem("Snacks", item.title, item.cal, item.p, item.c, item.f)}
                     className="p-1.5 h-auto bg-[#6068F0]/20 hover:bg-[#6068F0] border border-[#6068F0]/30 hover:border-transparent text-[#6068F0] hover:text-white rounded-lg transition-all duration-300"
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               ))}
+            </CardContent>
+          </Card>
+
+          {/* Log Custom Food Card */}
+          <Card className={`${glassCardClass} p-6`}>
+            <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex items-center justify-between">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                <Apple className="h-4 w-4 text-[#6068F0]" />
+                Log Custom Food
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-0 pt-2">
+              <form onSubmit={handleLogCustomFood} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Food Name</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Avocado Toast" 
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Meal Type</label>
+                    <select 
+                      value={customMeal}
+                      onChange={(e) => setCustomMeal(e.target.value)}
+                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                    >
+                      {["Breakfast", "Lunch", "Dinner", "Snacks"].map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Calories (kcal)</label>
+                    <input 
+                      type="number" 
+                      placeholder="e.g. 350" 
+                      value={customCal}
+                      onChange={(e) => setCustomCal(e.target.value)}
+                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Protein (g)</label>
+                    <input 
+                      type="number" 
+                      placeholder="0" 
+                      value={customProt}
+                      onChange={(e) => setCustomProt(e.target.value)}
+                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Carbs (g)</label>
+                    <input 
+                      type="number" 
+                      placeholder="0" 
+                      value={customCarb}
+                      onChange={(e) => setCustomCarb(e.target.value)}
+                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Fats (g)</label>
+                    <input 
+                      type="number" 
+                      placeholder="0" 
+                      value={customFat}
+                      onChange={(e) => setCustomFat(e.target.value)}
+                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit"
+                  className="w-full bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg shadow-[#6068F0]/20 flex items-center justify-center gap-2 mt-4 text-xs py-2 h-auto"
+                >
+                  <Plus className="h-4 w-4" />
+                  Log Custom Food
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </div>

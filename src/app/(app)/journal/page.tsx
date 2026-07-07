@@ -9,11 +9,10 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 
 // Styling constants
-const glassCardClass = "bg-white/70 dark:bg-[#0d0d0e]/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
-
-const PROFILE_ID = "alex_chen";
+const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
 
 export default function JournalPage() {
+  const [profileId, setProfileId] = useState("alex_chen");
   const [journalText, setJournalText] = useState("");
   const [selectedMood, setSelectedMood] = useState("focused");
   const [reflection, setReflection] = useState("Write down your thoughts above and select a mood, then click 'Reflect with AI Coach' to analyze your journal entry.");
@@ -22,6 +21,17 @@ export default function JournalPage() {
 
   useEffect(() => {
     async function loadJournal() {
+      let activeId = "alex_chen";
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          activeId = user.id;
+          setProfileId(user.id);
+        }
+      } catch (err) {
+        console.error("Failed to load user session:", err);
+      }
+
       try {
         const storedKey = localStorage.getItem("momentum_groq_key");
         if (storedKey) setGroqKey(storedKey);
@@ -29,7 +39,7 @@ export default function JournalPage() {
         const { data, error } = await supabase
           .from("journal_logs")
           .select("entry_text, mood, reflection_text")
-          .eq("profile_id", PROFILE_ID)
+          .eq("profile_id", activeId)
           .order("created_at", { ascending: false })
           .limit(1);
 
@@ -68,7 +78,7 @@ export default function JournalPage() {
             messages: [
               {
                 role: "system",
-                content: "You are Momentum AI, a premium personal health and mindfulness coach. Read the user's journal entry and mood, then provide a highly insightful, encouraging, and short (3 sentences max) reflection or mindfulness tip."
+                content: "You are ZenithFlow AI, a premium personal health and mindfulness coach. Read the user's journal entry and mood, then provide a highly insightful, encouraging, and short (3 sentences max) reflection or mindfulness tip."
               },
               {
                 role: "user",
@@ -98,7 +108,7 @@ export default function JournalPage() {
       await supabase
         .from("journal_logs")
         .insert({
-          profile_id: PROFILE_ID,
+          profile_id: profileId,
           entry_text: journalText,
           mood: selectedMood,
           reflection_text: reflectionResult || null
@@ -145,7 +155,7 @@ export default function JournalPage() {
                     className={cn(
                       "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs uppercase tracking-wider font-bold transition-all duration-300",
                       selectedMood === mood.name
-                        ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-white"
+                        ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-[#6068F0] dark:text-white"
                         : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-500 dark:text-neutral-500 hover:bg-slate-200 dark:hover:bg-white/10"
                     )}
                   >
