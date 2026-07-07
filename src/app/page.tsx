@@ -246,7 +246,7 @@ export default function Home() {
             borderRadius: "50%",
             background: theme === "dark"
               ? "radial-gradient(circle, rgba(167,139,250,0.12) 0%, rgba(196,181,253,0.05) 40%, transparent 70%)"
-              : "radial-gradient(circle, rgba(167,139,250,0.08) 0%, rgba(196,181,253,0.03) 40%, transparent 70%)",
+              : "radial-gradient(circle, rgba(139,92,246,0.20) 0%, rgba(167,139,250,0.10) 40%, transparent 70%)",
             filter: "blur(30px)",
             pointerEvents: "none",
             zIndex: 1,
