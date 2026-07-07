@@ -48,21 +48,21 @@ export default function AnalyticsPage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-neutral-300">
+    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       {/* Header Panel */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between p-6 bg-gradient-to-r from-[#0d0d0e]/80 to-transparent border border-white/10 rounded-xl gap-4">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between p-6 bg-gradient-to-r from-slate-50 to-transparent dark:from-[#0d0d0e]/80 dark:to-transparent border border-slate-200 dark:border-white/10 rounded-xl gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
             <LineChart className="h-7 w-7 text-[#6068F0]" />
             Performance Analytics
           </h1>
-          <p className="text-xs text-neutral-500 mt-1">Deep analysis of health, task completion, and habits consistency.</p>
+          <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1">Deep analysis of health, task completion, and habits consistency.</p>
         </div>
 
         {/* Range Selector Pill - exactly like the iOS segmented control reference */}
-        <div className="flex items-center p-1 bg-[#1C1C1E] border border-white/5 rounded-full shadow-inner max-w-max self-start md:self-auto">
+        <div className="flex items-center p-1 bg-slate-100 dark:bg-[#1C1C1E] border border-slate-200 dark:border-white/5 rounded-full shadow-inner max-w-max self-start md:self-auto">
           {ranges.map((range) => (
             <button
               key={range}
@@ -70,8 +70,8 @@ export default function AnalyticsPage() {
               className={cn(
                 "px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300",
                 selectedRange === range 
-                  ? "bg-[#3A3A3C] text-white shadow-sm" 
-                  : "text-neutral-500 hover:text-neutral-300"
+                  ? "bg-white dark:bg-[#3A3A3C] text-slate-900 dark:text-white shadow-sm" 
+                  : "text-slate-500 dark:text-neutral-500 hover:text-slate-700 dark:hover:text-neutral-300"
               )}
             >
               {range}
@@ -84,9 +84,9 @@ export default function AnalyticsPage() {
         
         {/* Weekly Progress Overviews */}
         <Card className={`${glassCardClass} p-6`}>
-          <CardHeader className="px-0 pt-0 pb-4 border-b border-white/10 mb-4 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <Activity className="h-4 w-4 text-neutral-400" />
+          <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <Activity className="h-4 w-4 text-slate-400 dark:text-neutral-400" />
               Focus & Productivity index
             </CardTitle>
           </CardHeader>
@@ -109,9 +109,9 @@ export default function AnalyticsPage() {
 
         {/* Weekly calories comparison */}
         <Card className={`${glassCardClass} p-6`}>
-          <CardHeader className="px-0 pt-0 pb-4 border-b border-white/10 mb-4 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <BarChart2 className="h-4 w-4 text-neutral-400" />
+          <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <BarChart2 className="h-4 w-4 text-slate-400 dark:text-neutral-400" />
               Daily Active Calorie Burn
             </CardTitle>
           </CardHeader>
@@ -126,7 +126,7 @@ export default function AnalyticsPage() {
                     i === 4 ? "bg-[#D946EF]" : "bg-[#6068F0]/40 group-hover:bg-[#6068F0]"
                   )}
                 />
-                <span className="text-[10px] text-neutral-600 font-semibold mt-2">
+                <span className="text-[10px] text-slate-400 dark:text-neutral-600 font-semibold mt-2">
                   {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][i]}
                 </span>
               </div>
@@ -137,29 +137,29 @@ export default function AnalyticsPage() {
         {/* Total Score Radar metric equivalent representation */}
         <Card className={`${glassCardClass} p-6 md:col-span-2 flex flex-col md:flex-row items-center justify-around gap-6`}>
           <div className="space-y-4 max-w-sm">
-            <h4 className="text-lg font-bold text-white flex items-center gap-2">
-              <Target className="h-5 w-5 text-neutral-400" />
+            <h4 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Target className="h-5 w-5 text-slate-400 dark:text-neutral-400" />
               Consistency Insights
             </h4>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Your focus and workout scores have remained highly synced this week. You scored an average of <span className="text-white font-bold">92%</span> in habit consistency, primarily driven by early morning hydration and solid training blocks.
+            <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">
+              Your focus and workout scores have remained highly synced this week. You scored an average of <span className="text-slate-900 dark:text-white font-bold">92%</span> in habit consistency, primarily driven by early morning hydration and solid training blocks.
             </p>
           </div>
           
           <div className="flex gap-8">
             <div className="text-center">
-              <span className="text-[10px] text-neutral-500 uppercase tracking-widest block mb-1">Average Sleep</span>
-              <span className="text-2xl font-extrabold text-white">7.5 h</span>
+              <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block mb-1">Average Sleep</span>
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">7.5 h</span>
             </div>
-            <div className="w-[1px] h-10 bg-white/10" />
+            <div className="w-[1px] h-10 bg-slate-200 dark:bg-white/10" />
             <div className="text-center">
-              <span className="text-[10px] text-neutral-500 uppercase tracking-widest block mb-1">Weekly Workouts</span>
-              <span className="text-2xl font-extrabold text-white">{weeklyWorkouts} Sessions</span>
+              <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block mb-1">Weekly Workouts</span>
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{weeklyWorkouts} Sessions</span>
             </div>
-            <div className="w-[1px] h-10 bg-white/10" />
+            <div className="w-[1px] h-10 bg-slate-200 dark:bg-white/10" />
             <div className="text-center">
-              <span className="text-[10px] text-neutral-500 uppercase tracking-widest block mb-1">Deep Focus Total</span>
-              <span className="text-2xl font-extrabold text-white">{focusHours} h</span>
+              <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block mb-1">Deep Focus Total</span>
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{focusHours} h</span>
             </div>
           </div>
         </Card>

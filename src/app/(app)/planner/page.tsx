@@ -118,10 +118,28 @@ export default function PlannerPage() {
     { name: "Sun", date: 3 }
   ];
 
-  const calendarDays = Array.from({ length: 31 }, (_, i) => i + 1);
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const calendarDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const calendarOffset = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+
+  // Compute current week label dynamically
+  const getWeeklyFocusLabel = () => {
+    const today = new Date();
+    const day = today.getDay();
+    const mon = new Date(today);
+    mon.setDate(today.getDate() - ((day + 6) % 7));
+    const sun = new Date(mon);
+    sun.setDate(mon.getDate() + 6);
+    const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `Weekly Focus: ${fmt(mon)} – ${fmt(sun)}, ${sun.getFullYear()}`;
+  };
+  const weeklyFocusLabel = getWeeklyFocusLabel();
+  const currentMonthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const todayDate = now.getDate();
 
   return (
-    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-neutral-300">
+    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
@@ -130,12 +148,12 @@ export default function PlannerPage() {
         <div className="lg:col-span-9 space-y-8">
           
           {/* Header Card */}
-          <div className="flex items-center justify-between p-6 bg-gradient-to-r from-[#0d0d0e]/80 to-transparent border border-white/10 rounded-xl">
+          <div className="flex items-center justify-between p-6 bg-gradient-to-r from-slate-50 to-transparent dark:from-[#0d0d0e]/80 dark:to-transparent border border-slate-200 dark:border-white/10 rounded-xl">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-                Weekly Focus: Oct 28 - Nov 3, 2024
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                {weeklyFocusLabel}
               </h1>
-              <p className="text-xs text-neutral-500 mt-1">Plan your sprint, align with tasks, track daily score.</p>
+              <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1">Plan your sprint, align with tasks, track daily score.</p>
             </div>
             <Button 
               onClick={() => setShowAddModal(true)}
@@ -147,7 +165,7 @@ export default function PlannerPage() {
           </div>
 
           {/* Schedule Board */}
-          <div className="grid grid-cols-7 gap-4 bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-xl">
+          <div className="grid grid-cols-7 gap-4 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 rounded-2xl backdrop-blur-xl">
             {days.map((day, idx) => (
               <div 
                 key={idx} 
@@ -156,7 +174,7 @@ export default function PlannerPage() {
                   "flex flex-col items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-300 border border-transparent",
                   selectedDay === day.date 
                     ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-white shadow-lg shadow-[#6068F0]/5" 
-                    : "hover:bg-white/5 text-neutral-400"
+                    : "hover:bg-slate-200 dark:hover:bg-white/5 text-slate-500 dark:text-neutral-400"
                 )}
               >
                 <span className="text-xs font-semibold uppercase tracking-wider">{day.name}</span>
@@ -166,26 +184,26 @@ export default function PlannerPage() {
 
             {/* Timetable view representing dynamic days items */}
             <div className="col-span-7 mt-6 space-y-4">
-              <div className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 pb-1 border-b border-white/5">
-                Active Timeline for Oct {selectedDay}
+              <div className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-2 pb-1 border-b border-slate-200 dark:border-white/5">
+                Active Timeline — {now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </div>
               
               {scheduleSlots.length > 0 ? (
                 scheduleSlots.map((slot, idx) => (
                   <div 
                     key={idx} 
-                    className="flex items-center gap-6 p-4 rounded-xl bg-[#0d0d0e]/60 border border-white/5 hover:border-[#6068F0]/30 hover:bg-[#111112]/80 transition-all duration-300 shadow-inner"
+                    className="flex items-center gap-6 p-4 rounded-xl bg-white dark:bg-[#0d0d0e]/60 border border-slate-200 dark:border-white/5 hover:border-[#6068F0]/30 hover:bg-slate-50 dark:hover:bg-[#111112]/80 transition-all duration-300 shadow-sm"
                   >
                     <span className="text-xs font-semibold text-[#6068F0] w-16">{slot.time}</span>
                     <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-white">{slot.event}</h4>
-                      <p className="text-[10px] text-neutral-500 mt-0.5">{slot.desc}</p>
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{slot.event}</h4>
+                      <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{slot.desc}</p>
                     </div>
-                    <span className="text-[10px] bg-white/5 px-2.5 py-1 rounded-full border border-white/10 text-neutral-400">{slot.duration}</span>
+                    <span className="text-[10px] bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-full border border-slate-200 dark:border-white/10 text-slate-500 dark:text-neutral-400">{slot.duration}</span>
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-neutral-500 italic py-6 text-center">No schedule events logged for this day.</p>
+                <p className="text-xs text-slate-400 dark:text-neutral-500 italic py-6 text-center">No schedule events logged for this day.</p>
               )}
             </div>
           </div>
@@ -196,25 +214,25 @@ export default function PlannerPage() {
           
           {/* Priority Checklist */}
           <Card className={`${glassCardClass} p-6`}>
-            <CardHeader className="px-0 pt-0 pb-4 border-b border-white/10 mb-4">
-              <CardTitle className="text-sm font-bold text-white uppercase tracking-wider">Priority List</CardTitle>
+            <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Priority List</CardTitle>
             </CardHeader>
             <CardContent className="px-0 space-y-3">
               {plannerTasks.map((task) => (
                 <div 
                   key={task.id} 
                   onClick={() => toggleTask(task.id)}
-                  className="flex items-center gap-3 p-3 bg-white/5 border border-white/5 rounded-xl cursor-pointer hover:bg-white/10 transition-all duration-300"
+                  className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-300"
                 >
                   <div className={cn(
-                    "h-4 w-4 rounded border border-white/30 flex items-center justify-center transition-all duration-300",
+                    "h-4 w-4 rounded border border-slate-300 dark:border-white/30 flex items-center justify-center transition-all duration-300",
                     task.completed ? "bg-[#6068F0] border-[#6068F0]" : ""
                   )}>
                     {task.completed && <Check className="h-3 w-3 text-white stroke-[3px]" />}
                   </div>
                   <span className={cn(
                     "text-xs font-medium transition-all duration-300",
-                    task.completed ? "line-through text-neutral-600" : "text-neutral-200"
+                    task.completed ? "line-through text-slate-400 dark:text-neutral-600" : "text-slate-700 dark:text-neutral-200"
                   )}>
                     {task.title}
                   </span>
@@ -225,27 +243,27 @@ export default function PlannerPage() {
 
           {/* Mini Calendar Card */}
           <Card className={`${glassCardClass} p-6`}>
-            <CardHeader className="px-0 pt-0 pb-4 border-b border-white/10 mb-4 flex flex-row items-center justify-between">
-              <span className="text-sm font-bold text-white uppercase tracking-wider">October 2024</span>
+            <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex flex-row items-center justify-between">
+              <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{currentMonthLabel}</span>
               <div className="flex gap-1">
-                <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full text-neutral-400"><ChevronLeft className="h-3 w-3" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full text-neutral-400"><ChevronRight className="h-3 w-3" /></Button>
+                <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full text-slate-400 dark:text-neutral-400"><ChevronLeft className="h-3 w-3" /></Button>
+                <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full text-slate-400 dark:text-neutral-400"><ChevronRight className="h-3 w-3" /></Button>
               </div>
             </CardHeader>
             <CardContent className="px-0">
               <div className="grid grid-cols-7 gap-y-2 text-center text-[10px]">
                 {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day, i) => (
-                  <span key={i} className="text-neutral-600 font-semibold">{day}</span>
+                  <span key={i} className="text-slate-400 dark:text-neutral-600 font-semibold">{day}</span>
                 ))}
-                {Array.from({ length: 2 }).map((_, i) => (
+                {Array.from({ length: calendarOffset }).map((_, i) => (
                   <span key={i} />
                 ))}
                 {calendarDays.map((d) => (
                   <span 
                     key={d} 
                     className={cn(
-                      "w-6 h-6 flex items-center justify-center mx-auto rounded-full cursor-pointer hover:bg-white/10 transition-all duration-300",
-                      d === 29 ? "bg-[#6068F0] text-white font-bold" : "text-neutral-400"
+                      "w-6 h-6 flex items-center justify-center mx-auto rounded-full cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-300",
+                      d === todayDate ? "bg-[#6068F0] text-white font-bold" : "text-slate-500 dark:text-neutral-400"
                     )}
                   >
                     {d}
@@ -260,15 +278,15 @@ export default function PlannerPage() {
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <Card className="bg-[#0d0d0e] border border-white/10 p-6 w-full max-w-md shadow-2xl rounded-2xl relative">
-            <h3 className="text-lg font-bold text-white mb-4">Add Weekly Task</h3>
+          <Card className="bg-white dark:bg-[#0d0d0e] border border-slate-200 dark:border-white/10 p-6 w-full max-w-md shadow-2xl rounded-2xl relative">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Add Weekly Task</h3>
             <form onSubmit={handleAddTask} className="space-y-4">
               <input 
                 type="text" 
                 placeholder="Task title..." 
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
                 autoFocus
               />
               <div className="flex justify-end gap-2 mt-6">
@@ -276,7 +294,7 @@ export default function PlannerPage() {
                   type="button" 
                   variant="outline" 
                   onClick={() => setShowAddModal(false)}
-                  className="border-neutral-800 text-neutral-400 hover:bg-neutral-900"
+                  className="border-slate-200 dark:border-neutral-800 text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900"
                 >
                   Cancel
                 </Button>

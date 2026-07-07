@@ -164,7 +164,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className={cn("mx-auto flex h-screen w-full flex-col overflow-hidden bg-black dark:bg-black light:bg-slate-50 text-neutral-300 dark:text-neutral-300 light:text-slate-800 relative md:flex-row transition-colors duration-500")}>
+    <div className={cn("mx-auto flex h-screen w-full flex-col overflow-hidden bg-slate-50 dark:bg-black text-slate-700 dark:text-neutral-300 relative md:flex-row transition-colors duration-500")}>
       
       {/* Background Orbs: Hidden or very low opacity in light mode to keep clean Prospector feel */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 dark:opacity-100 light:opacity-10">

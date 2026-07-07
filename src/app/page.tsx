@@ -202,7 +202,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#09090B] dark:bg-[#09090B] light:bg-[#FAFAFA] text-[#FAFAFA] dark:text-[#FAFAFA] light:text-[#09090B] antialiased overflow-x-hidden transition-colors duration-500 font-sans">
+    <div className="relative min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] antialiased overflow-x-hidden transition-colors duration-500 font-sans">
       
       {/* ── Background Grid & volumetric light ── */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
@@ -492,7 +492,7 @@ export default function Home() {
                       "px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-300",
                       activePreviewTab === t.id
                         ? "bg-[#A78BFA] text-black shadow-md"
-                        : "text-neutral-400 hover:text-neutral-200"
+                        : "text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-neutral-200"
                     )}
                   >
                     {t.label}
@@ -540,7 +540,7 @@ export default function Home() {
                   
                   {/* Task list matching Prospector mockup style */}
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Active Priorities</h4>
+                    <h4 className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Active Priorities</h4>
                     <div className="space-y-2">
                       {[
                         { title: "Refactor API server auth endpoints", status: "completed" },
@@ -548,7 +548,7 @@ export default function Home() {
                         { title: "Review marketing graphics deck", status: "pending" },
                       ].map((task, i) => (
                         <div key={i} className="flex justify-between items-center p-3.5 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 rounded-xl">
-                          <span className="text-[11px] font-semibold text-neutral-300 dark:text-neutral-300 light:text-slate-700">{task.title}</span>
+                          <span className="text-[11px] font-semibold text-slate-700 dark:text-neutral-300">{task.title}</span>
                           <span className={cn(
                             "text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full",
                             task.status === "completed" 
@@ -564,7 +564,7 @@ export default function Home() {
 
                   {/* Schedule block */}
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Today's Protocol</h4>
+                    <h4 className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Today's Protocol</h4>
                     <div className="space-y-2">
                       {[
                         { time: "09:30 AM", act: "Deep Focus (Code Refactor)", duration: "90 min" },
@@ -574,9 +574,9 @@ export default function Home() {
                         <div key={i} className="flex justify-between items-center p-3.5 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 rounded-xl">
                           <div>
                             <span className="text-[9px] font-mono text-[#A78BFA] block">{item.time}</span>
-                            <span className="text-[11px] font-bold text-white dark:text-white light:text-slate-800">{item.act}</span>
+                            <span className="text-[11px] font-bold text-[#09090B] dark:text-white">{item.act}</span>
                           </div>
-                          <span className="text-[10px] text-neutral-400 font-semibold">{item.duration}</span>
+                          <span className="text-[10px] text-slate-500 dark:text-neutral-400 font-semibold">{item.duration}</span>
                         </div>
                       ))}
                     </div>
@@ -592,8 +592,8 @@ export default function Home() {
                   {/* Routine Info header */}
                   <div className="flex justify-between items-center p-4 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 rounded-xl">
                     <div>
-                      <h4 className="text-xs font-bold text-white dark:text-white light:text-slate-800">Monday - Chest & Triceps</h4>
-                      <span className="text-[9px] text-neutral-500 mt-1 block uppercase tracking-wider">Volume Target: 5,400 kg</span>
+                      <h4 className="text-xs font-bold text-[#09090B] dark:text-white">Monday - Chest & Triceps</h4>
+                      <span className="text-[9px] text-slate-400 dark:text-neutral-500 mt-1 block uppercase tracking-wider">Volume Target: 5,400 kg</span>
                     </div>
                     
                     {/* Live Timer Controls in Preview */}
@@ -604,7 +604,7 @@ export default function Home() {
                       >
                         {timerActive ? "||" : "▶"}
                       </button>
-                      <span className="text-xs font-mono font-bold text-neutral-300 dark:text-neutral-300 light:text-slate-700">{formatTimer(timerSeconds)}</span>
+                      <span className="text-xs font-mono font-bold text-slate-700 dark:text-neutral-300">{formatTimer(timerSeconds)}</span>
                     </div>
                   </div>
 
@@ -616,12 +616,12 @@ export default function Home() {
                     ].map((ex, i) => (
                       <div key={i} className="bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 p-4 rounded-xl space-y-2">
                         <div className="flex justify-between items-start">
-                          <span className="text-[11px] font-bold text-white dark:text-white light:text-slate-800">{ex.name}</span>
-                          <span className="text-[9px] text-neutral-500">{ex.sets}</span>
+                          <span className="text-[11px] font-bold text-[#09090B] dark:text-white">{ex.name}</span>
+                          <span className="text-[9px] text-slate-400 dark:text-neutral-500">{ex.sets}</span>
                         </div>
-                        <div className="text-[10px] text-neutral-400 pt-1.5 border-t border-white/5 flex justify-between font-mono">
+                        <div className="text-[10px] text-slate-500 dark:text-neutral-400 pt-1.5 border-t border-slate-100 dark:border-white/5 flex justify-between font-mono">
                           <span>Previous PR:</span>
-                          <span className="text-neutral-300">{ex.last}</span>
+                          <span className="text-slate-700 dark:text-neutral-300">{ex.last}</span>
                         </div>
                       </div>
                     ))}
@@ -640,14 +640,14 @@ export default function Home() {
                     { label: "Task Completion", val: "4 / 5 completed", progress: "80%" },
                   ].map((m, i) => (
                     <div key={i} className="bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 p-4 rounded-xl space-y-3">
-                      <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">{m.label}</span>
-                      <span className="text-sm font-extrabold text-white dark:text-white light:text-slate-800 block">{m.val}</span>
+                      <span className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">{m.label}</span>
+                      <span className="text-sm font-extrabold text-[#09090B] dark:text-white block">{m.val}</span>
                       
                       <div className="space-y-1 pt-1">
                         <div className="h-1.5 w-full bg-white/5 dark:bg-white/5 light:bg-slate-100 rounded-full overflow-hidden border border-white/5 dark:border-white/5 light:border-slate-200">
                           <div className="h-full bg-gradient-to-r from-[#A78BFA] to-[#F9A8D4]" style={{ width: m.progress }} />
                         </div>
-                        <span className="text-[8px] text-neutral-500 font-mono flex justify-end">{m.progress}</span>
+                        <span className="text-[8px] text-slate-400 dark:text-neutral-500 font-mono flex justify-end">{m.progress}</span>
                       </div>
                     </div>
                   ))}

@@ -91,17 +91,17 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-neutral-300">
+    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       {/* Header Panel */}
-      <div className="relative z-10 p-6 bg-gradient-to-r from-[#0d0d0e]/80 to-transparent border border-white/10 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="relative z-10 p-6 bg-gradient-to-r from-slate-50 to-transparent dark:from-[#0d0d0e]/80 dark:to-transparent border border-slate-200 dark:border-white/10 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
             <Target className="h-7 w-7 text-[#6068F0]" />
             Objectives & Goals
           </h1>
-          <p className="text-xs text-neutral-500 mt-1">Set long term OKRs, track key indicators, view timeline milestones.</p>
+          <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1">Set long term OKRs, track key indicators, view timeline milestones.</p>
         </div>
         <Button 
           onClick={handleAddGoal}
@@ -123,15 +123,15 @@ export default function GoalsPage() {
               <Card key={i} className={glassCardClass}>
                 <CardContent className="p-6 space-y-6 flex flex-col justify-between h-full">
                   <div>
-                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Key Objective {i + 1}</span>
-                    <h4 className="text-sm font-bold text-white leading-snug">{obj.title}</h4>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest block mb-2">Key Objective {i + 1}</span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">{obj.title}</h4>
                   </div>
                   
                   {/* Progress circular indicator */}
                   <div className="flex items-center gap-4">
                     <div className="relative w-16 h-16 flex items-center justify-center">
                       <svg className="w-full h-full transform -rotate-90">
-                        <circle cx="32" cy="32" r="26" className="stroke-neutral-800" strokeWidth="4" fill="transparent" />
+                        <circle cx="32" cy="32" r="26" stroke="currentColor" className="text-slate-200 dark:text-neutral-800" strokeWidth="4" fill="transparent" />
                         <circle 
                           cx="32" cy="32" r="26" 
                           className="stroke-[#6068F0]" 
@@ -142,16 +142,16 @@ export default function GoalsPage() {
                           fill="transparent" 
                         />
                       </svg>
-                      <span className="absolute text-xs font-bold text-white">{obj.percent}%</span>
+                      <span className="absolute text-xs font-bold text-slate-900 dark:text-white">{obj.percent}%</span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-neutral-400 font-medium block">{obj.days}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-neutral-400 font-medium block">{obj.days}</span>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-white/5">
-                    <span className="text-[9px] text-neutral-500 block">Next Milestone:</span>
-                    <span className="text-[10px] font-semibold text-neutral-300 mt-0.5 block">{obj.milestone}</span>
+                  <div className="pt-4 border-t border-slate-100 dark:border-white/5">
+                    <span className="text-[9px] text-slate-400 dark:text-neutral-500 block">Next Milestone:</span>
+                    <span className="text-[10px] font-semibold text-slate-600 dark:text-neutral-300 mt-0.5 block">{obj.milestone}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -160,7 +160,7 @@ export default function GoalsPage() {
 
           {/* All Goals List Grid */}
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white uppercase tracking-wider pl-1">All Goals</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-wider pl-1">All Goals</h3>
             
             {allGoals.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -178,13 +178,12 @@ export default function GoalsPage() {
                       </div>
 
                       <div>
-                        <h5 className="text-xs font-bold text-white">{goal.title}</h5>
-                        <span className="text-[10px] text-neutral-500 mt-1 block">{goal.val}</span>
+                        <h5 className="text-xs font-bold text-slate-900 dark:text-white">{goal.title}</h5>
+                        <span className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1 block">{goal.val}</span>
                       </div>
 
                       <div className="space-y-1 pt-2">
-                        {/* Mini sparkline or progress bar */}
-                        <div className="h-1.5 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
                           <div 
                             className={cn(
                               "h-full rounded-full",
@@ -200,7 +199,7 @@ export default function GoalsPage() {
               </div>
             ) : (
               <Card className={`${glassCardClass} p-8 text-center`}>
-                <p className="text-xs text-neutral-500 italic">No goals tracked. Click Add Goal above to log your first target!</p>
+                <p className="text-xs text-slate-400 dark:text-neutral-500 italic">No goals tracked. Click Add Goal above to log your first target!</p>
               </Card>
             )}
           </div>
@@ -211,20 +210,20 @@ export default function GoalsPage() {
           
           {/* Milestone Timeline */}
           <Card className={`${glassCardClass} p-6 flex-1`}>
-            <CardHeader className="px-0 pt-0 pb-4 border-b border-white/10 mb-4">
-              <span className="text-sm font-bold text-white uppercase tracking-wider">Milestone Timeline</span>
+            <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4">
+              <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Milestone Timeline</span>
             </CardHeader>
             <CardContent className="px-0 space-y-6">
               {timeline.map((milestone, i) => (
                 <div key={i} className="flex gap-4 relative">
                   {/* Timeline vertical dot/line */}
                   <div className="flex flex-col items-center">
-                    <div className="h-3.5 w-3.5 rounded-full border-2 border-[#6068F0] bg-black z-10" />
-                    {i !== timeline.length - 1 && <div className="w-[1.5px] h-12 bg-white/10 mt-1" />}
+                    <div className="h-3.5 w-3.5 rounded-full border-2 border-[#6068F0] bg-white dark:bg-black z-10" />
+                    {i !== timeline.length - 1 && <div className="w-[1.5px] h-12 bg-slate-200 dark:bg-white/10 mt-1" />}
                   </div>
                   <div>
-                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">{milestone.date}</span>
-                    <span className="text-xs font-semibold text-neutral-200 mt-1 block">{milestone.desc}</span>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">{milestone.date}</span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-neutral-200 mt-1 block">{milestone.desc}</span>
                   </div>
                 </div>
               ))}
@@ -232,12 +231,12 @@ export default function GoalsPage() {
           </Card>
 
           {/* Goal AI Insights */}
-          <Card className={`${glassCardClass} p-6 border-[#6068F0]/20 bg-gradient-to-b from-[#0d0d0e]/60 to-[#6068F0]/5`}>
-            <CardTitle className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+          <Card className={`${glassCardClass} p-6 border-[#6068F0]/20 bg-gradient-to-b from-slate-50 to-[#6068F0]/5 dark:from-[#0d0d0e]/60 dark:to-[#6068F0]/5`}>
+            <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
               <Brain className="h-5 w-5 text-[#6068F0]" />
               Goal AI Insights
             </CardTitle>
-            <p className="text-xs text-neutral-400 italic leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-neutral-400 italic leading-relaxed">
               "Add your OKRs and habits goals above. Once you begin logging tasks, AI will evaluate cognitive performance, scheduling recommendations, and study-blocks advice."
             </p>
           </Card>

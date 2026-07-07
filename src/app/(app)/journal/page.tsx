@@ -116,16 +116,16 @@ export default function JournalPage() {
   ];
 
   return (
-    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-neutral-300">
+    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       {/* Header Panel */}
-      <div className="relative z-10 p-6 bg-gradient-to-r from-[#0d0d0e]/80 to-transparent border border-white/10 rounded-xl">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+      <div className="relative z-10 p-6 bg-gradient-to-r from-slate-50 to-transparent dark:from-[#0d0d0e]/80 dark:to-transparent border border-slate-200 dark:border-white/10 rounded-xl">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
           <BookOpenText className="h-7 w-7 text-[#6068F0]" />
           Mindfulness Journal
         </h1>
-        <p className="text-xs text-neutral-500 mt-1">Reflect on your daily wins, write your thoughts, evaluate cognitive state.</p>
+        <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1">Reflect on your daily wins, write your thoughts, evaluate cognitive state.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
@@ -134,7 +134,7 @@ export default function JournalPage() {
         <div className="lg:col-span-8 space-y-8">
           <Card className={`${glassCardClass} p-6 space-y-6`}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <span className="text-sm font-semibold text-white">Daily Journal Draft</span>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">Daily Journal Draft</span>
               
               {/* Mood selector */}
               <div className="flex gap-2">
@@ -146,7 +146,7 @@ export default function JournalPage() {
                       "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs uppercase tracking-wider font-bold transition-all duration-300",
                       selectedMood === mood.name
                         ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-white"
-                        : "bg-white/5 border-white/5 text-neutral-500 hover:bg-white/10"
+                        : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-500 dark:text-neutral-500 hover:bg-slate-200 dark:hover:bg-white/10"
                     )}
                   >
                     {mood.icon}
@@ -161,7 +161,7 @@ export default function JournalPage() {
               placeholder="What went well today? Any blockers or moments of reflection?"
               value={journalText}
               onChange={(e) => setJournalText(e.target.value)}
-              className="w-full h-80 bg-black/40 border border-white/10 rounded-2xl p-6 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300 leading-relaxed resize-none"
+              className="w-full h-80 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl p-6 text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300 leading-relaxed resize-none"
             />
 
             <div className="flex justify-end">
@@ -181,16 +181,16 @@ export default function JournalPage() {
         <div className="lg:col-span-4">
           <Card className={`${glassCardClass} p-6 h-full flex flex-col justify-between`}>
             <div className="space-y-4">
-              <CardTitle className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider pb-4 border-b border-white/10">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-wider pb-4 border-b border-slate-200 dark:border-white/10">
                 <Sparkles className="h-4 w-4 text-[#D946EF]" />
                 Daily Reflection
               </CardTitle>
-              <div className="bg-black/40 border border-white/5 p-6 rounded-2xl text-xs text-neutral-300 italic leading-relaxed">
+              <div className="bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 p-6 rounded-2xl text-xs text-slate-600 dark:text-neutral-300 italic leading-relaxed">
                 "{reflection}"
               </div>
             </div>
             
-            <p className="text-[10px] text-neutral-600 mt-6 leading-normal">
+            <p className="text-[10px] text-slate-400 dark:text-neutral-600 mt-6 leading-normal">
               Your journal reflections are processed securely using your local API settings. They are never shared publicly.
             </p>
           </Card>

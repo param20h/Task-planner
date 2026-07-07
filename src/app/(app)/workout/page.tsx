@@ -413,11 +413,11 @@ export default function WorkoutPage() {
   };
 
   return (
-    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-neutral-300">
+    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       {/* Tab Segment Controller */}
-      <div className="relative z-10 flex flex-wrap gap-2 items-center p-1 bg-[#1C1C1E] border border-white/5 rounded-xl shadow-inner max-w-max">
+      <div className="relative z-10 flex flex-wrap gap-2 items-center p-1 bg-slate-100 dark:bg-[#1C1C1E] border border-slate-200 dark:border-white/5 rounded-xl shadow-inner max-w-max">
         {[
           { id: "overview", label: "Overview" },
           { id: "log", label: "Log Workout" },
@@ -431,7 +431,7 @@ export default function WorkoutPage() {
               "px-5 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 uppercase tracking-wider",
               activeTab === tab.id 
                 ? "bg-[#6068F0]/20 border-[#6068F0]/30 text-white shadow-lg shadow-[#6068F0]/5" 
-                : "text-neutral-500 hover:text-neutral-300"
+                : "text-slate-500 dark:text-neutral-500 hover:text-slate-700 dark:hover:text-neutral-300"
             )}
           >
             {tab.label}
@@ -453,29 +453,28 @@ export default function WorkoutPage() {
                 <div className="grid grid-cols-2 gap-6">
                   <Card className={`${glassCardClass} p-5 flex items-center justify-between`}>
                     <div>
-                      <span className="text-[9px] text-neutral-500 uppercase tracking-wider block">Weekly Time</span>
-                      <span className="text-xl font-extrabold text-white mt-1 block">{weeklyDuration}</span>
+                      <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider block">Weekly Time</span>
+                      <span className="text-xl font-extrabold text-slate-900 dark:text-white mt-1 block">{weeklyDuration}</span>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                    <div className="h-9 w-9 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center">
                       <Timer className="h-5 w-5 text-[#6068F0]" />
                     </div>
                   </Card>
 
                   <Card className={`${glassCardClass} p-5 flex items-center justify-between`}>
                     <div>
-                      <span className="text-[9px] text-neutral-500 uppercase tracking-wider block">Calorie Burn</span>
-                      <span className="text-xl font-extrabold text-white mt-1 block">{caloriesBurned} kcal</span>
+                      <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider block">Calorie Burn</span>
+                      <span className="text-xl font-extrabold text-slate-900 dark:text-white mt-1 block">{caloriesBurned} kcal</span>
                     </div>
-                    <div className="h-9 w-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                    <div className="h-9 w-9 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center">
                       <Flame className="h-5 w-5 text-rose-500" />
                     </div>
                   </Card>
                 </div>
 
-                {/* Past Workouts History */}
                 <Card className={`${glassCardClass} p-6`}>
-                  <CardHeader className="px-0 pt-0 pb-4 border-b border-white/10 mb-4 flex flex-row items-center justify-between">
-                    <CardTitle className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                   <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex flex-row items-center justify-between">
+                    <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                       <History className="h-4.5 w-4.5 text-[#6068F0]" />
                       Workout History (Supabase)
                     </CardTitle>
@@ -485,34 +484,34 @@ export default function WorkoutPage() {
                       pastWorkouts.map((w: any, idx) => (
                         <div 
                           key={idx} 
-                          className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-white/10 hover:bg-white/[0.04] transition-all duration-300 space-y-3 shadow-md"
+                          className="p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-2xl hover:border-slate-200 dark:hover:border-white/10 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-all duration-300 space-y-3 shadow-md"
                         >
                           <div className="flex justify-between items-start gap-4">
                             <div>
-                              <h4 className="text-xs font-bold text-white uppercase tracking-wider">{w.name}</h4>
-                              <span className="text-[9px] text-neutral-500 mt-1 block leading-relaxed">{w.notes}</span>
+                              <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{w.name}</h4>
+                              <span className="text-[9px] text-slate-400 dark:text-neutral-500 mt-1 block leading-relaxed">{w.notes}</span>
                             </div>
-                            <span className="text-[9px] text-neutral-400 bg-black/45 px-2.5 py-1 rounded-full border border-white/5 font-mono whitespace-nowrap">{w.date}</span>
+                            <span className="text-[9px] text-slate-500 dark:text-neutral-400 bg-slate-100 dark:bg-black/45 px-2.5 py-1 rounded-full border border-slate-200 dark:border-white/5 font-mono whitespace-nowrap">{w.date}</span>
                           </div>
                           
-                          <div className="flex flex-wrap gap-x-5 gap-y-2 text-[10px] border-t border-white/5 pt-2 text-neutral-400 font-medium">
+                          <div className="flex flex-wrap gap-x-5 gap-y-2 text-[10px] border-t border-slate-100 dark:border-white/5 pt-2 text-slate-500 dark:text-neutral-400 font-medium">
                             <div className="flex items-center gap-1.5">
                               <Dumbbell className="h-3.5 w-3.5 text-[#6068F0] opacity-80" />
-                              <span>Volume: <strong className="text-white">{w.volume.toLocaleString()} kg</strong></span>
+                              <span>Volume: <strong className="text-slate-900 dark:text-white">{w.volume.toLocaleString()} kg</strong></span>
                             </div>
                             <div className="flex items-center gap-1.5">
                               <Timer className="h-3.5 w-3.5 text-rose-400 opacity-80" />
-                              <span>Time: <strong className="text-white">{w.duration}</strong></span>
+                              <span>Time: <strong className="text-slate-900 dark:text-white">{w.duration}</strong></span>
                             </div>
                             <div className="flex items-center gap-1.5">
                               <Activity className="h-3.5 w-3.5 text-emerald-400 opacity-80" />
-                              <span>Type: <strong className="text-white">{w.type}</strong></span>
+                              <span>Type: <strong className="text-slate-900 dark:text-white">{w.type}</strong></span>
                             </div>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="text-center py-8 text-neutral-500 italic text-xs">
+                      <div className="text-center py-8 text-slate-400 dark:text-neutral-500 italic text-xs">
                         No completed workouts found. Load a template and finish logging your first session!
                       </div>
                     )}
@@ -522,11 +521,9 @@ export default function WorkoutPage() {
 
               {/* Right Side: AI Coach & Overview index */}
               <div className="lg:col-span-5 space-y-8">
-                
-                {/* ECG Heart beat wave */}
-                <Card className={`${glassCardClass} p-6 space-y-4`}>
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Heart Rate Waveform</span>
+                               <Card className={`${glassCardClass} p-6 space-y-4`}>
+                   <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/5 pb-2">
+                    <span className="text-xs font-bold text-slate-400 dark:text-neutral-400 uppercase tracking-wider">Heart Rate Waveform</span>
                     <Heart className="h-4 w-4 text-rose-500 animate-pulse" />
                   </div>
                   <div className="h-28 relative flex items-end">
@@ -542,18 +539,18 @@ export default function WorkoutPage() {
                 </Card>
 
                 {/* Coach advice tips */}
-                <Card className={`${glassCardClass} p-6 border-[#6068F0]/20 bg-gradient-to-b from-[#0d0d0e]/60 to-[#6068F0]/5`}>
-                  <CardHeader className="px-0 pt-0 pb-3 border-b border-white/5 mb-4">
-                    <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+                <Card className={`${glassCardClass} p-6 border-[#6068F0]/20 bg-gradient-to-b from-slate-50 to-[#6068F0]/5 dark:from-[#0d0d0e]/60 dark:to-[#6068F0]/5`}>
+                  <CardHeader className="px-0 pt-0 pb-3 border-b border-slate-100 dark:border-white/5 mb-4">
+                    <span className="text-xs font-bold text-slate-400 dark:text-neutral-400 uppercase tracking-wider flex items-center gap-2">
                       <Sparkles className="h-4.5 w-4.5 text-[#6068F0]" />
                       Gym Coach Advice
                     </span>
                   </CardHeader>
-                  <CardContent className="px-0 text-xs text-neutral-400 space-y-3 leading-relaxed">
-                    <p>• <strong className="text-white">Upper Chest:</strong> Prioritize incline bench/dumbbells to balance chest composition.</p>
-                    <p>• <strong className="text-white">Side & Rear Delts:</strong> Complete lateral raises and rear flyes on Saturdays to broaden shoulder frame.</p>
-                    <p>• <strong className="text-white">Latency Width:</strong> Do Wide Grip Lat Pulldown or pull-ups to define V-taper.</p>
-                    <p>• <strong className="text-white">Form Target:</strong> Aim for 1-2 Reps in Reserve (RIR) on compounds.</p>
+                  <CardContent className="px-0 text-xs text-slate-500 dark:text-neutral-400 space-y-3 leading-relaxed">
+                    <p>• <strong className="text-slate-900 dark:text-white">Upper Chest:</strong> Prioritize incline bench/dumbbells to balance chest composition.</p>
+                    <p>• <strong className="text-slate-900 dark:text-white">Side &amp; Rear Delts:</strong> Complete lateral raises and rear flyes on Saturdays to broaden shoulder frame.</p>
+                    <p>• <strong className="text-slate-900 dark:text-white">Latency Width:</strong> Do Wide Grip Lat Pulldown or pull-ups to define V-taper.</p>
+                    <p>• <strong className="text-slate-900 dark:text-white">Form Target:</strong> Aim for 1-2 Reps in Reserve (RIR) on compounds.</p>
                   </CardContent>
                 </Card>
               </div>

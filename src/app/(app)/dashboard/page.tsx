@@ -19,7 +19,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 
 // Responsive Glassmorphism Styles
-const glassCardClass = "bg-white/70 dark:bg-[#0d0d0e]/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
+const glassCardClass = "bg-white dark:bg-[#0d0d0e]/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
 const glassIconWrapperClass = "p-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg flex items-center justify-center";
 
 const PROFILE_ID = "alex_chen";
@@ -264,14 +264,14 @@ export default function DashboardPage() {
 
         const count = contributionMap[dateStr] || 0;
         
-        let colorClass = "bg-white/5"; // 0 logs
+        let colorClass = "bg-slate-200 dark:bg-white/5"; // 0 logs
         if (count === 1) colorClass = "bg-[#6068F0]/30";
         if (count === 2) colorClass = "bg-[#6068F0]/60";
         if (count >= 3) colorClass = "bg-[#6068F0]";
 
         // If the date is in the future, render it slightly faded/empty
         if (cellDate > today) {
-          colorClass = "bg-white/5 opacity-20";
+          colorClass = "bg-slate-100 dark:bg-white/5 opacity-20";
         }
 
         rowCells.push(
@@ -287,7 +287,7 @@ export default function DashboardPage() {
       }
       grid.push(
         <div key={r} className="flex items-center gap-1.5">
-          <span className="text-[10px] text-neutral-600 w-3 text-center">{days[r]}</span>
+          <span className="text-[10px] text-slate-400 dark:text-neutral-600 w-3 text-center">{days[r]}</span>
           <div className="flex gap-1.5">{rowCells}</div>
         </div>
       );
@@ -296,7 +296,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-neutral-300">
+    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       {/* 3-Column Premium Layout */}
@@ -306,11 +306,11 @@ export default function DashboardPage() {
         <div className="lg:col-span-9 space-y-8">
           
           {/* Header Card */}
-          <Card className={`${glassCardClass} py-6 px-8 border-none bg-gradient-to-r from-[#0d0d0e]/80 to-transparent`}>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
+          <Card className={`${glassCardClass} py-6 px-8 border-none bg-gradient-to-r from-slate-50 to-transparent dark:from-[#0d0d0e]/80 dark:to-transparent`}>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
               Good Evening, <span className="text-[#6068F0]">{userName}</span>
             </h1>
-            <p className="text-neutral-500 mt-2 text-base">Let's finish the day strong. Here's your overview.</p>
+            <p className="text-slate-500 dark:text-neutral-500 mt-2 text-base">Let's finish the day strong. Here's your overview.</p>
           </Card>
 
           {/* Core Analytics Blocks */}
@@ -318,13 +318,14 @@ export default function DashboardPage() {
             
             {/* Today's Score Circle Chart (4 cols) */}
             <Card className={`${glassCardClass} md:col-span-5 flex flex-col items-center justify-center p-6 text-center`}>
-              <CardTitle className="text-sm font-semibold text-neutral-400 tracking-wider uppercase mb-6">Today's Score</CardTitle>
+              <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase mb-6">Today's Score</CardTitle>
               <div className="relative w-48 h-48 flex items-center justify-center">
                 {/* SVG Progress Circle */}
                 <svg className="w-full h-full transform -rotate-90">
                   <circle 
                     cx="96" cy="96" r="80" 
-                    className="stroke-neutral-800" 
+                    stroke="currentColor"
+                    className="text-slate-200 dark:text-neutral-800" 
                     strokeWidth="10" 
                     fill="transparent"
                   />
@@ -339,8 +340,8 @@ export default function DashboardPage() {
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center">
-                  <span className="text-4xl font-extrabold text-white tracking-tight">{todayScore}%</span>
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-wider mt-1">Consistency</span>
+                  <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{todayScore}%</span>
+                  <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider mt-1">Consistency</span>
                 </div>
               </div>
             </Card>
@@ -350,19 +351,19 @@ export default function DashboardPage() {
               {/* Calories card */}
               <Card className={glassCardClass}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Calories</span>
-                  <Apple className="h-4 w-4 text-neutral-500" />
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Calories</span>
+                  <Apple className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                 </CardHeader>
                 <CardContent className="pt-2">
-                  <div className="text-xl font-bold text-white">{caloriesConsumed.toLocaleString()}</div>
-                  <div className="text-[10px] text-neutral-500">/ 2,500 kcal</div>
+                  <div className="text-xl font-bold text-slate-900 dark:text-white">{caloriesConsumed.toLocaleString()}</div>
+                  <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 2,500 kcal</div>
                   {/* Micro Bar Chart */}
                   <div className="flex items-end gap-1.5 h-12 mt-4">
                     {[35, 55, 45, 65, 80, 50, 74].map((h, i) => (
                       <div 
                         key={i} 
                         style={{ height: `${h}%` }} 
-                        className={`w-full rounded-t-sm ${i === 6 ? "bg-[#6068F0]" : "bg-neutral-800"}`}
+                        className={`w-full rounded-t-sm ${i === 6 ? "bg-[#6068F0]" : "bg-slate-200 dark:bg-neutral-800"}`}
                       />
                     ))}
                   </div>
@@ -372,15 +373,15 @@ export default function DashboardPage() {
               {/* Workout card */}
               <Card className={glassCardClass}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Workout</span>
-                  <Dumbbell className="h-4 w-4 text-neutral-500" />
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Workout</span>
+                  <Dumbbell className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                 </CardHeader>
                 <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
                   <div>
-                    <div className="text-xl font-bold text-white">{workoutMinutes} MIN</div>
-                    <div className="text-[10px] text-neutral-500">Active time</div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white">{workoutMinutes} MIN</div>
+                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">Active time</div>
                   </div>
-                  <div className="flex items-center justify-center p-3 bg-white/5 border border-white/10 rounded-xl mt-6">
+                  <div className="flex items-center justify-center p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl mt-6">
                     <Dumbbell className="h-6 w-6 text-[#6068F0] animate-pulse" />
                   </div>
                 </CardContent>
@@ -389,16 +390,16 @@ export default function DashboardPage() {
               {/* Water card */}
               <Card className={glassCardClass}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Water</span>
-                  <Droplet className="h-4 w-4 text-neutral-500" />
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Water</span>
+                  <Droplet className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                 </CardHeader>
                 <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
                   <div>
-                    <div className="text-xl font-bold text-white">{waterConsumed} L</div>
-                    <div className="text-[10px] text-neutral-500">/ 3.0 L goal</div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white">{waterConsumed} L</div>
+                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 3.0 L goal</div>
                   </div>
-                  <div className="relative h-14 w-full bg-white/5 rounded-xl border border-white/10 mt-4 overflow-hidden flex items-end">
-                    <div className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center text-xs font-bold text-white/80 z-10">
+                  <div className="relative h-14 w-full bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 mt-4 overflow-hidden flex items-end">
+                    <div className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-white/80 z-10">
                       {Math.min(100, Math.round((waterConsumed / 3.0) * 100))}%
                     </div>
                     <div 
@@ -416,9 +417,9 @@ export default function DashboardPage() {
             
             {/* Habit Heatmap (7 cols) */}
             <Card className={`${glassCardClass} md:col-span-7 p-6`}>
-              <CardTitle className="text-sm font-semibold text-neutral-400 tracking-wider uppercase mb-6 flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase mb-6 flex items-center justify-between">
                 <span>Habit Consistency</span>
-                <span className="text-[10px] text-neutral-600 font-normal">Last 6 Months</span>
+                <span className="text-[10px] text-slate-400 dark:text-neutral-600 font-normal">Last 6 Months</span>
               </CardTitle>
               <div className="flex flex-col gap-1.5 overflow-x-auto pb-2">
                 {renderHabitGrid()}
@@ -428,11 +429,11 @@ export default function DashboardPage() {
             {/* Performance Chart (5 cols) */}
             <Card className={`${glassCardClass} md:col-span-5 p-6 flex flex-col justify-between`}>
               <div>
-                <CardTitle className="text-sm font-semibold text-neutral-400 tracking-wider uppercase flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-4 w-4 text-neutral-500" />
+                <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                   Weekly Performance
                 </CardTitle>
-                <p className="text-xs text-neutral-500">Average weekly workload index</p>
+                <p className="text-xs text-slate-400 dark:text-neutral-500">Average weekly workload index</p>
               </div>
               
               {/* Smooth Area Chart inside an SVG */}
@@ -467,11 +468,11 @@ export default function DashboardPage() {
           
           {/* Upcoming Tasks block */}
           <Card className={`${glassCardClass} p-6 flex-1 flex flex-col`}>
-            <CardHeader className="px-0 pt-0 pb-4 flex flex-row items-center justify-between border-b border-white/10">
-              <span className="text-sm font-bold text-white tracking-wide">Upcoming Tasks</span>
+            <CardHeader className="px-0 pt-0 pb-4 flex flex-row items-center justify-between border-b border-slate-200 dark:border-white/10">
+              <span className="text-sm font-bold text-slate-900 dark:text-white tracking-wide">Upcoming Tasks</span>
               <Link 
                 href="/planner"
-                className="h-7 w-7 rounded-full text-neutral-400 hover:text-white flex items-center justify-center hover:bg-white/5 transition-all duration-300"
+                className="h-7 w-7 rounded-full text-slate-400 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-white/5 transition-all duration-300"
               >
                 <Plus className="h-4 w-4" />
               </Link>
@@ -479,28 +480,28 @@ export default function DashboardPage() {
             <CardContent className="px-0 py-4 flex-1 space-y-4">
               {todoList.length > 0 ? (
                 todoList.map((task, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 hover:border-white/10 transition-all duration-300">
+                  <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/10 transition-all duration-300">
                     <div className="flex items-center gap-3">
                       <div className="h-2 w-2 rounded-full bg-[#6068F0]" />
-                      <span className="text-xs font-medium text-neutral-200">{task.title}</span>
+                      <span className="text-xs font-medium text-slate-700 dark:text-neutral-200">{task.title}</span>
                     </div>
-                    <span className="text-[10px] text-neutral-500 font-semibold">{task.time}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-semibold">{task.time}</span>
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-neutral-500 italic text-center py-6">All tasks completed!</p>
+                <p className="text-xs text-slate-400 dark:text-neutral-500 italic text-center py-6">All tasks completed!</p>
               )}
             </CardContent>
           </Card>
 
           {/* AI Coach interactive Chat Widget */}
-          <Card className={`${glassCardClass} border-[#6068F0]/20 bg-gradient-to-b from-[#0d0d0e]/60 to-[#6068F0]/5 p-6 flex flex-col justify-between`}>
+          <Card className={`${glassCardClass} border-[#6068F0]/20 bg-gradient-to-b from-slate-50 to-[#6068F0]/5 dark:from-[#0d0d0e]/60 dark:to-[#6068F0]/5 p-6 flex flex-col justify-between`}>
             <div>
-              <CardTitle className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
                 <Brain className="h-5 w-5 text-[#6068F0]" />
                 AI Coach Insight
               </CardTitle>
-              <div className="relative bg-black/40 border border-white/5 p-4 rounded-xl text-xs text-neutral-300 italic leading-relaxed">
+              <div className="relative bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 p-4 rounded-xl text-xs text-slate-600 dark:text-neutral-300 italic leading-relaxed">
                 "{aiMessage}"
               </div>
             </div>
@@ -511,7 +512,7 @@ export default function DashboardPage() {
                 placeholder="Ask your coach..."
                 value={userChatInput}
                 onChange={(e) => setUserChatInput(e.target.value)}
-                className="flex-1 bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                className="flex-1 bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
               />
               <Button 
                 type="submit" 

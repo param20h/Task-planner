@@ -228,7 +228,7 @@ export default function FoodPage() {
   ];
 
   return (
-    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-neutral-300">
+    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       {/* Day Scroller */}
@@ -241,7 +241,7 @@ export default function FoodPage() {
               "flex flex-col items-center justify-center px-6 py-3 rounded-xl border cursor-pointer min-w-[100px] transition-all duration-300",
               selectedDayIndex === idx 
                 ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-white shadow-lg shadow-[#6068F0]/5" 
-                : "bg-white/5 border-white/10 text-neutral-400 hover:bg-white/10"
+                : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-white/10"
             )}
           >
             <span className="text-[10px] font-bold tracking-wider uppercase">{day.name}</span>
@@ -259,8 +259,8 @@ export default function FoodPage() {
             <Card className={`${glassCardClass} p-6`}>
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-widest block">Calories Consumed</span>
-                  <span className="text-3xl font-extrabold text-white mt-1 block">{caloriesConsumed} / 2,500 kcal</span>
+                  <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">Calories Consumed</span>
+                  <span className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1 block">{caloriesConsumed} / 2,500 kcal</span>
                 </div>
                 <div className="h-12 w-12 rounded-full border-2 border-dashed border-[#6068F0]/30 flex items-center justify-center">
                   <Flame className="h-6 w-6 text-[#6068F0]" />
@@ -270,30 +270,30 @@ export default function FoodPage() {
                 {/* Protein */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
-                    <span className="font-semibold text-neutral-400">Protein</span>
-                    <span className="text-white font-bold">{macros.protein}g / 180g</span>
+                    <span className="font-semibold text-slate-500 dark:text-neutral-400">Protein</span>
+                    <span className="text-slate-900 dark:text-white font-bold">{macros.protein}g / 180g</span>
                   </div>
-                  <div className="h-2 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
                     <div className="h-full bg-amber-500 rounded-full" style={{ width: `${Math.min(100, (macros.protein / 180) * 100)}%` }} />
                   </div>
                 </div>
                 {/* Carbs */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
-                    <span className="font-semibold text-neutral-400">Carbohydrates</span>
-                    <span className="text-white font-bold">{macros.carbs}g / 250g</span>
+                    <span className="font-semibold text-slate-500 dark:text-neutral-400">Carbohydrates</span>
+                    <span className="text-slate-900 dark:text-white font-bold">{macros.carbs}g / 250g</span>
                   </div>
-                  <div className="h-2 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, (macros.carbs / 250) * 100)}%` }} />
                   </div>
                 </div>
                 {/* Fats */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
-                    <span className="font-semibold text-neutral-400">Fats</span>
-                    <span className="text-white font-bold">{macros.fats}g / 80g</span>
+                    <span className="font-semibold text-slate-500 dark:text-neutral-400">Fats</span>
+                    <span className="text-slate-900 dark:text-white font-bold">{macros.fats}g / 80g</span>
                   </div>
-                  <div className="h-2 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
                     <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(100, (macros.fats / 80) * 100)}%` }} />
                   </div>
                 </div>
@@ -304,8 +304,8 @@ export default function FoodPage() {
             <Card className={`${glassCardClass} p-6 flex flex-col justify-between`}>
               <div className="flex justify-between items-center">
                 <div>
-                  <span className="text-[10px] text-neutral-500 uppercase tracking-widest block">Water Intake</span>
-                  <span className="text-2xl font-extrabold text-white mt-1 block">{waterIntake} L</span>
+                  <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">Water Intake</span>
+                  <span className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1 block">{waterIntake} L</span>
                 </div>
                 <Button 
                   onClick={handleAddWater}
@@ -316,14 +316,14 @@ export default function FoodPage() {
               </div>
 
               {/* Water Cylinder Fluid Indicator */}
-              <div className="relative w-full h-32 bg-white/5 border border-white/10 rounded-2xl overflow-hidden mt-6 shadow-inner">
+              <div className="relative w-full h-32 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden mt-6 shadow-inner">
                 <div 
                   className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#6068F0] to-[#8088ff] transition-all duration-700 ease-out"
                   style={{ height: `${Math.min(100, (waterIntake / 3.0) * 100)}%` }}
                 >
                   <div className="absolute top-1 left-0 w-full h-1 bg-white/20 animate-pulse" />
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-neutral-400">
+                <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-neutral-400">
                   Target: 3.0 Liters
                 </div>
               </div>
@@ -337,16 +337,16 @@ export default function FoodPage() {
               return (
                 <Card key={meal.type} className={glassCardClass}>
                   <CardContent className="p-6 space-y-4">
-                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                    <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-3">
                       <div className="flex items-center gap-3">
                         <div className={glassIconWrapperClass}>
                           {meal.icon}
                         </div>
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">{meal.type}</h3>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{meal.type}</h3>
                       </div>
                       <Button 
                         onClick={() => handleAddFoodItem(meal.type, meal.defaultName, meal.c, meal.p, meal.carb, meal.f)}
-                        className="bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+                        className="bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-300 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         Log Meal
@@ -356,20 +356,20 @@ export default function FoodPage() {
                     <div className="space-y-3">
                       {currentMealItems.length > 0 ? (
                         currentMealItems.map((item) => (
-                          <div key={item.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-colors duration-300">
+                          <div key={item.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors duration-300">
                             <div>
-                              <h4 className="text-xs font-bold text-white">{item.name}</h4>
-                              <span className="text-[10px] text-neutral-500 mt-1 block">
+                              <h4 className="text-xs font-bold text-slate-900 dark:text-white">{item.name}</h4>
+                              <span className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1 block">
                                 P: {item.protein}g | C: {item.carbs}g | F: {item.fats}g
                               </span>
                             </div>
                             <div className="flex items-center gap-4">
-                              <span className="text-xs font-bold text-white">{item.calories} kcal</span>
+                              <span className="text-xs font-bold text-slate-900 dark:text-white">{item.calories} kcal</span>
                               <Button 
                                 variant="ghost" 
                                 size="icon"
                                 onClick={() => handleDeleteFoodItem(item.id)}
-                                className="h-8 w-8 text-neutral-500 hover:text-red-400 hover:bg-white/5 rounded-full"
+                                className="h-8 w-8 text-slate-400 dark:text-neutral-500 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -377,7 +377,7 @@ export default function FoodPage() {
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs text-neutral-500 italic py-2">No items logged yet.</p>
+                        <p className="text-xs text-slate-400 dark:text-neutral-500 italic py-2">No items logged yet.</p>
                       )}
                     </div>
                   </CardContent>
@@ -390,8 +390,8 @@ export default function FoodPage() {
         {/* Right column - Quick suggestions list */}
         <div className="lg:col-span-4 space-y-8">
           <Card className={`${glassCardClass} p-6`}>
-            <CardHeader className="px-0 pt-0 pb-4 border-b border-white/10 mb-4">
-              <CardTitle className="text-sm font-bold text-white uppercase tracking-wider">Quick Suggestions</CardTitle>
+            <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Quick Suggestions</CardTitle>
             </CardHeader>
             <CardContent className="px-0 space-y-4">
               {[
@@ -400,10 +400,10 @@ export default function FoodPage() {
                 { title: "Mixed Nuts (30g)", cal: 170, desc: "P: 6g | C: 5g | F: 16g" },
                 { title: "Banana (Medium)", cal: 105, desc: "P: 1g | C: 27g | F: 0g" }
               ].map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded-xl hover:border-white/10 hover:bg-white/10 transition-all duration-300">
+                <div key={idx} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-xl hover:border-slate-200 dark:hover:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-300">
                   <div>
-                    <h5 className="text-xs font-bold text-white">{item.title}</h5>
-                    <span className="text-[10px] text-neutral-500 mt-0.5 block">{item.desc}</span>
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">{item.title}</h5>
+                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5 block">{item.desc}</span>
                   </div>
                   <Button 
                     onClick={() => handleAddFoodItem("Snacks", item.title, item.cal, 20, 10, 5)}

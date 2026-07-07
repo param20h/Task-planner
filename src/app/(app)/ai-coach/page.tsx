@@ -99,16 +99,16 @@ export default function AiCoachPage() {
   };
 
   return (
-    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1000px] mx-auto overflow-hidden text-neutral-300">
+    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1000px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       {/* Header */}
-      <div className="relative z-10 p-6 bg-gradient-to-r from-[#0d0d0e]/80 to-transparent border border-white/10 rounded-xl">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+      <div className="relative z-10 p-6 bg-gradient-to-r from-slate-50 to-transparent dark:from-[#0d0d0e]/80 dark:to-transparent border border-slate-200 dark:border-white/10 rounded-xl">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
           <Brain className="h-7 w-7 text-[#6068F0]" />
           Full-Stack AI Coach
         </h1>
-        <p className="text-xs text-neutral-500 mt-1">Converse with Llama-3.3-70B model to dynamically schedule sessions, workouts, and OKRs.</p>
+        <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1">Converse with Llama-3.3-70B model to dynamically schedule sessions, workouts, and OKRs.</p>
       </div>
 
       {/* Main Chat Box */}
@@ -124,16 +124,16 @@ export default function AiCoachPage() {
               )}
             >
               <div className={cn(
-                "p-2 rounded-xl flex items-center justify-center shrink-0 border border-white/10",
-                msg.role === "user" ? "bg-white/5" : "bg-[#6068F0]/10 border-[#6068F0]/20"
+                "p-2 rounded-xl flex items-center justify-center shrink-0 border border-slate-200 dark:border-white/10",
+                msg.role === "user" ? "bg-slate-100 dark:bg-white/5" : "bg-[#6068F0]/10 border-[#6068F0]/20"
               )}>
-                {msg.role === "user" ? <User className="h-4 w-4 text-neutral-300" /> : <Bot className="h-4 w-4 text-[#6068F0]" />}
+                {msg.role === "user" ? <User className="h-4 w-4 text-slate-500 dark:text-neutral-300" /> : <Bot className="h-4 w-4 text-[#6068F0]" />}
               </div>
               <div className={cn(
                 "p-4 rounded-2xl text-xs leading-relaxed",
                 msg.role === "user" 
-                  ? "bg-white/5 border border-white/5 text-neutral-200" 
-                  : "bg-black/40 border border-white/10 text-neutral-300"
+                  ? "bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-neutral-200" 
+                  : "bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/10 text-slate-600 dark:text-neutral-300"
               )}>
                 {msg.content.split("\n").map((para, idx) => (
                   <p key={idx} className={idx > 0 ? "mt-2" : ""}>{para}</p>
@@ -142,7 +142,7 @@ export default function AiCoachPage() {
             </div>
           ))}
           {isSending && (
-            <div className="flex gap-4 items-center text-xs text-neutral-500">
+            <div className="flex gap-4 items-center text-xs text-slate-400 dark:text-neutral-500">
               <div className="p-2 rounded-xl bg-[#6068F0]/10 border border-[#6068F0]/20 animate-pulse">
                 <Brain className="h-4 w-4 text-[#6068F0]" />
               </div>
@@ -153,14 +153,14 @@ export default function AiCoachPage() {
         </div>
 
         {/* Input area */}
-        <form onSubmit={handleSend} className="mt-6 flex gap-3 relative z-20 border-t border-white/10 pt-4">
+        <form onSubmit={handleSend} className="mt-6 flex gap-3 relative z-20 border-t border-slate-200 dark:border-white/10 pt-4">
           <input 
             type="text" 
             placeholder="Type your coaching question..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isSending}
-            className="flex-1 bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+            className="flex-1 bg-slate-50 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
           />
           <Button 
             type="submit" 

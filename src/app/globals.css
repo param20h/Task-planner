@@ -2,7 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@variant dark (&:is(.dark *));
+@variant light (&:not(:is(.dark *)));
 
 @theme inline {
   --animate-spotlight: spotlight 2s ease 0.75s 1 forwards;

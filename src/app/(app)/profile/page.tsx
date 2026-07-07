@@ -23,7 +23,7 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 
 // Styling constants
-const glassCardClass = "bg-[#0d0d0e]/[var(--glass-opacity,0.42)] backdrop-blur-[var(--glass-blur,20px)] border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-white/15";
+const glassCardClass = "bg-white dark:bg-[#0d0d0e]/[var(--glass-opacity,0.42)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-700 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-slate-300 dark:hover:border-white/15";
 
 const PROFILE_ID = "alex_chen";
 
@@ -110,7 +110,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-neutral-300">
+    <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       {/* 3-Column Profile Grid mimicking Screen 5 */}
@@ -122,8 +122,8 @@ export default function ProfilePage() {
           {/* Main profile avatar header */}
           <Card className={`${glassCardClass} p-8 flex flex-col items-center justify-center text-center`}>
             {/* Specular circle glass avatar */}
-            <div className="relative w-32 h-32 rounded-full border border-white/20 bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center shadow-2xl mb-6">
-              <div className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-black/60 border border-white/5 shadow-inner">
+            <div className="relative w-32 h-32 rounded-full border border-slate-200 dark:border-white/20 bg-gradient-to-br from-slate-100 dark:from-white/10 to-transparent flex items-center justify-center shadow-2xl mb-6">
+              <div className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/5 shadow-inner">
                 <Image src="/AGENTS.png" alt="Profile Logo" fill className="object-contain p-2" />
               </div>
               <div className="absolute bottom-1 right-1 bg-[#6068F0] border border-white/20 rounded-full p-1 shadow-lg">
@@ -133,47 +133,47 @@ export default function ProfilePage() {
             
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-2">
-                <h2 className="text-2xl font-extrabold text-white">{name}</h2>
+                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">{name}</h2>
                 <span className="text-[10px] font-bold bg-[#6068F0]/20 border border-[#6068F0]/30 text-[#6068F0] px-2 py-0.5 rounded-full uppercase">Pro</span>
               </div>
-              <p className="text-xs text-neutral-500 font-medium">Productivity Enthusiast. Focused on deep work.</p>
+              <p className="text-xs text-slate-400 dark:text-neutral-500 font-medium">Productivity Enthusiast. Focused on deep work.</p>
             </div>
           </Card>
 
           {/* Forms & personal details */}
           <Card className={`${glassCardClass} p-6 space-y-6`}>
-            <div className="border-b border-white/10 pb-3 flex items-center gap-2.5">
+            <div className="border-b border-slate-200 dark:border-white/10 pb-3 flex items-center gap-2.5">
               <User className="h-4.5 w-4.5 text-[#6068F0]" />
-              <span className="text-xs font-bold text-white uppercase tracking-wider">Personal Info</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Personal Info</span>
             </div>
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Email</Label>
+                <Label htmlFor="email" className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Email</Label>
                 <Input 
                   id="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-black/60 border-white/10 text-white focus:border-[#6068F0]/50 transition-all duration-300"
+                  className="bg-slate-50 dark:bg-black/60 border-slate-200 dark:border-white/10 text-slate-800 dark:text-white focus:border-[#6068F0]/50 transition-all duration-300"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="fullname" className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Full Name</Label>
+                <Label htmlFor="fullname" className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Full Name</Label>
                 <Input 
                   id="fullname" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-black/60 border-white/10 text-white focus:border-[#6068F0]/50 transition-all duration-300"
+                  className="bg-slate-50 dark:bg-black/60 border-slate-200 dark:border-white/10 text-slate-800 dark:text-white focus:border-[#6068F0]/50 transition-all duration-300"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="phone" className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Phone</Label>
+                <Label htmlFor="phone" className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Phone</Label>
                 <Input 
                   id="phone" 
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="bg-black/60 border-white/10 text-white focus:border-[#6068F0]/50 transition-all duration-300"
+                  className="bg-slate-50 dark:bg-black/60 border-slate-200 dark:border-white/10 text-slate-800 dark:text-white focus:border-[#6068F0]/50 transition-all duration-300"
                 />
               </div>
             </div>
@@ -182,24 +182,24 @@ export default function ProfilePage() {
           {/* Security & Subscription Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <Card className={`${glassCardClass} p-5 flex flex-col justify-between space-y-4`}>
-              <div className="border-b border-white/10 pb-2 flex items-center gap-2">
-                <Shield className="h-4 w-4 text-neutral-400" />
-                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Security</span>
+              <div className="border-b border-slate-200 dark:border-white/10 pb-2 flex items-center gap-2">
+                <Shield className="h-4 w-4 text-slate-400 dark:text-neutral-400" />
+                <span className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">Security</span>
               </div>
               <div className="space-y-2 text-xs">
-                <button className="w-full text-left py-1 text-neutral-400 hover:text-white transition-colors duration-300">Password Reset →</button>
-                <button className="w-full text-left py-1 text-neutral-400 hover:text-white transition-colors duration-300">Two-Factor Auth →</button>
+                <button className="w-full text-left py-1 text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">Password Reset →</button>
+                <button className="w-full text-left py-1 text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white transition-colors duration-300">Two-Factor Auth →</button>
               </div>
             </Card>
 
             <Card className={`${glassCardClass} p-5 flex flex-col justify-between space-y-4`}>
-              <div className="border-b border-white/10 pb-2 flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-neutral-400" />
-                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Subscription</span>
+              <div className="border-b border-slate-200 dark:border-white/10 pb-2 flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-slate-400 dark:text-neutral-400" />
+                <span className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">Subscription</span>
               </div>
               <div>
-                <h5 className="text-xs font-bold text-white">Pro Plan</h5>
-                <p className="text-[9px] text-neutral-500 mt-0.5">Next Billing: Nov 1, 2023</p>
+                <h5 className="text-xs font-bold text-slate-900 dark:text-white">Pro Plan</h5>
+                <p className="text-[9px] text-slate-400 dark:text-neutral-500 mt-0.5">Next Billing: Nov 1, 2023</p>
               </div>
               <Button size="sm" className="bg-[#6068F0] hover:bg-[#4d55d0] text-white w-full rounded-xl transition-all duration-300 shadow-md shadow-[#6068F0]/10">
                 Manage
@@ -213,48 +213,31 @@ export default function ProfilePage() {
           
           {/* Notification toggles */}
           <Card className={`${glassCardClass} p-6 space-y-6`}>
-            <div className="border-b border-white/10 pb-3 flex items-center gap-2.5">
+            <div className="border-b border-slate-200 dark:border-white/10 pb-3 flex items-center gap-2.5">
               <Bell className="h-4.5 w-4.5 text-[#6068F0]" />
-              <span className="text-xs font-bold text-white uppercase tracking-wider">Notifications</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Notifications</span>
             </div>
             
-            <div className="space-y-4 text-xs font-semibold text-neutral-300">
+            <div className="space-y-4 text-xs font-semibold text-slate-600 dark:text-neutral-300">
               <div className="flex items-center justify-between">
                 <span>Email Digests</span>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={emailDigests} 
-                    onChange={() => setEmailDigests(!emailDigests)}
-                    className="sr-only peer" 
-                  />
-                  <div className="w-9 h-5 bg-white/5 border border-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#6068F0] peer-checked:border-[#6068F0]" />
+                  <input type="checkbox" checked={emailDigests} onChange={() => setEmailDigests(!emailDigests)} className="sr-only peer" />
+                  <div className="w-9 h-5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#6068F0] peer-checked:border-[#6068F0]" />
                 </label>
               </div>
-
               <div className="flex items-center justify-between">
                 <span>Push Notifications</span>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={pushNotifications} 
-                    onChange={() => setPushNotifications(!pushNotifications)}
-                    className="sr-only peer" 
-                  />
-                  <div className="w-9 h-5 bg-white/5 border border-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#6068F0] peer-checked:border-[#6068F0]" />
+                  <input type="checkbox" checked={pushNotifications} onChange={() => setPushNotifications(!pushNotifications)} className="sr-only peer" />
+                  <div className="w-9 h-5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#6068F0] peer-checked:border-[#6068F0]" />
                 </label>
               </div>
-
               <div className="flex items-center justify-between">
                 <span>Daily Briefing</span>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={dailyBriefing} 
-                    onChange={() => setDailyBriefing(!dailyBriefing)}
-                    className="sr-only peer" 
-                  />
-                  <div className="w-9 h-5 bg-white/5 border border-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#6068F0] peer-checked:border-[#6068F0]" />
+                  <input type="checkbox" checked={dailyBriefing} onChange={() => setDailyBriefing(!dailyBriefing)} className="sr-only peer" />
+                  <div className="w-9 h-5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#6068F0] peer-checked:border-[#6068F0]" />
                 </label>
               </div>
             </div>
@@ -262,53 +245,47 @@ export default function ProfilePage() {
 
           {/* Appearance slider */}
           <Card className={`${glassCardClass} p-6 space-y-6`}>
-            <div className="border-b border-white/10 pb-3 flex items-center gap-2.5">
+            <div className="border-b border-slate-200 dark:border-white/10 pb-3 flex items-center gap-2.5">
               <SunMoon className="h-4.5 w-4.5 text-[#6068F0]" />
-              <span className="text-xs font-bold text-white uppercase tracking-wider">Appearance Sensitivity</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Appearance Sensitivity</span>
             </div>
             <div className="space-y-4">
-              <div className="flex justify-between text-[10px] text-neutral-500 font-bold uppercase tracking-wider">
+              <div className="flex justify-between text-[10px] text-slate-400 dark:text-neutral-500 font-bold uppercase tracking-wider">
                 <span>Transparency Sensitivity</span>
                 <span className="text-[#6068F0] font-bold">
                   {appearance < 30 ? "Solid Panels" : appearance < 75 ? "Translucent Glass" : "Frosted / Specular"}
                 </span>
               </div>
               <input 
-                type="range" 
-                min="5" 
-                max="100" 
-                value={appearance}
+                type="range" min="5" max="100" value={appearance}
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   setAppearance(val);
                   document.documentElement.style.setProperty('--glass-opacity', String((val / 100) * 0.4 + 0.1));
                   document.documentElement.style.setProperty('--glass-blur', `${(val / 100) * 20 + 8}px`);
                 }}
-                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#6068F0]" 
+                className="w-full h-1 bg-slate-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#6068F0]" 
               />
             </div>
           </Card>
 
           {/* AI Coach Preference */}
           <Card className={`${glassCardClass} p-6 space-y-6`}>
-            <div className="border-b border-white/10 pb-3 flex items-center gap-2.5">
+            <div className="border-b border-slate-200 dark:border-white/10 pb-3 flex items-center gap-2.5">
               <Brain className="h-4.5 w-4.5 text-[#6068F0]" />
-              <span className="text-xs font-bold text-white uppercase tracking-wider">AI Coach Settings</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">AI Coach Settings</span>
             </div>
             <div className="space-y-4">
-              <div className="flex justify-between text-xs text-neutral-400">
+              <div className="flex justify-between text-xs text-slate-500 dark:text-neutral-400">
                 <span>Depth Level</span>
-                <span className="text-white font-bold">{aiDepth > 70 ? "Deep" : "Light"}</span>
+                <span className="text-slate-900 dark:text-white font-bold">{aiDepth > 70 ? "Deep" : "Light"}</span>
               </div>
               <input 
-                type="range" 
-                min="0" 
-                max="100" 
-                value={aiDepth}
+                type="range" min="0" max="100" value={aiDepth}
                 onChange={(e) => setAiDepth(Number(e.target.value))}
-                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#6068F0]" 
+                className="w-full h-1 bg-slate-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#6068F0]" 
               />
-              <p className="text-[10px] text-neutral-500 leading-normal">AI provides in-depth cognitive analysis and personalized athletic strategies.</p>
+              <p className="text-[10px] text-slate-400 dark:text-neutral-500 leading-normal">AI provides in-depth cognitive analysis and personalized athletic strategies.</p>
             </div>
           </Card>
         </div>
@@ -318,43 +295,37 @@ export default function ProfilePage() {
           
           {/* Storage usage layout */}
           <Card className={`${glassCardClass} p-6 space-y-6`}>
-            <div className="border-b border-white/10 pb-3 flex items-center gap-2.5">
+            <div className="border-b border-slate-200 dark:border-white/10 pb-3 flex items-center gap-2.5">
               <Database className="h-4.5 w-4.5 text-[#6068F0]" />
-              <span className="text-xs font-bold text-white uppercase tracking-wider">Storage Usage</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Storage Usage</span>
             </div>
             
             <div className="space-y-5">
-              {/* Documents */}
               <div className="space-y-1.5">
-                <div className="flex justify-between text-[10px] text-neutral-400">
+                <div className="flex justify-between text-[10px] text-slate-500 dark:text-neutral-400">
                   <span>Documents (45%)</span>
                 </div>
-                <div className="h-1.5 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
                   <div className="h-full bg-[#6068F0] rounded-full" style={{ width: "45%" }} />
                 </div>
               </div>
-
-              {/* Media */}
               <div className="space-y-1.5">
-                <div className="flex justify-between text-[10px] text-neutral-400">
+                <div className="flex justify-between text-[10px] text-slate-500 dark:text-neutral-400">
                   <span>Media (30%)</span>
                 </div>
-                <div className="h-1.5 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
                   <div className="h-full bg-[#6068F0]/70 rounded-full" style={{ width: "30%" }} />
                 </div>
               </div>
-
-              {/* Projects */}
               <div className="space-y-1.5">
-                <div className="flex justify-between text-[10px] text-neutral-400">
+                <div className="flex justify-between text-[10px] text-slate-500 dark:text-neutral-400">
                   <span>Projects (25%)</span>
                 </div>
-                <div className="h-1.5 w-full bg-white/5 border border-white/10 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
                   <div className="h-full bg-[#D946EF]/80 rounded-full" style={{ width: "25%" }} />
                 </div>
               </div>
-
-              <div className="text-[10px] text-neutral-500 pt-2 border-t border-white/5 flex justify-between">
+              <div className="text-[10px] text-slate-400 dark:text-neutral-500 pt-2 border-t border-slate-100 dark:border-white/5 flex justify-between">
                 <span>25GB of 100GB used</span>
               </div>
             </div>
@@ -362,20 +333,20 @@ export default function ProfilePage() {
 
           {/* Secure Groq Key Management */}
           <Card className={`${glassCardClass} p-6 space-y-4`}>
-            <div className="border-b border-white/10 pb-3 flex items-center gap-2.5">
+            <div className="border-b border-slate-200 dark:border-white/10 pb-3 flex items-center gap-2.5">
               <Key className="h-4.5 w-4.5 text-[#6068F0]" />
-              <span className="text-xs font-bold text-white uppercase tracking-wider">API Keys</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">API Keys</span>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="groq_key" className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider">Groq API Key</Label>
+              <Label htmlFor="groq_key" className="text-[10px] text-slate-400 dark:text-neutral-500 font-bold uppercase tracking-wider">Groq API Key</Label>
               <Input 
                 id="groq_key" 
                 type="password"
                 placeholder="gsk_..." 
                 value={groqKey}
                 onChange={(e) => setGroqKey(e.target.value)}
-                className="bg-black/60 border-white/10 text-white font-mono text-xs focus:border-[#6068F0]/50 transition-all duration-300"
+                className="bg-slate-50 dark:bg-black/60 border-slate-200 dark:border-white/10 text-slate-800 dark:text-white font-mono text-xs focus:border-[#6068F0]/50 transition-all duration-300"
               />
             </div>
           </Card>
