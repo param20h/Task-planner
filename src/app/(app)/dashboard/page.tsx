@@ -19,8 +19,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 
 // Responsive Glassmorphism Styles
-const glassCardClass = "bg-[#0d0d0e]/60 backdrop-blur-xl border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:border-[#6068F0]/30 hover:bg-[#111112]/70 hover:shadow-[0_20px_50px_rgba(96,104,240,0.15)]";
-const glassIconWrapperClass = "p-2 bg-white/5 border border-white/10 rounded-lg shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] flex items-center justify-center";
+const glassCardClass = "bg-white/70 dark:bg-[#0d0d0e]/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
+const glassIconWrapperClass = "p-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg flex items-center justify-center";
 
 const PROFILE_ID = "alex_chen";
 

@@ -14,15 +14,69 @@ import {
   Menu,
   Check,
   Bolt,
-  ChevronDown
+  ChevronDown,
+  Sun,
+  Moon,
+  Sparkles,
+  Calendar,
+  Activity,
+  Timer,
+  Play,
+  RotateCcw,
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+// Types for Mock Dashboard Preview
+type DashboardTab = "ai" | "tasks" | "workout" | "metrics";
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
   const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({});
+  
+  // Theme state: defaults to dark (#09090B) as requested
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  // Dashboard preview state
+  const [activePreviewTab, setActivePreviewTab] = useState<DashboardTab>("ai");
+
+  // Timer simulation state in preview
+  const [timerSeconds, setTimerSeconds] = useState(1500); // 25 mins
+  const [timerActive, setTimerActive] = useState(false);
+
+  // Counter animation trigger
+  const [countersActive, setCountersActive] = useState(false);
+
+  useEffect(() => {
+    // Check local storage or preference on mount
+    const savedTheme = localStorage.getItem("momentum_theme") as "dark" | "light";
+    if (savedTheme) {
+      setTheme(savedTheme);
+      if (savedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    } else {
+      // Default to dark mode
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("momentum_theme", "dark");
+    }
+    setCountersActive(true);
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    localStorage.setItem("momentum_theme", nextTheme);
+    if (nextTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   const toggleFaq = (idx: number) => {
     setFaqOpen(prev => ({
@@ -31,17 +85,36 @@ export default function Home() {
     }));
   };
 
+  // Timer formatter
+  const formatTimer = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  // Focus Timer interval simulation
+  useEffect(() => {
+    let interval: any = null;
+    if (timerActive) {
+      interval = setInterval(() => {
+        setTimerSeconds((prev) => (prev > 0 ? prev - 1 : 1500));
+      }, 1000);
+    } else {
+      if (interval) clearInterval(interval);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timerActive]);
+
   const basePrice = "Free";
   const proPrice = isYearly ? "$120" : "$12";
   const proPeriod = isYearly ? "/yr" : "/mo";
   const elitePrice = isYearly ? "$290" : "$29";
   const elitePeriod = isYearly ? "/yr" : "/mo";
 
-  const glassCardClass = "bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] hover:border-white/20";
-
-  // Perspective grid + light beams animation
+  // Canvas drawing ref
   const gridCanvasRef = useRef<HTMLCanvasElement>(null);
-  const beamsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const canvas = gridCanvasRef.current;
@@ -65,13 +138,18 @@ export default function Home() {
       const speed = 0.0004;
       const offset = (t * speed) % (1 / rows);
 
-      ctx.strokeStyle = "rgba(99,102,241,0.13)";
-      ctx.lineWidth = 0.8;
+      // Color scheme adapts to theme
+      const gridColor = theme === "dark" 
+        ? "rgba(196,181,253,0.06)" // dark purple grid
+        : "rgba(99,102,241,0.07)";  // light indigo grid
+      
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 0.9;
 
       for (let r = 0; r <= rows; r++) {
         const p = ((r / rows) + offset) % 1;
         const y = vp.y + (H - vp.y) * p;
-        const spread = p * W * 1.2;
+        const spread = p * W * 1.3;
         ctx.beginPath();
         ctx.moveTo(vp.x - spread / 2, y);
         ctx.lineTo(vp.x + spread / 2, y);
@@ -86,42 +164,15 @@ export default function Home() {
         ctx.beginPath();
         ctx.moveTo(vp.x, vp.y);
         ctx.lineTo(xBottom, H);
-        ctx.globalAlpha = 0.13;
+        ctx.globalAlpha = 0.06;
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
     }
 
-    // Create light beams
-    const beamsEl = beamsContainerRef.current;
-    const beamEls: { el: HTMLDivElement; phase: number; speed: number }[] = [];
-    const beamCount = 7;
-
-    if (beamsEl) {
-      for (let i = 0; i < beamCount; i++) {
-        const b = document.createElement("div");
-        const angle = (i - (beamCount - 1) / 2) * 18;
-        const h = 40 + Math.random() * 40;
-        b.style.cssText = `
-          position:absolute;bottom:0;left:50%;width:2px;
-          background:linear-gradient(to top,rgba(99,102,241,0.5),transparent);
-          border-radius:2px;transform-origin:bottom center;
-          will-change:opacity,transform;filter:blur(1px);
-          height:${h}%;opacity:0;
-          transform:translateX(-50%) rotate(${angle}deg);
-        `;
-        beamsEl.appendChild(b);
-        beamEls.push({ el: b, phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.4 });
-      }
-    }
-
     let reqId: number;
     const animate = (ts: number) => {
       drawGrid(ts);
-      beamEls.forEach((b) => {
-        const op = (Math.sin(ts * 0.001 * b.speed + b.phase) * 0.5 + 0.5) * 0.45;
-        b.el.style.opacity = String(op);
-      });
       reqId = requestAnimationFrame(animate);
     };
     reqId = requestAnimationFrame(animate);
@@ -129,11 +180,10 @@ export default function Home() {
     return () => {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(reqId);
-      beamEls.forEach((b) => b.el.remove());
     };
-  }, []);
+  }, [theme]);
 
-  // Intersection Observer for scroll reveal effect
+  // Intersection Observer for animations
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -144,7 +194,7 @@ export default function Home() {
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.05 }
     );
 
     document.querySelectorAll(".reveal-fade").forEach((el) => observer.observe(el));
@@ -152,280 +202,792 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#09090B] text-[#e3e1ec] antialiased overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#09090B] dark:bg-[#09090B] light:bg-[#FAFAFA] text-[#FAFAFA] dark:text-[#FAFAFA] light:text-[#09090B] antialiased overflow-x-hidden transition-colors duration-500 font-sans">
       
-      {/* ── Animated Background ── */}
-      <div className="fixed inset-0 z-0 bg-[#09090B] overflow-hidden pointer-events-none">
-        {/* Ambient top glow */}
-        <div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[radial-gradient(ellipse,rgba(99,102,241,0.1)_0%,transparent_65%)] blur-[60px] animate-[ambient-drift_12s_ease-in-out_infinite_alternate]" />
+      {/* ── Background Grid & volumetric light ── */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         
-        {/* Core glow */}
-        <div className="absolute bottom-[28%] left-1/2 -translate-x-1/2 w-[320px] h-[320px] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.55)_0%,rgba(99,102,241,0.1)_45%,transparent_70%)] blur-[40px] animate-[core-pulse_4s_ease-in-out_infinite_alternate]" />
+        {/* Faint blueprint grid overlay */}
+        <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.02] light:opacity-[0.04] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:32px_32px]"></div>
 
-        {/* Expanding rings */}
-        <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full border border-[rgba(99,102,241,0.18)] animate-[ring-expand_6s_ease-out_infinite]" />
-        <div className="absolute bottom-[4%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full border border-[rgba(99,102,241,0.18)] animate-[ring-expand_6s_ease-out_infinite_2s]" />
-        <div className="absolute -bottom-[4%] left-1/2 -translate-x-1/2 w-[1100px] h-[1100px] rounded-full border border-[rgba(99,102,241,0.18)] animate-[ring-expand_6s_ease-out_infinite_4s]" />
+        {/* Ambient top soft purple/pink glow */}
+        <div className="absolute -top-[300px] left-1/2 -translate-x-1/2 w-[1200px] h-[600px] rounded-full bg-[radial-gradient(ellipse,rgba(196,181,253,0.15)_0%,rgba(249,168,212,0.05)_50%,transparent_75%)] dark:bg-[radial-gradient(ellipse,rgba(196,181,253,0.15)_0%,rgba(249,168,212,0.05)_50%,transparent_75%)] light:bg-[radial-gradient(ellipse,rgba(167,139,250,0.06)_0%,transparent_60%)] blur-[80px]" />
+        
+        {/* Soft volumetric center light ray */}
+        <div className="absolute top-[20%] left-1/3 w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(253,186,116,0.03)_0%,transparent_65%)] dark:bg-[radial-gradient(circle,rgba(253,186,116,0.02)_0%,transparent_65%)] light:hidden blur-[60px]" />
 
-        {/* Light beams container */}
-        <div ref={beamsContainerRef} className="absolute bottom-[28%] left-1/2 -translate-x-1/2 w-full h-[80%]" />
-
-        {/* Scan lines */}
-        <div className="absolute left-0 right-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(99,102,241,0.4)_30%,rgba(139,92,246,0.6)_50%,rgba(99,102,241,0.4)_70%,transparent_100%)] blur-[1px] animate-[scan_8s_linear_infinite]" />
-        <div className="absolute left-0 right-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(99,102,241,0.4)_30%,rgba(139,92,246,0.6)_50%,rgba(99,102,241,0.4)_70%,transparent_100%)] blur-[1px] animate-[scan_8s_linear_infinite_4s]" />
-
-        {/* Perspective grid canvas */}
-        <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[200%] h-[70%]" style={{ perspective: "600px" }}>
+        {/* Perspective grid lines canvas */}
+        <div className="absolute bottom-[-15%] left-1/2 -translate-x-1/2 w-[220%] h-[75%] opacity-70 dark:opacity-70 light:opacity-50" style={{ perspective: "600px" }}>
           <canvas ref={gridCanvasRef} className="absolute inset-0 w-full h-full" />
         </div>
 
-        {/* Film grain */}
-        <div className="absolute -inset-1/2 w-[200%] h-[200%] opacity-[0.028] animate-[grain-anim_0.08s_steps(1)_infinite] pointer-events-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "200px 200px" }} />
+        {/* Dynamic scan lines */}
+        <div className="absolute left-0 right-0 h-[1.5px] bg-[linear-gradient(90deg,transparent_0%,rgba(167,139,250,0.15)_30%,rgba(249,168,212,0.25)_50%,rgba(167,139,250,0.15)_70%,transparent_100%)] dark:bg-[linear-gradient(90deg,transparent_0%,rgba(167,139,250,0.15)_30%,rgba(249,168,212,0.25)_50%,rgba(167,139,250,0.15)_70%,transparent_100%)] light:hidden blur-[1px] animate-[scan_10s_linear_infinite]" />
+
+        {/* Film grain layer */}
+        <div className="absolute -inset-1/2 w-[200%] h-[200%] opacity-[0.015] dark:opacity-[0.015] light:opacity-[0.005] animate-[grain-anim_0.08s_steps(1)_infinite] pointer-events-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "256px 256px" }} />
       </div>
 
-      {/* Top Navbar */}
-      <nav className="sticky top-0 w-full z-50 bg-[#09090B]/50 backdrop-blur-xl border-b border-white/10 transition-all duration-300">
-        <div className="flex justify-between items-center max-w-[1280px] mx-auto px-6 md:px-10 h-20">
-          
-          {/* Logo brand */}
-          <Link href="/dashboard" className="font-bold text-2xl tracking-tighter text-white flex items-center gap-2">
-            <Triangle className="h-6 w-6 text-[#c0c1ff] fill-[#c0c1ff]/20 rotate-180" />
-            <span>Momentum</span>
-          </Link>
-
-          {/* Links */}
-          <ul className="hidden md:flex items-center gap-8 text-sm font-semibold">
-            <li>
-              <a href="#features" className="text-[#c7c4d7] hover:text-white transition-colors hover:bg-white/5 px-3.5 py-2 rounded-lg duration-300">
-                Features
-              </a>
-            </li>
-            <li>
-              <Link href="/pricing" className="text-[#c7c4d7] hover:text-white transition-colors hover:bg-white/5 px-3.5 py-2 rounded-lg duration-300">
-                Pricing
-              </Link>
-            </li>
-            <li>
-              <a href="#about" className="text-[#c7c4d7] hover:text-white transition-colors hover:bg-white/5 px-3.5 py-2 rounded-lg duration-300">
-                About
-              </a>
-            </li>
-          </ul>
-
-          {/* Actions */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost" className="text-[#c7c4d7] hover:text-white uppercase tracking-widest text-[10px] font-bold">
-                Login
-              </Button>
-            </Link>
-            <Link href="/register">
-              <button className="relative overflow-hidden bg-gradient-to-r from-[#9A9CFE] via-[#C98BFE] to-[#FCA088] hover:opacity-95 text-black px-6 py-2.5 rounded-xl text-[10px] font-semibold uppercase tracking-widest transition-all duration-300 shadow-[0_4px_15px_-3px_rgba(154,156,254,0.3)]">
-                Register
-              </button>
-            </Link>
-          </div>
-
-          {/* Mobile hamburger menu */}
-          <button className="md:hidden text-white" onClick={() => setMenuOpen(!menuOpen)}>
-            <Menu className="h-6 w-6" />
-          </button>
-        </div>
-      </nav>
-
-      <main className="relative z-10">
-        
-        {/* Hero Section */}
-        <section className="relative min-h-[calc(100vh-5rem)] flex items-center justify-center pt-10 overflow-hidden">
-          <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10 text-center flex flex-col items-center">
+      {/* ── Center Navigation Bar (Inspired by Arc/Apple) ── */}
+      <header className="sticky top-0 w-full z-50 transition-all duration-300">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-5">
+          <nav className="flex justify-between items-center bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white/70 backdrop-blur-2xl border border-white/[0.06] dark:border-white/[0.06] light:border-slate-200/50 px-8 py-3.5 rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.3)] light:shadow-[0_10px_30px_rgba(0,0,0,0.05)] w-full">
             
-            {/* Tag pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/10 mb-8 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-              <span className="w-2 h-2 rounded-full bg-[#C98BFE] animate-pulse shadow-[0_0_8px_rgba(201,139,254,0.8)]"></span>
-              <span className="text-[10px] font-bold tracking-widest text-[#c7c4d7] uppercase">v2.0 Beta Live</span>
-            </div>
+            {/* Left Brand Logo */}
+            <Link href="/" className="font-sans font-bold text-lg tracking-tighter flex items-center gap-2 group text-white dark:text-white light:text-[#09090B]">
+              <div className="relative h-5 w-5 bg-gradient-to-tr from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] rounded-md flex items-center justify-center p-0.5 shadow-sm group-hover:scale-105 transition-all duration-300">
+                <Triangle className="h-3.5 w-3.5 text-black fill-black rotate-180" />
+              </div>
+              <span className="font-extrabold text-base tracking-tight">Momentum</span>
+            </Link>
 
-            {/* Main Header */}
-            <h1 className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out font-black text-[48px] md:text-[84px] leading-tight md:leading-[90px] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-[#E2E4FF] to-[#888A9F] mb-6 max-w-4xl mx-auto">
-              Master Your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#9A9CFE] via-[#C98BFE] to-[#FCA088] filter drop-shadow-[0_0_30px_rgba(201,139,254,0.2)]">Momentum.</span>
-            </h1>
+            {/* Mid Links */}
+            <ul className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
+              <li><a href="#features" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">Features</a></li>
+              <li><Link href="/pricing" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">Pricing</Link></li>
+              <li><a href="#coach" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">AI Coach</a></li>
+              <li><a href="#analytics" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">Analytics</a></li>
+              <li><a href="#about" className="hover:text-[#FAFAFA] dark:hover:text-[#FAFAFA] light:hover:text-[#09090B] transition-colors">About</a></li>
+            </ul>
 
-            {/* Description */}
-            <p className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out text-base md:text-xl text-[#c7c4d7]/70 max-w-2xl mx-auto mb-12">
-              AI-driven productivity meets hyper-detailed fitness tracking in a singular, immersive digital cockpit. Form habits, crush goals, leave a legacy.
-            </p>
+            {/* Actions & Theme Swapper */}
+            <div className="flex items-center gap-4">
+              
+              {/* Light/Dark Toggle */}
+              <button 
+                onClick={toggleTheme} 
+                className="h-8 w-8 rounded-full border border-white/10 dark:border-white/10 light:border-slate-200 bg-white/5 dark:bg-white/5 light:bg-slate-100 flex items-center justify-center hover:bg-white/10 dark:hover:bg-white/10 light:hover:bg-slate-200 transition-colors text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600"
+                aria-label="Toggle Theme"
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
 
-            {/* Action buttons */}
-            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
-              <Link href="/register" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-gradient-to-r from-[#9A9CFE] via-[#C98BFE] to-[#FCA088] hover:opacity-95 active:scale-[0.99] text-black px-8 py-4 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all duration-300 shadow-[0_10px_25px_-5px_rgba(154,156,254,0.3)] flex items-center justify-center gap-2">
-                  Get Started
-                  <ArrowRight className="h-4 w-4" />
+              <Link href="/login">
+                <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 hover:text-white dark:hover:text-white light:hover:text-[#09090B] px-3 py-1">
+                  Login
+                </Button>
+              </Link>
+              
+              <Link href="/register">
+                <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_15px_rgba(167,139,250,0.3)]">
+                  Register
                 </button>
               </Link>
-              <Link href="/login" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-white/[0.03] hover:bg-white/[0.06] text-white px-8 py-4 rounded-xl text-xs font-semibold uppercase tracking-widest border border-white/10 transition-all duration-300 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-                  Sign In
-                  </button>
-              </Link>
-            </div>
-          </div>
 
-          {/* Decorative design lines */}
-          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-          <div className="absolute top-1/2 left-0 w-full h-[1px] bg-white/[0.02] -z-10"></div>
-          <div className="absolute top-0 left-1/2 w-[1px] h-full bg-white/[0.02] -z-10"></div>
+              {/* Mobile hamburger menu */}
+              <button className="lg:hidden text-neutral-400 dark:text-neutral-400 light:text-slate-600 ml-1" onClick={() => setMenuOpen(!menuOpen)}>
+                <Menu className="h-5 w-5" />
+              </button>
+            </div>
+
+          </nav>
+        </div>
+      </header>
+
+      {/* Mobile Drawer Navigation */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-40 bg-[#09090B]/95 backdrop-blur-2xl flex flex-col justify-center items-center gap-8 text-xl font-bold uppercase tracking-widest text-[#A1A1AA] border-b border-white/10">
+          <button className="absolute top-8 right-8 text-white text-3xl" onClick={() => setMenuOpen(false)}>✕</button>
+          <a href="#features" onClick={() => setMenuOpen(false)} className="hover:text-white">Features</a>
+          <Link href="/pricing" onClick={() => setMenuOpen(false)} className="hover:text-white">Pricing</Link>
+          <a href="#coach" onClick={() => setMenuOpen(false)} className="hover:text-white">AI Coach</a>
+          <a href="#analytics" onClick={() => setMenuOpen(false)} className="hover:text-white">Analytics</a>
+          <a href="#about" onClick={() => setMenuOpen(false)} className="hover:text-white">About</a>
+          <Link href="/login" onClick={() => setMenuOpen(false)} className="text-white">Login</Link>
+          <Link href="/register" onClick={() => setMenuOpen(false)}>
+            <button className="bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-8 py-3 rounded-full text-sm font-extrabold tracking-widest">
+              Register
+            </button>
+          </Link>
+        </div>
+      )}
+
+      {/* ── Main Layout ── */}
+      <main className="relative z-10">
+        
+        {/* 1. HERO SECTION */}
+        <section className="relative min-h-[calc(100vh-6rem)] flex items-center justify-center pt-8 md:pt-16 pb-20 overflow-hidden">
+          <div className="max-w-[1280px] mx-auto px-6 md:px-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left Hero Text Content (7 Columns) */}
+            <div className="lg:col-span-6 space-y-8 text-left">
+              
+              {/* Beta Badge Tag */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] dark:bg-white/[0.03] light:bg-slate-100 border border-white/10 dark:border-white/10 light:border-slate-200/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#A78BFA] animate-pulse"></span>
+                <span className="text-[10px] font-bold tracking-widest text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500 uppercase">Intelligent Workspace v2.0</span>
+              </div>
+
+              {/* Headings: Editorial Instrument Serif */}
+              <h1 className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out font-serif text-[68px] md:text-[92px] leading-[0.9] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white dark:from-white dark:via-white light:from-[#09090B] light:via-[#09090B] light:to-slate-700">
+                Master Your <br />
+                <span className="font-serif italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#C4B5FD] via-[#A78BFA] to-[#FDBA74] pr-2 filter drop-shadow-[0_2px_15px_rgba(167,139,250,0.1)]">Momentum.</span>
+              </h1>
+
+              {/* Sub-text Description */}
+              <p className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl leading-relaxed">
+                AI-powered productivity meets intelligent fitness tracking, habit building, deep analytics, and personal growth in one immersive digital workspace. 
+              </p>
+
+              {/* Two CTA Buttons */}
+              <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out flex flex-row items-center gap-4 pt-2">
+                <Link href="/register">
+                  <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-7 py-3.5 rounded-[18px] text-xs font-bold uppercase tracking-widest transition-all duration-300 shadow-[0_8px_25px_-5px_rgba(167,139,250,0.4)] hover:shadow-[0_8px_30px_rgba(167,139,250,0.6)] flex items-center justify-center gap-2 border border-white/20">
+                    Start Building
+                    <ArrowRight className="h-3.5 w-3.5 text-black" />
+                  </button>
+                </Link>
+                <a href="#preview">
+                  <button className="bg-white/[0.03] dark:bg-white/[0.03] light:bg-slate-100 hover:bg-white/[0.06] dark:hover:bg-white/[0.06] light:hover:bg-slate-200 text-white dark:text-white light:text-slate-800 px-7 py-3.5 rounded-[18px] text-xs font-bold uppercase tracking-widest border border-white/10 dark:border-white/10 light:border-slate-200 transition-all duration-300 backdrop-blur-xl">
+                    Watch Demo
+                  </button>
+                </a>
+              </div>
+
+            </div>
+
+            {/* Right Hero Illustration: Floating Futuristic Dashboard Widgets (6 Columns) */}
+            <div className="lg:col-span-6 relative flex items-center justify-center min-h-[420px] lg:min-h-[500px]">
+              
+              {/* Soft decorative elements background */}
+              <div className="absolute w-[450px] h-[450px] rounded-full border border-white/[0.03] dark:border-white/[0.03] light:border-slate-200/50 pointer-events-none -z-10 animate-[spin_60s_linear_infinite]" />
+              <div className="absolute w-[300px] h-[300px] rounded-full border border-dashed border-white/[0.03] dark:border-white/[0.03] light:border-slate-200/40 pointer-events-none -z-10" />
+
+              {/* Glowing Purple light streaks */}
+              <div className="absolute top-1/4 left-1/4 w-[160px] h-[160px] rounded-full bg-[#A78BFA]/10 blur-[40px] pointer-events-none animate-pulse" />
+              <div className="absolute bottom-1/4 right-1/4 w-[160px] h-[160px] rounded-full bg-[#FDBA74]/5 blur-[40px] pointer-events-none animate-pulse" />
+
+              {/* Blueprint mesh dots grid */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.01)_1.5px,transparent_1.5px)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.01)_1.5px,transparent_1.5px)] light:bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.015)_1.5px,transparent_1.5px)] bg-[size:24px_24px] pointer-events-none -z-10" />
+
+              {/* Futuristic Widget Group (Floating Mockup) */}
+              <div className="w-full relative space-y-4 max-w-[480px]">
+
+                {/* 1. AI Assistant Chat Box Widget */}
+                <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white/80 backdrop-blur-xl border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200/60 p-4 rounded-2xl shadow-xl flex items-start gap-3 relative transform hover:-translate-y-1 transition-transform duration-300">
+                  <div className="w-8 h-8 rounded-lg bg-[#A78BFA]/10 flex items-center justify-center text-[#A78BFA]">
+                    <Brain className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="space-y-1 flex-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-400 light:text-slate-500">Momentum AI</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    </div>
+                    <p className="text-[11px] leading-relaxed text-neutral-300 dark:text-neutral-300 light:text-slate-700">
+                      "Biometrics look optimal today. Recommended block: 90min Deep Work at 10:00 AM, followed by a volume Chest routine."
+                    </p>
+                  </div>
+                  {/* Glowing connector lines indicator */}
+                  <div className="absolute -bottom-8 left-10 w-0.5 h-8 bg-gradient-to-b from-[#A78BFA]/40 to-transparent pointer-events-none" />
+                </div>
+
+                {/* Second row widgets (Side by side) */}
+                <div className="grid grid-cols-2 gap-4">
+                  
+                  {/* 2. Habit Tracker Card */}
+                  <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-100 bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white/80 backdrop-blur-xl border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200/60 p-4 rounded-2xl shadow-xl space-y-3 transform hover:-translate-y-1 transition-transform duration-300">
+                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">Habits</span>
+                    <ul className="space-y-2 text-[10px] text-neutral-300 dark:text-neutral-300 light:text-slate-700 font-semibold">
+                      <li className="flex items-center justify-between">
+                        <span>🧘 Meditation</span>
+                        <Check className="h-3 w-3 text-emerald-500" />
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span>💧 3L Hydration</span>
+                        <div className="w-3 h-3 rounded-full border border-white/20 dark:border-white/20 light:border-slate-300"></div>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span>📚 Deep Read</span>
+                        <Check className="h-3 w-3 text-emerald-500" />
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* 3. Focus Timer Widget */}
+                  <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-200 bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white/80 backdrop-blur-xl border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200/60 p-4 rounded-2xl shadow-xl flex flex-col justify-between items-center text-center transform hover:-translate-y-1 transition-transform duration-300">
+                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Focus Block</span>
+                    <div className="font-mono text-xl font-extrabold text-[#FDBA74] my-2">25:00</div>
+                    <div className="flex gap-2">
+                      <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 light:bg-slate-200 flex items-center justify-center">
+                        <Play className="h-2.5 w-2.5 fill-white dark:fill-white light:fill-slate-800" />
+                      </div>
+                      <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 light:bg-slate-200 flex items-center justify-center">
+                        <RotateCcw className="h-2.5 w-2.5 text-neutral-400" />
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* 4. Workout Cardio / Progress Ring Widget */}
+                <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-300 bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white/80 backdrop-blur-xl border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200/60 p-4 rounded-2xl shadow-xl flex justify-between items-center transform hover:-translate-y-1 transition-transform duration-300">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                      <Dumbbell className="h-4.5 w-4.5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white dark:text-white light:text-slate-800">Push Day routine</h4>
+                      <span className="text-[9px] text-neutral-500 uppercase tracking-wider block mt-0.5">Vol: 4,800 kg logged</span>
+                    </div>
+                  </div>
+                  
+                  {/* Small progress ring indicator */}
+                  <div className="relative w-8 h-8 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="16" cy="16" r="12" stroke="rgba(255,255,255,0.06)" strokeWidth="2.5" fill="transparent" />
+                      <circle cx="16" cy="16" r="12" stroke="#A78BFA" strokeWidth="2.5" fill="transparent" strokeDasharray="75" strokeDashoffset="25" />
+                    </svg>
+                    <span className="absolute text-[8px] font-bold font-mono">75%</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
         </section>
 
-        {/* Bento Grid Features Section */}
-        <section id="features" className="relative py-24 max-w-[1280px] mx-auto px-6 md:px-10">
-          <div className="text-center mb-16 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4">Precision Engineering for the Mind & Body</h2>
-            <p className="text-sm md:text-base text-[#c7c4d7]/70 max-w-xl mx-auto">
-              Seamlessly integrate your physical output with your mental clarity using our proprietary glass-pane architecture.
+        {/* 2. THE SAAS INTERACTIVE PREVIEW PANEL */}
+        <section id="preview" className="relative py-20 max-w-[1280px] mx-auto px-6 md:px-10">
+          <div className="text-center mb-12 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white dark:text-white light:text-[#09090B] tracking-tight mb-4">Cockpit Walkthrough</h2>
+            <p className="text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl mx-auto">
+              Click the tabs below to dynamically view the different cockpits inside the Momentum platform.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Interactive Screen Preview Container */}
+          <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 bg-[#111114]/50 dark:bg-[#111114]/50 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-3xl p-6 shadow-2xl relative">
             
-            {/* Feature 1: AI Coach */}
-            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out bg-[#12131C]/35 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-8 flex flex-col h-full group hover:border-white/20 transition-all duration-500 relative overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_15px_30px_rgba(0,0,0,0.4)]">
-              {/* Top border highlight glow */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#9A9CFE]/30 to-transparent"></div>
+            {/* Header controls matching Prospector mockup style */}
+            <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center pb-6 border-b border-white/[0.08] dark:border-white/[0.08] light:border-slate-100 gap-4 mb-6">
               
-              <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center mb-6 text-[#9A9CFE] group-hover:scale-105 transition-transform duration-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-                <Brain className="h-5 w-5" />
+              {/* Fake browser circle buttons & path */}
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1.5 mr-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                </div>
+                <div className="text-[11px] text-neutral-400 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-slate-100 border border-white/5 dark:border-white/5 light:border-slate-200 px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-mono">
+                  <span>momentum.app</span>
+                  <span className="text-neutral-600">/</span>
+                  <span className="text-white dark:text-white light:text-slate-800 font-bold">{activePreviewTab}</span>
+                </div>
               </div>
-              <div className="text-[10px] text-[#C98BFE] font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-[#C98BFE] rounded-full animate-ping"></span> AI Powered
+
+              {/* Tabs list (Tasks, Workouts, Nutrition, AI) */}
+              <div className="flex flex-wrap gap-1.5 bg-neutral-900/80 dark:bg-neutral-900/80 light:bg-slate-100 p-1 border border-white/5 dark:border-white/5 light:border-slate-200/60 rounded-xl">
+                {[
+                  { id: "ai", label: "💬 AI Assistant" },
+                  { id: "tasks", label: "🎯 Tasks & Schedule" },
+                  { id: "workout", label: "🏋️ Gym Logger" },
+                  { id: "metrics", label: "📊 Key Metrics" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setActivePreviewTab(t.id as DashboardTab)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-300",
+                      activePreviewTab === t.id
+                        ? "bg-[#A78BFA] text-black shadow-md"
+                        : "text-neutral-400 hover:text-neutral-200"
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                ))}
               </div>
-              <h3 className="text-xl font-bold text-white mb-4">AI Performance Coach</h3>
-              <p className="text-xs md:text-sm text-[#c7c4d7]/70 leading-relaxed">
-                Context-aware intelligence analyzes your biometric data and schedule, delivering actionable insights and dynamically adjusting your protocols in real-time.
-              </p>
+
+            </div>
+
+            {/* Inner Dashboard View Renderer */}
+            <div className="min-h-[350px] relative rounded-2xl bg-neutral-950/65 dark:bg-neutral-950/65 light:bg-slate-50/50 border border-white/5 dark:border-white/5 light:border-slate-200/50 p-6">
               
-              {/* Premium Waveform Graphic */}
-              <div className="mt-8 h-20 border-t border-white/5 relative overflow-hidden flex items-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                <div className="w-1/6 bg-gradient-to-t from-[#9A9CFE]/10 to-[#9A9CFE]/40 h-[30%] rounded-t-lg transition-all duration-500 group-hover:h-[50%]"></div>
-                <div className="w-1/6 bg-gradient-to-t from-[#C98BFE]/10 to-[#C98BFE]/50 h-[50%] rounded-t-lg transition-all duration-500 group-hover:h-[30%]"></div>
-                <div className="w-1/6 bg-gradient-to-t from-[#FCA088]/10 to-[#FCA088]/60 h-[40%] rounded-t-lg transition-all duration-500 group-hover:h-[70%]"></div>
-                <div className="w-1/6 bg-gradient-to-r from-[#9A9CFE] via-[#C98BFE] to-[#FCA088] h-[80%] rounded-t-lg shadow-[0_0_15px_rgba(154,156,254,0.4)] transition-all duration-500 group-hover:h-[90%]"></div>
-                <div className="w-1/6 bg-gradient-to-t from-[#C98BFE]/10 to-[#C98BFE]/50 h-[60%] rounded-t-lg transition-all duration-500 group-hover:h-[40%]"></div>
-                <div className="w-1/6 bg-gradient-to-t from-[#9A9CFE]/10 to-[#9A9CFE]/30 h-[45%] rounded-t-lg transition-all duration-500 group-hover:h-[60%]"></div>
+              {/* TAB 1: AI */}
+              {activePreviewTab === "ai" && (
+                <div className="space-y-6 max-w-2xl mx-auto">
+                  <div className="bg-[#111114]/80 dark:bg-[#111114]/80 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200/60 p-5 rounded-2xl flex gap-4 shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-[#A78BFA]/10 flex items-center justify-center text-[#A78BFA]">
+                      <Brain className="h-5 w-5" />
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      <h4 className="text-xs font-bold text-white dark:text-white light:text-slate-800">Biometric Recovery Insights</h4>
+                      <p className="text-[11px] leading-relaxed text-neutral-400 dark:text-neutral-400 light:text-slate-600">
+                        "Your HRV (Heart Rate Variability) is up by 15% today, signaling excellent autonomic nervous system recovery. However, deep sleep was slightly abbreviated. I suggest focusing on hypertrophy rather than heavy power complexes. Perform bench sets at RPE 8."
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#111114]/80 dark:bg-[#111114]/80 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200/60 p-5 rounded-2xl flex gap-4 shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-[#FDBA74]/10 flex items-center justify-center text-[#FDBA74]">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                    <div className="space-y-2 flex-1">
+                      <h4 className="text-xs font-bold text-white dark:text-white light:text-slate-800">Productivity Block recommendations</h4>
+                      <p className="text-[11px] leading-relaxed text-neutral-400 dark:text-neutral-400 light:text-slate-600">
+                        "You typically experience peak focus between 09:30 AM and 11:30 AM. I have auto-scheduled a 90-minute deep work block and muted distractions to enable optimal cognitive performance."
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: TASKS */}
+              {activePreviewTab === "tasks" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  
+                  {/* Task list matching Prospector mockup style */}
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Active Priorities</h4>
+                    <div className="space-y-2">
+                      {[
+                        { title: "Refactor API server auth endpoints", status: "completed" },
+                        { title: "Design light mode CSS system", status: "pending" },
+                        { title: "Review marketing graphics deck", status: "pending" },
+                      ].map((task, i) => (
+                        <div key={i} className="flex justify-between items-center p-3.5 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 rounded-xl">
+                          <span className="text-[11px] font-semibold text-neutral-300 dark:text-neutral-300 light:text-slate-700">{task.title}</span>
+                          <span className={cn(
+                            "text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full",
+                            task.status === "completed" 
+                              ? "bg-emerald-500/10 text-emerald-400" 
+                              : "bg-amber-500/10 text-amber-400"
+                          )}>
+                            {task.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Schedule block */}
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Today's Protocol</h4>
+                    <div className="space-y-2">
+                      {[
+                        { time: "09:30 AM", act: "Deep Focus (Code Refactor)", duration: "90 min" },
+                        { time: "12:00 PM", act: "Hypertrophy Push Workout", duration: "60 min" },
+                        { time: "03:30 PM", act: "Synchronous Team Sync", duration: "30 min" },
+                      ].map((item, i) => (
+                        <div key={i} className="flex justify-between items-center p-3.5 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 rounded-xl">
+                          <div>
+                            <span className="text-[9px] font-mono text-[#A78BFA] block">{item.time}</span>
+                            <span className="text-[11px] font-bold text-white dark:text-white light:text-slate-800">{item.act}</span>
+                          </div>
+                          <span className="text-[10px] text-neutral-400 font-semibold">{item.duration}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* TAB 3: WORKOUT */}
+              {activePreviewTab === "workout" && (
+                <div className="space-y-6">
+                  
+                  {/* Routine Info header */}
+                  <div className="flex justify-between items-center p-4 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 rounded-xl">
+                    <div>
+                      <h4 className="text-xs font-bold text-white dark:text-white light:text-slate-800">Monday - Chest & Triceps</h4>
+                      <span className="text-[9px] text-neutral-500 mt-1 block uppercase tracking-wider">Volume Target: 5,400 kg</span>
+                    </div>
+                    
+                    {/* Live Timer Controls in Preview */}
+                    <div className="flex items-center gap-3 bg-neutral-950 dark:bg-neutral-950 light:bg-slate-100 px-4 py-1.5 rounded-full border border-white/5 dark:border-white/5 light:border-slate-200">
+                      <button 
+                        onClick={() => setTimerActive(!timerActive)}
+                        className="h-4 w-4 bg-[#A78BFA] rounded-full flex items-center justify-center text-black"
+                      >
+                        {timerActive ? "||" : "▶"}
+                      </button>
+                      <span className="text-xs font-mono font-bold text-neutral-300 dark:text-neutral-300 light:text-slate-700">{formatTimer(timerSeconds)}</span>
+                    </div>
+                  </div>
+
+                  {/* Exercises Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                      { name: "Incline Dumbbell Press", sets: "4 Sets × 8-10 reps", last: "40kg × 8 reps" },
+                      { name: "Flat Barbell Bench Press", sets: "3 Sets × 6-8 reps", last: "100kg × 7 reps" },
+                    ].map((ex, i) => (
+                      <div key={i} className="bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 p-4 rounded-xl space-y-2">
+                        <div className="flex justify-between items-start">
+                          <span className="text-[11px] font-bold text-white dark:text-white light:text-slate-800">{ex.name}</span>
+                          <span className="text-[9px] text-neutral-500">{ex.sets}</span>
+                        </div>
+                        <div className="text-[10px] text-neutral-400 pt-1.5 border-t border-white/5 flex justify-between font-mono">
+                          <span>Previous PR:</span>
+                          <span className="text-neutral-300">{ex.last}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+              )}
+
+              {/* TAB 4: METRICS */}
+              {activePreviewTab === "metrics" && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {[
+                    { label: "Daily Water Goal", val: "2.4 / 3.0 Liters", progress: "80%" },
+                    { label: "Calorie Intake", val: "2,150 / 2,800 kcal", progress: "76%" },
+                    { label: "Workout Volume", val: "4,800 kg completed", progress: "100%" },
+                    { label: "Task Completion", val: "4 / 5 completed", progress: "80%" },
+                  ].map((m, i) => (
+                    <div key={i} className="bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 p-4 rounded-xl space-y-3">
+                      <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">{m.label}</span>
+                      <span className="text-sm font-extrabold text-white dark:text-white light:text-slate-800 block">{m.val}</span>
+                      
+                      <div className="space-y-1 pt-1">
+                        <div className="h-1.5 w-full bg-white/5 dark:bg-white/5 light:bg-slate-100 rounded-full overflow-hidden border border-white/5 dark:border-white/5 light:border-slate-200">
+                          <div className="h-full bg-gradient-to-r from-[#A78BFA] to-[#F9A8D4]" style={{ width: m.progress }} />
+                        </div>
+                        <span className="text-[8px] text-neutral-500 font-mono flex justify-end">{m.progress}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
+
+          </div>
+        </section>
+
+        {/* 3. THREE PREMIUM FEATURE CARDS */}
+        <section id="features" className="relative py-24 max-w-[1280px] mx-auto px-6 md:px-10">
+          
+          <div className="text-center mb-16 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white dark:text-white light:text-[#09090B] tracking-tight mb-4">Precision Engineering for the Mind & Body</h2>
+            <p className="text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl mx-auto">
+              Seamlessly integrate your physical habits and mental focus using our custom glassmorphism dashboard modules.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Card 1: AI Coach */}
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-[24px] p-8 flex flex-col justify-between group hover:border-[#A78BFA]/30 dark:hover:border-[#A78BFA]/30 light:hover:border-[#A78BFA]/50 transition-all duration-500 relative overflow-hidden shadow-2xl">
+              {/* Highlight line */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#A78BFA]/30 to-transparent"></div>
+              
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-neutral-900 light:bg-slate-100 border border-white/10 dark:border-white/10 light:border-slate-200 flex items-center justify-center mb-6 text-[#A78BFA]">
+                  <Brain className="h-5 w-5" />
+                </div>
+                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-800 mb-3">AI Coach</h3>
+                <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 leading-relaxed">
+                  Personalized suggestions powered by intelligent reasoning. Syncs metrics dynamically.
+                </p>
+              </div>
+
+              {/* Glowing decorative connection points */}
+              <div className="mt-8 pt-4 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-100 flex items-center justify-between text-[10px] text-neutral-500 font-semibold font-mono">
+                <span>INTEL. SYSTEM</span>
+                <span className="text-[#A78BFA]">01_REASONING</span>
               </div>
             </div>
 
-            {/* Feature 2: Workout Logging */}
-            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out bg-[#12131C]/35 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-8 flex flex-col h-full group hover:border-white/20 transition-all duration-500 relative overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_15px_30px_rgba(0,0,0,0.4)]">
-              {/* Top border highlight glow */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C98BFE]/30 to-transparent"></div>
+            {/* Card 2: Smart Analytics */}
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-[24px] p-8 flex flex-col justify-between group hover:border-[#F9A8D4]/30 dark:hover:border-[#F9A8D4]/30 light:hover:border-[#F9A8D4]/50 transition-all duration-500 relative overflow-hidden shadow-2xl">
+              {/* Highlight line */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#F9A8D4]/30 to-transparent"></div>
               
-              <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center mb-6 text-[#C98BFE] group-hover:scale-105 transition-transform duration-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-                <Dumbbell className="h-5 w-5" />
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-neutral-900 light:bg-slate-100 border border-white/10 dark:border-white/10 light:border-slate-200 flex items-center justify-center mb-6 text-[#F9A8D4]">
+                  <Activity className="h-5 w-5" />
+                </div>
+                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-800 mb-3">Smart Analytics</h3>
+                <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 leading-relaxed">
+                  Visual insights into productivity, health, and focus. Maps sleep vectors and HRV trends.
+                </p>
               </div>
-              <div className="text-[10px] text-[#FCA088] font-bold uppercase tracking-widest mb-2">Metrics Logging</div>
-              <h3 className="text-xl font-bold text-white mb-4">Hyper-Detailed Logging</h3>
-              <p className="text-xs md:text-sm text-[#c7c4d7]/70 leading-relaxed mb-6">
-                High-precision mechanics for tracking sets, reps, targets, and active intervals. The interface stays completely out of your way until you need it.
-              </p>
-              
-              {/* Table mock */}
-              <div className="mt-auto bg-black/45 border border-white/10 rounded-xl p-4 text-[10px] text-[#a9abff] font-mono shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]">
-                <div className="flex justify-between mb-2"><span className="font-bold text-white uppercase">BENCH PRESS</span> <span className="text-white opacity-60">4 SETS</span></div>
-                <div className="flex justify-between text-neutral-400"><span>100kg × 8</span> <span className="text-[#FCA088] font-semibold">@RPE8</span></div>
-                <div className="flex justify-between text-neutral-400 mt-1.5"><span>105kg × 6</span> <span className="text-[#FCA088] font-semibold">@RPE8.5</span></div>
+
+              <div className="mt-8 pt-4 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-100 flex items-center justify-between text-[10px] text-neutral-500 font-semibold font-mono">
+                <span>GRAPH VECTORS</span>
+                <span className="text-[#F9A8D4]">02_BIOMETRICS</span>
               </div>
             </div>
 
-            {/* Feature 3: Journaling */}
-            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out bg-[#12131C]/35 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-8 flex flex-col h-full group hover:border-white/20 transition-all duration-500 relative overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_15px_30px_rgba(0,0,0,0.4)]">
-              {/* Top border highlight glow */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#FCA088]/30 to-transparent"></div>
+            {/* Card 3: Habit Engine */}
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-[24px] p-8 flex flex-col justify-between group hover:border-[#FDBA74]/30 dark:hover:border-[#FDBA74]/30 light:hover:border-[#FDBA74]/50 transition-all duration-500 relative overflow-hidden shadow-2xl">
+              {/* Highlight line */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#FDBA74]/30 to-transparent"></div>
               
-              <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center mb-6 text-[#FCA088] group-hover:scale-105 transition-transform duration-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-                <BookOpen className="h-5 w-5" />
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-neutral-900 light:bg-slate-100 border border-white/10 dark:border-white/10 light:border-slate-200 flex items-center justify-center mb-6 text-[#FDBA74]">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-800 mb-3">Habit Engine</h3>
+                <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 leading-relaxed">
+                  Build consistent routines with adaptive AI reminders. Keeps you focused day-by-day.
+                </p>
               </div>
-              <div className="text-[10px] text-[#9A9CFE] font-bold uppercase tracking-widest mb-2">Editorial</div>
-              <h3 className="text-xl font-bold text-white mb-4">Reflective Journaling</h3>
-              <p className="text-xs md:text-sm text-[#c7c4d7]/70 leading-relaxed mt-auto relative z-10">
-                An editorial-grade canvas designed for deep reflection. Disconnect from the metrics and synthesize your thoughts in an elegant, distraction-free environment.
-              </p>
-              
-              {/* Ampersand design */}
-              <div className="absolute -bottom-10 -right-6 font-serif text-[160px] leading-none text-white/[0.01] pointer-events-none group-hover:scale-110 group-hover:text-white/[0.02] transition-all duration-700">
-                &amp;
+
+              <div className="mt-8 pt-4 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-100 flex items-center justify-between text-[10px] text-neutral-500 font-semibold font-mono">
+                <span>CORE SCHEDULER</span>
+                <span className="text-[#FDBA74]">03_ROUTINES</span>
               </div>
             </div>
 
           </div>
         </section>
 
-        {/* Break Action Section */}
-        <section className="py-24 border-y border-white/[0.05] bg-white/[0.01] backdrop-blur-md w-full relative overflow-hidden">
-          {/* Subtle background glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[250px] bg-[#9A9CFE]/5 rounded-full blur-[80px] pointer-events-none"></div>
+        {/* 4. METRICS / STATS SECTION */}
+        <section className="relative py-20 border-y border-white/[0.05] dark:border-white/[0.05] light:border-slate-200 bg-[#111114]/30 dark:bg-[#111114]/30 light:bg-slate-100/50 backdrop-blur-md">
+          <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+              
+              <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 space-y-2">
+                <span className="text-4xl md:text-5xl font-black text-white dark:text-white light:text-slate-800 block">98%</span>
+                <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Goal Completion</span>
+              </div>
 
-          <div className="max-w-[1280px] mx-auto px-6 md:px-10 text-center relative z-10 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
-            <div className="text-[10px] font-bold text-[#C98BFE] uppercase tracking-[0.2em] mb-4 pl-1">Ready to initialize?</div>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-8">Stop tracking. Start engineering.</h2>
-            <Link href="/register">
-              <button className="bg-gradient-to-r from-[#9A9CFE] via-[#C98BFE] to-[#FCA088] hover:opacity-95 active:scale-[0.99] text-black px-10 py-4 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all duration-300 shadow-[0_10px_25px_-5px_rgba(154,156,254,0.3)]">
-                Create Account
+              <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-100 space-y-2">
+                <span className="text-4xl md:text-5xl font-black text-white dark:text-white light:text-slate-800 block">250K+</span>
+                <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Users Registered</span>
+              </div>
+
+              <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-200 space-y-2">
+                <span className="text-4xl md:text-5xl font-black text-white dark:text-white light:text-slate-800 block">40M+</span>
+                <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Tasks Managed</span>
+              </div>
+
+              <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-300 space-y-2">
+                <span className="text-4xl md:text-5xl font-black text-white dark:text-white light:text-slate-800 block">4.9★</span>
+                <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">User Rating</span>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* 5. TESTIMONIALS SECTION */}
+        <section className="relative py-24 max-w-[1280px] mx-auto px-6 md:px-10">
+          <div className="text-center mb-16 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white dark:text-white light:text-[#09090B] tracking-tight mb-4">Critically Acclaimed</h2>
+            <p className="text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl mx-auto">
+              How high-performers utilize Momentum to organize their mind, routines, and performance.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: "The integration of deep work timers with biometrics is absolute genius. I've doubled my development velocity without burning out.",
+                author: "Sarah Jenkins",
+                role: "Lead Systems Architect, Vercel",
+                rating: "⭐⭐⭐⭐⭐"
+              },
+              {
+                quote: "Logging workouts has never felt this premium. The RPE charts combined with active target recommendations keep me incredibly honest.",
+                author: "David Chen",
+                role: "Product Designer, Linear",
+                rating: "⭐⭐⭐⭐⭐"
+              },
+              {
+                quote: "Momentum is now my primary workspace. The AI advice is clean, logical, and structured without the useless fluff you get with standard bots.",
+                author: "Elena Rostova",
+                role: "Founder, Peak Cognitive",
+                rating: "⭐⭐⭐⭐⭐"
+              }
+            ].map((t, idx) => (
+              <div 
+                key={idx} 
+                className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-3xl p-8 flex flex-col justify-between shadow-lg"
+              >
+                <div className="space-y-4">
+                  <div className="text-xs">{t.rating}</div>
+                  <p className="text-xs md:text-sm text-neutral-300 dark:text-neutral-300 light:text-slate-700 italic leading-relaxed">
+                    "{t.quote}"
+                  </p>
+                </div>
+                
+                <div className="mt-8 flex items-center gap-3 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-100 pt-4">
+                  <div className="w-8 h-8 rounded-full bg-neutral-800 dark:bg-neutral-800 light:bg-slate-200 flex items-center justify-center font-bold text-xs text-[#A78BFA] font-mono">
+                    {t.author.split(" ").map(n => n[0]).join("")}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white dark:text-white light:text-slate-800">{t.author}</h4>
+                    <span className="text-[10px] text-neutral-500">{t.role}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 6. PRICING SECTION */}
+        <section id="pricing" className="relative py-24 max-w-[1280px] mx-auto px-6 md:px-10">
+          
+          <div className="text-center mb-16 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white dark:text-white light:text-[#09090B] tracking-tight mb-4">Predictable Subscription Packages</h2>
+            
+            {/* Toggle yearly */}
+            <div className="inline-flex items-center gap-3 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-slate-100 border border-white/5 dark:border-white/5 light:border-slate-200 px-3.5 py-1.5 rounded-full mt-4">
+              <button 
+                onClick={() => setIsYearly(false)}
+                className={cn("px-3.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all", !isYearly ? "bg-white text-black" : "text-neutral-500")}
+              >
+                Monthly
               </button>
-            </Link>
+              <button 
+                onClick={() => setIsYearly(true)}
+                className={cn("px-3.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all", isYearly ? "bg-white text-black" : "text-neutral-500")}
+              >
+                Yearly (-20%)
+              </button>
+            </div>
+
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+            
+            {/* Starter Plan */}
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-[24px] p-8 flex flex-col justify-between shadow-xl">
+              <div>
+                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-800 mb-2">Starter</h3>
+                <span className="text-2xl font-black text-white dark:text-white light:text-slate-800">{basePrice}</span>
+                
+                <ul className="space-y-3.5 text-xs text-neutral-400 mt-8 font-medium">
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Basic Task Management</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Simple Gym Log History</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Manual Water Intake logging</li>
+                </ul>
+              </div>
+
+              <Link href="/register" className="mt-8">
+                <button className="w-full bg-white/5 dark:bg-white/5 light:bg-slate-100 text-white dark:text-white light:text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 light:border-slate-200">
+                  Deploy Starter
+                </button>
+              </Link>
+            </div>
+
+            {/* Pro Plan (Highlighted + glowing purple ambient lighting) */}
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 bg-[#111114]/80 dark:bg-[#111114]/80 light:bg-white border border-[#A78BFA]/30 dark:border-[#A78BFA]/30 light:border-[#A78BFA]/50 rounded-[24px] p-8 flex flex-col justify-between shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] dark:shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] light:shadow-[0_20px_40px_rgba(167,139,250,0.15)] relative">
+              
+              {/* Highlight Label Badge */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#A78BFA] to-[#F9A8D4] text-black text-[9px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full border border-white/20">
+                Most Popular
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-800 mb-2">Pro</h3>
+                <span className="text-2xl font-black text-white dark:text-white light:text-slate-800">{proPrice} <span className="text-xs text-neutral-400 font-normal">{proPeriod}</span></span>
+                
+                <ul className="space-y-3.5 text-xs text-neutral-300 dark:text-neutral-300 light:text-slate-700 mt-8 font-medium">
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Everything in Starter</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Full AI Coach Biometric Feedback</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Unlimited Workout Volume tracking</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Advanced Focus Analytics trend graphs</li>
+                </ul>
+              </div>
+
+              <Link href="/register" className="mt-8">
+                <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-95 transition-opacity shadow-md shadow-[#A78BFA]/20">
+                  Upgrade to Pro
+                </button>
+              </Link>
+            </div>
+
+            {/* Enterprise Plan */}
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 bg-[#111114]/65 dark:bg-[#111114]/65 light:bg-white border border-white/[0.08] dark:border-white/[0.08] light:border-slate-200 rounded-[24px] p-8 flex flex-col justify-between shadow-xl">
+              <div>
+                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-800 mb-2">Enterprise</h3>
+                <span className="text-2xl font-black text-white dark:text-white light:text-slate-800">{elitePrice} <span className="text-xs text-neutral-400 font-normal">{elitePeriod}</span></span>
+                
+                <ul className="space-y-3.5 text-xs text-neutral-400 mt-8">
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Custom Workspace Teams Integration</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Dedicated Coach consult sessions</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Priority Server Speed response</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Single Sign-On (SSO) Support</li>
+                </ul>
+              </div>
+
+              <Link href="/register" className="mt-8">
+                <button className="w-full bg-white/5 dark:bg-white/5 light:bg-slate-100 text-white dark:text-white light:text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 light:border-slate-200">
+                  Deploy Enterprise
+                </button>
+              </Link>
+            </div>
+
           </div>
         </section>
 
       </main>
 
-      {/* Footer */}
-      <footer className="w-full relative z-10 bg-black/40 border-t border-white/5">
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
+      {/* ── Footer ── */}
+      <footer className="w-full relative z-10 bg-[#09090B] dark:bg-[#09090B] light:bg-slate-100 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-200 transition-colors duration-500">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
           
-          <div className="md:col-span-2">
-            <div className="font-bold text-xl text-white flex items-center gap-2">
-              <Triangle className="h-5 w-5 text-[#c0c1ff] fill-[#c0c1ff]/20 rotate-180" />
+          {/* Brand Info & Newsletter (5 Columns) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="font-sans font-bold text-xl text-white dark:text-white light:text-[#09090B] flex items-center gap-2">
+              <div className="h-5 w-5 bg-gradient-to-tr from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] rounded-md flex items-center justify-center p-0.5">
+                <Triangle className="h-3.5 w-3.5 text-black fill-black rotate-180" />
+              </div>
               <span>Momentum</span>
             </div>
-            <p className="text-xs md:text-sm text-[#c7c4d7] mt-4 max-w-sm leading-relaxed">
-              High-performance systems for individuals who refuse to stagnate.
+            <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500 leading-relaxed max-w-sm">
+              Luxury performance systems built for the focused individual. Synchronizing biomechanical logging and cognitive productivity logs.
             </p>
-            <p className="text-xs text-[#c7c4d7]/60 mt-8">
-              © 2026 Momentum AI. All rights reserved.
-            </p>
+            
+            {/* Newsletter Sign up */}
+            <div className="space-y-2 pt-2 max-w-sm">
+              <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Subscribe to Insights</label>
+              <div className="flex gap-2">
+                <input 
+                  type="email" 
+                  placeholder="Enter your email" 
+                  className="bg-[#111114]/80 dark:bg-[#111114]/80 light:bg-white border border-white/10 dark:border-white/10 light:border-slate-300 rounded-xl px-4 py-2 text-xs text-white dark:text-white light:text-slate-800 focus:outline-none focus:border-[#A78BFA] flex-1"
+                />
+                <button className="bg-[#A78BFA] hover:bg-[#9073ea] text-black text-xs font-bold uppercase tracking-wider px-4 rounded-xl transition-colors">
+                  Join
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <h4 className="text-[10px] font-bold text-white uppercase tracking-widest mb-6">Legal</h4>
-            <ul className="space-y-3 text-xs">
-              <li><a className="text-[#c7c4d7] hover:text-[#c0c1ff] transition-colors" href="#">Privacy Policy</a></li>
-              <li><a className="text-[#c7c4d7] hover:text-[#c0c1ff] transition-colors" href="#">Terms of Service</a></li>
-              <li><a className="text-[#c7c4d7] hover:text-[#c0c1ff] transition-colors" href="#">Sitemap</a></li>
+          {/* Links 1 (3 Columns) */}
+          <div className="lg:col-span-3 lg:col-start-7 space-y-4">
+            <h4 className="text-[10px] font-bold text-white dark:text-white light:text-[#09090B] uppercase tracking-widest">Product</h4>
+            <ul className="space-y-3 text-xs text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
+              <li><a href="#features" className="hover:text-white dark:hover:text-white light:hover:text-black">Features</a></li>
+              <li><Link href="/pricing" className="hover:text-white dark:hover:text-white light:hover:text-black">Pricing</Link></li>
+              <li><a href="#coach" className="hover:text-white dark:hover:text-white light:hover:text-black">AI Coach</a></li>
+              <li><a href="#analytics" className="hover:text-white dark:hover:text-white light:hover:text-black">Analytics</a></li>
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-[10px] font-bold text-white uppercase tracking-widest mb-6">Connect</h4>
-            <ul className="space-y-3 text-xs">
-              <li>
-                <a className="text-[#c7c4d7] hover:text-[#c0c1ff] transition-colors flex items-center gap-2" href="#">
-                  <MessageSquare className="h-4 w-4" /> Contact Support
-                </a>
-              </li>
-              <li>
-                <a className="text-[#c7c4d7] hover:text-[#c0c1ff] transition-colors flex items-center gap-2" href="#">
-                  <Globe className="h-4 w-4" /> Twitter
-                </a>
-              </li>
-              <li>
-                <a className="text-[#c7c4d7] hover:text-[#c0c1ff] transition-colors flex items-center gap-2" href="#">
-                  <Camera className="h-4 w-4" /> Instagram
-                </a>
-              </li>
+          {/* Links 2 (2 Columns) */}
+          <div className="lg:col-span-2 space-y-4">
+            <h4 className="text-[10px] font-bold text-white dark:text-white light:text-[#09090B] uppercase tracking-widest">Legal</h4>
+            <ul className="space-y-3 text-xs text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
+              <li><a className="hover:text-white dark:hover:text-white light:hover:text-black">Privacy Policy</a></li>
+              <li><a className="hover:text-white dark:hover:text-white light:hover:text-black">Terms of Service</a></li>
+              <li><a className="hover:text-white dark:hover:text-white light:hover:text-black">SSO Security</a></li>
             </ul>
           </div>
 
+          {/* Links 3 (2 Columns) */}
+          <div className="lg:col-span-2 space-y-4">
+            <h4 className="text-[10px] font-bold text-white dark:text-white light:text-[#09090B] uppercase tracking-widest">Connect</h4>
+            <ul className="space-y-3 text-xs text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
+              <li><a className="hover:text-white dark:hover:text-white light:hover:text-black flex items-center gap-1.5"><MessageSquare className="h-3.5 w-3.5" /> Support</a></li>
+              <li><a className="hover:text-white dark:hover:text-white light:hover:text-black flex items-center gap-1.5"><Globe className="h-3.5 w-3.5" /> Twitter</a></li>
+              <li><a className="hover:text-white dark:hover:text-white light:hover:text-black flex items-center gap-1.5"><Camera className="h-3.5 w-3.5" /> Instagram</a></li>
+            </ul>
+          </div>
+
+        </div>
+        
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pb-12 text-center text-xs text-neutral-500 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-200 pt-8">
+          © 2026 Momentum AI. Designed with precision. All rights reserved.
         </div>
       </footer>
 
