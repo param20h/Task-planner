@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Brain, Send, User, Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 // Styling constants
@@ -103,23 +104,36 @@ export default function AiCoachPage() {
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
       
       {/* Header */}
-      <div className="relative z-10 p-6 bg-gradient-to-r from-slate-50 to-transparent dark:from-[#0d0d0e]/80 dark:to-transparent border border-slate-200 dark:border-white/10 rounded-xl">
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative z-10 p-6 bg-gradient-to-r from-slate-50 to-transparent dark:from-[#0d0d0e]/80 dark:to-transparent border border-slate-200 dark:border-white/10 rounded-xl"
+      >
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
           <Brain className="h-7 w-7 text-[#6068F0]" />
           Full-Stack AI Coach
         </h1>
         <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1">Converse with Llama-3.3-70B model to dynamically schedule sessions, workouts, and OKRs.</p>
-      </div>
+      </motion.div>
 
       {/* Main Chat Box */}
-      <Card className={cn(glassCardClass, "flex flex-col h-[65vh] relative z-10 p-6")}>
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+        className={cn(glassCardClass, "flex flex-col h-[65vh] relative z-10 p-6")}
+      >
         {/* Chat History */}
         <div className="flex-1 overflow-y-auto space-y-6 pr-2 scrollbar-thin">
           {messages.map((msg, i) => (
-            <div 
+            <motion.div 
               key={i} 
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
               className={cn(
-                "flex gap-4 max-w-[85%] items-start animate-fade-in",
+                "flex gap-4 max-w-[85%] items-start",
                 msg.role === "user" ? "ml-auto flex-row-reverse" : ""
               )}
             >
@@ -130,7 +144,7 @@ export default function AiCoachPage() {
                 {msg.role === "user" ? <User className="h-4 w-4 text-slate-500 dark:text-neutral-300" /> : <Bot className="h-4 w-4 text-[#6068F0]" />}
               </div>
               <div className={cn(
-                "p-4 rounded-2xl text-xs leading-relaxed",
+                "p-4 rounded-2xl text-xs leading-relaxed shadow-sm",
                 msg.role === "user" 
                   ? "bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-neutral-200" 
                   : "bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/10 text-slate-600 dark:text-neutral-300"
@@ -139,15 +153,19 @@ export default function AiCoachPage() {
                   <p key={idx} className={idx > 0 ? "mt-2" : ""}>{para}</p>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
           {isSending && (
-            <div className="flex gap-4 items-center text-xs text-slate-400 dark:text-neutral-500">
+            <motion.div 
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex gap-4 items-center text-xs text-slate-400 dark:text-neutral-500"
+            >
               <div className="p-2 rounded-xl bg-[#6068F0]/10 border border-[#6068F0]/20 animate-pulse">
                 <Brain className="h-4 w-4 text-[#6068F0]" />
               </div>
               <span className="flex items-center gap-1">AI Coach is thinking<span className="animate-bounce">.</span><span className="animate-bounce delay-150">.</span><span className="animate-bounce delay-300">.</span></span>
-            </div>
+            </motion.div>
           )}
           <div ref={chatEndRef} />
         </div>
@@ -171,7 +189,7 @@ export default function AiCoachPage() {
             Send
           </Button>
         </form>
-      </Card>
+      </motion.div>
     </div>
   );
 }
