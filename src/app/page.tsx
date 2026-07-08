@@ -995,69 +995,104 @@ export default function Home() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="w-full relative z-10 bg-[#09090B] dark:bg-[#09090B] light:bg-slate-100 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-200 transition-colors duration-500">
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <footer className="w-full relative z-10 bg-transparent py-12 transition-all duration-500">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10">
           
-          {/* Brand Info & Newsletter (5 Columns) */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="font-sans font-bold text-xl text-[#09090B] dark:text-white flex items-center gap-2">
-              <div className="relative h-5 w-5 rounded-md overflow-hidden flex items-center justify-center border border-slate-200 dark:border-white/10">
-                <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="20px" className="object-cover" />
-              </div>
-              <span>ZenithFlow</span>
-            </div>
-            <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500 leading-relaxed max-w-sm">
-              Luxury performance systems built for the focused individual. Synchronizing biomechanical logging and cognitive productivity logs.
-            </p>
+          {/* Inner card taking inspiration from Graphy footer style */}
+          <div className="bg-white dark:bg-[#0d0d0e]/60 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.06] rounded-[32px] p-8 md:p-16 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 transition-all duration-500">
             
-            {/* Newsletter Sign up */}
-            <div className="space-y-3 pt-2 max-w-sm">
-              <div className="flex items-center justify-between gap-4">
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Subscribe to Insights</label>
-                <div className="flex items-center gap-4 text-slate-500 dark:text-[#A1A1AA]">
-                  <a href="#" aria-label="Support" className="hover:text-[#A78BFA] transition-colors"><MessageSquare className="h-4.5 w-4.5" /></a>
-                  <a href="#" aria-label="Twitter" className="hover:text-[#A78BFA] transition-colors"><Globe className="h-4.5 w-4.5" /></a>
-                  <a href="#" aria-label="Instagram" className="hover:text-[#A78BFA] transition-colors"><Camera className="h-4.5 w-4.5" /></a>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              {/* Left Column (Brand + Desc + Socials) */}
+              <div className="lg:col-span-5 space-y-6">
+                <Link href="/" className="font-sans font-bold text-xl text-[#09090B] dark:text-white flex items-center gap-2.5 group">
+                  <div className="relative h-6 w-6 rounded-lg overflow-hidden flex items-center justify-center border border-slate-200 dark:border-white/10 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                    <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="24px" className="object-cover" />
+                  </div>
+                  <span className="font-extrabold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-white dark:to-neutral-300">
+                    ZenithFlow
+                  </span>
+                </Link>
+                <p className="text-xs md:text-sm text-slate-500 dark:text-neutral-400 leading-relaxed max-w-sm">
+                  ZenithFlow empowers individuals to synchronize biomechanical logging, nutrition tracking, and daily focus blocks — making performance easier to master, analyze, and sustain.
+                </p>
+                
+                {/* Social Links (Clean outline SVG format as inspired by Graphy) */}
+                <div className="flex items-center gap-5 pt-2 text-slate-400 dark:text-neutral-500">
+                  <a href="#" aria-label="X (Twitter)" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+                    <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="Instagram" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+                    <svg className="h-4.5 w-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="LinkedIn" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+                    <svg className="h-4 w-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                      <rect x="2" y="9" width="4" height="12"></rect>
+                      <circle cx="4" cy="4" r="2"></circle>
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="GitHub" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+                    <svg className="h-4.5 w-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                    </svg>
+                  </a>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="bg-white dark:bg-[#111114]/80 border border-white/10 dark:border-white/10 light:border-slate-300 rounded-xl px-4 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#A78BFA] flex-1"
-                />
-                <button className="bg-[#A78BFA] hover:bg-[#9073ea] text-black text-xs font-bold uppercase tracking-wider px-4 rounded-xl transition-colors">
-                  Join
-                </button>
+
+              {/* Product Column */}
+              <div className="lg:col-span-2 lg:col-start-7 space-y-4">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Product</h4>
+                <ul className="space-y-3 text-xs font-medium text-slate-500 dark:text-neutral-400">
+                  <li><a href="#features" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-200">Features</a></li>
+                  <li><Link href="/pricing" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-200">Pricing</Link></li>
+                  <li><a href="#coach" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-200">AI Coach</a></li>
+                  <li><a href="#analytics" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-200">Analytics</a></li>
+                </ul>
+              </div>
+
+              {/* Resources Column */}
+              <div className="lg:col-span-2 space-y-4">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Resources</h4>
+                <ul className="space-y-3 text-xs font-medium text-slate-500 dark:text-neutral-400">
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Documentation</a></li>
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Tutorials</a></li>
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Blog</a></li>
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Support</a></li>
+                </ul>
+              </div>
+
+              {/* Company Column */}
+              <div className="lg:col-span-2 space-y-4">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Company</h4>
+                <ul className="space-y-3 text-xs font-medium text-slate-500 dark:text-neutral-400">
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">About</a></li>
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Careers</a></li>
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Contact</a></li>
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Partners</a></li>
+                </ul>
               </div>
             </div>
-          </div>
 
-          {/* Links 1 (3 Columns) */}
-          <div className="lg:col-span-3 lg:col-start-7 space-y-4">
-            <h4 className="text-[10px] font-bold text-[#09090B] dark:text-white uppercase tracking-widest">Product</h4>
-            <ul className="space-y-3 text-xs text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
-              <li><a href="#features" className="hover:text-black dark:hover:text-white">Features</a></li>
-              <li><Link href="/pricing" className="hover:text-black dark:hover:text-white">Pricing</Link></li>
-              <li><a href="#coach" className="hover:text-black dark:hover:text-white">AI Coach</a></li>
-              <li><a href="#analytics" className="hover:text-black dark:hover:text-white">Analytics</a></li>
-            </ul>
-          </div>
+            {/* Divider line */}
+            <div className="h-px bg-slate-200/60 dark:bg-white/5 w-full my-8 md:my-10" />
 
-          {/* Links 2 (3 Columns) */}
-          <div className="lg:col-span-3 space-y-4">
-            <h4 className="text-[10px] font-bold text-[#09090B] dark:text-white uppercase tracking-widest">Legal</h4>
-            <ul className="space-y-3 text-xs text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
-              <li><a className="hover:text-black dark:hover:text-white">Privacy Policy</a></li>
-              <li><a className="hover:text-black dark:hover:text-white">Terms of Service</a></li>
-              <li><a className="hover:text-black dark:hover:text-white">SSO Security</a></li>
-            </ul>
-          </div>
+            {/* Bottom Row */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-neutral-500 font-medium">
+              <span>© 2026 ZenithFlow. All rights reserved.</span>
+              <div className="flex gap-6">
+                <a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Privacy Policy</a>
+                <a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Terms of Service</a>
+                <a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Cookies Settings</a>
+              </div>
+            </div>
 
-        </div>
-        
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pb-12 text-center text-xs text-neutral-500 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-200 pt-8">
-          © 2026 ZenithFlow AI. Designed with precision. All rights reserved.
+          </div>
         </div>
       </footer>
 
