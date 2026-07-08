@@ -260,7 +260,7 @@ export default function Home() {
         <div className="absolute -top-[300px] left-1/2 -translate-x-1/2 w-[1400px] h-[700px] rounded-full bg-[radial-gradient(ellipse,rgba(167,139,250,0.07)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse,rgba(196,181,253,0.22)_0%,rgba(249,168,212,0.08)_50%,transparent_75%)] blur-[80px]" />
         
         {/* Soft volumetric center light ray - brighter dark mode */}
-        <div className="absolute top-[20%] left-1/3 w-[500px] h-[500px] rounded-full light:hidden dark:bg-[radial-gradient(circle,rgba(167,139,250,0.06)_0%,transparent_65%)] blur-[60px]" />
+        <div className="absolute top-[20%] left-1/3 w-[500px] h-[500px] rounded-full hidden dark:block dark:bg-[radial-gradient(circle,rgba(167,139,250,0.06)_0%,transparent_65%)] blur-[60px]" />
 
         {/* Perspective grid lines canvas */}
         <div className="absolute bottom-[-15%] left-1/2 -translate-x-1/2 w-[220%] h-[75%] opacity-50 dark:opacity-70" style={{ perspective: "600px" }}>
@@ -268,7 +268,7 @@ export default function Home() {
         </div>
 
         {/* Dynamic scan lines */}
-        <div className="absolute left-0 right-0 h-[1.5px] bg-[linear-gradient(90deg,transparent_0%,rgba(167,139,250,0.15)_30%,rgba(249,168,212,0.25)_50%,rgba(167,139,250,0.15)_70%,transparent_100%)] dark:bg-[linear-gradient(90deg,transparent_0%,rgba(167,139,250,0.15)_30%,rgba(249,168,212,0.25)_50%,rgba(167,139,250,0.15)_70%,transparent_100%)] light:hidden blur-[1px] animate-[scan_10s_linear_infinite]" />
+        <div className="absolute left-0 right-0 h-[1.5px] bg-[linear-gradient(90deg,transparent_0%,rgba(167,139,250,0.15)_30%,rgba(249,168,212,0.25)_50%,rgba(167,139,250,0.15)_70%,transparent_100%)] dark:bg-[linear-gradient(90deg,transparent_0%,rgba(167,139,250,0.15)_30%,rgba(249,168,212,0.25)_50%,rgba(167,139,250,0.15)_70%,transparent_100%)] hidden dark:block blur-[1px] animate-[scan_10s_linear_infinite]" />
 
         {/* Film grain layer */}
         <div className="absolute -inset-1/2 w-[200%] h-[200%] opacity-[0.005] dark:opacity-[0.015] animate-[grain-anim_0.08s_steps(1)_infinite] pointer-events-none" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")", backgroundSize: "256px 256px" }} />
@@ -296,7 +296,7 @@ export default function Home() {
             </Link>
 
             {/* Mid Links */}
-            <ul className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
+            <ul className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#A1A1AA]">
               <li><a href="#features" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Features</a></li>
               <li><Link href="/pricing" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Pricing</Link></li>
               <li><a href="#coach" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">AI Coach</a></li>
@@ -310,14 +310,14 @@ export default function Home() {
               {/* Light/Dark Toggle */}
               <button 
                 onClick={toggleTheme} 
-                className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600"
+                className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-[#A1A1AA]"
                 aria-label="Toggle Theme"
               >
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
               <Link href="/login" className="hidden sm:inline-flex">
-                <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 hover:text-[#09090B] dark:hover:text-white px-3 py-1">
+                <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-slate-600 dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white px-3 py-1">
                   Login
                 </Button>
               </Link>
@@ -369,7 +369,7 @@ export default function Home() {
               {/* Beta Badge Tag */}
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.12] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] dark:shadow-[0_0_12px_rgba(167,139,250,0.15)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#A78BFA] animate-pulse shadow-[0_0_6px_rgba(167,139,250,0.8)]"></span>
-                <span className="text-[10px] font-bold tracking-widest text-[#A1A1AA] dark:text-[#C4B5FD] light:text-slate-500 uppercase">Intelligent Workspace v2.0</span>
+                <span className="text-[10px] font-bold tracking-widest text-[#A1A1AA] dark:text-[#C4B5FD] text-slate-500 uppercase">Intelligent Workspace v2.0</span>
               </div>
 
               {/* Headings: Editorial Instrument Serif */}
@@ -379,7 +379,7 @@ export default function Home() {
               </h1>
 
               {/* Sub-text Description */}
-              <p className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out text-sm md:text-base text-slate-500 dark:text-neutral-300 light:text-slate-600 max-w-xl leading-relaxed">
+              <p className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out text-sm md:text-base text-slate-500 dark:text-neutral-300 text-slate-600 max-w-xl leading-relaxed">
                 AI-powered productivity meets intelligent fitness tracking, habit building, deep analytics, and personal growth in one immersive digital workspace. 
               </p>
 
@@ -448,7 +448,7 @@ export default function Home() {
                       </li>
                       <li className="flex items-center justify-between">
                         <span>💧 3L Hydration</span>
-                        <div className="w-3 h-3 rounded-full border border-slate-200 dark:border-white/20 light:border-slate-300"></div>
+                        <div className="w-3 h-3 rounded-full border border-slate-200 dark:border-white/20 border-slate-300"></div>
                       </li>
                       <li className="flex items-center justify-between">
                         <span>📚 Deep Read</span>
@@ -462,10 +462,10 @@ export default function Home() {
                     <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Focus Block</span>
                     <div className="font-mono text-xl font-extrabold text-[#FDBA74] my-2">25:00</div>
                     <div className="flex gap-2">
-                      <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 light:bg-slate-200 flex items-center justify-center">
-                        <Play className="h-2.5 w-2.5 fill-white dark:fill-white light:fill-slate-800" />
+                      <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 bg-slate-200 flex items-center justify-center">
+                        <Play className="h-2.5 w-2.5 fill-white dark:fill-white fill-slate-800" />
                       </div>
-                      <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 light:bg-slate-200 flex items-center justify-center">
+                      <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 bg-slate-200 flex items-center justify-center">
                         <RotateCcw className="h-2.5 w-2.5 text-neutral-400" />
                       </div>
                     </div>
@@ -506,24 +506,24 @@ export default function Home() {
         <section id="preview" className="relative py-20 max-w-[1280px] mx-auto px-6 md:px-10">
           <div className="text-center mb-12 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#09090B] dark:text-white tracking-tight mb-4">Cockpit Walkthrough</h2>
-            <p className="text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl mx-auto">
+            <p className="text-sm md:text-base text-slate-600 dark:text-[#A1A1AA] max-w-xl mx-auto">
               Click the tabs below to dynamically view the different cockpits inside the ZenithFlow platform.
             </p>
           </div>
 
           {/* Interactive Screen Preview Container */}
-          <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 bg-white dark:bg-[#111114]/50 border border-slate-200 dark:border-white/[0.08] rounded-3xl p-6 shadow-2xl relative">
+          <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 bg-white dark:bg-[#111114]/50 border border-slate-200 dark:border-white/[0.08] rounded-3xl p-4 sm:p-6 shadow-2xl relative">
             
             {/* Header controls matching Prospector mockup style */}
             <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center pb-6 border-b border-slate-100 dark:border-white/[0.08] gap-4 mb-6">
               
               {/* Fake browser control bar */}
-              <div className="flex items-center gap-4 flex-1">
+              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                 {/* Traffic lights */}
                 <div className="flex gap-1.5 shrink-0">
-                  <span className="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E]"></span>
-                  <span className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123]"></span>
-                  <span className="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29]"></span>
+                  <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#FF5F56] border border-[#E0443E]"></span>
+                  <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123]"></span>
+                  <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#27C93F] border border-[#1AAB29]"></span>
                 </div>
                 {/* Back/Forward navigation */}
                 <div className="hidden sm:flex gap-1 shrink-0 text-slate-400 dark:text-neutral-600">
@@ -531,13 +531,13 @@ export default function Home() {
                   <button disabled className="p-1 rounded hover:bg-slate-100 dark:hover:bg-neutral-800 opacity-50 cursor-not-allowed"><ChevronRight className="h-4 w-4" /></button>
                 </div>
                 {/* Modern address bar */}
-                <div className="text-[11px] text-slate-500 dark:text-neutral-400 bg-slate-100 dark:bg-neutral-900/60 border border-slate-200 dark:border-white/5 px-4 py-2 rounded-xl flex items-center justify-between gap-1.5 font-mono flex-1 max-w-md shadow-inner">
-                  <div className="flex items-center gap-2">
+                <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 bg-slate-100 dark:bg-neutral-900/60 border border-slate-200 dark:border-white/5 px-2.5 sm:px-4 py-2 rounded-xl flex items-center justify-between gap-1.5 font-mono flex-1 max-w-md shadow-inner overflow-hidden min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0 truncate">
                     <Lock className="h-3 w-3 text-emerald-500 shrink-0" />
-                    <span className="text-slate-400 dark:text-neutral-500">https://</span>
-                    <span className="text-slate-800 dark:text-white font-semibold">zenithflow.dev</span>
+                    <span className="hidden sm:inline text-slate-400 dark:text-neutral-500">https://</span>
+                    <span className="text-slate-800 dark:text-white font-semibold truncate">zenithflow.dev</span>
                     <span className="text-slate-300 dark:text-neutral-700">/</span>
-                    <span className="text-[#A78BFA] font-bold">{activePreviewTab}</span>
+                    <span className="text-[#A78BFA] font-bold shrink-0">{activePreviewTab}</span>
                   </div>
                   <RotateCcw className="h-3 w-3 text-slate-400 dark:text-neutral-500 cursor-pointer hover:text-[#A78BFA] transition-colors shrink-0" />
                 </div>
@@ -547,15 +547,15 @@ export default function Home() {
               <div className="flex flex-wrap gap-1 bg-slate-100 dark:bg-neutral-900/80 p-1 border border-slate-200/60 dark:border-white/5 rounded-xl shrink-0 relative">
                 {[
                   { id: "ai", label: "💬 AI Assistant" },
-                  { id: "tasks", label: "🎯 Tasks & Schedule" },
-                  { id: "workout", label: "🏋️ Gym Logger" },
-                  { id: "metrics", label: "📊 Key Metrics" },
+                  { id: "tasks", label: "🎯 Tasks" },
+                  { id: "workout", label: "🏋️ Gym" },
+                  { id: "metrics", label: "📊 Metrics" },
                 ].map((t) => (
                   <button
                     key={t.id}
                     onClick={() => setActivePreviewTab(t.id as DashboardTab)}
                     className={cn(
-                      "relative px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-300 z-10",
+                      "relative px-2.5 sm:px-4 py-2 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-300 z-10",
                       activePreviewTab === t.id
                         ? "text-black dark:text-black font-extrabold"
                         : "text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-neutral-200"
@@ -576,7 +576,7 @@ export default function Home() {
             </div>
 
             {/* Inner Dashboard View Renderer */}
-            <div className="min-h-[350px] relative rounded-2xl bg-slate-50/50 dark:bg-neutral-950/65 border border-slate-200/50 dark:border-white/5 p-6">
+            <div className="min-h-[350px] relative rounded-2xl bg-slate-50/50 dark:bg-neutral-950/65 border border-slate-200/50 dark:border-white/5 p-4 sm:p-6">
               
               {/* TAB 1: AI */}
               {activePreviewTab === "ai" && (
@@ -620,7 +620,7 @@ export default function Home() {
                         { title: "Design light mode CSS system", status: "pending" },
                         { title: "Review marketing graphics deck", status: "pending" },
                       ].map((task, i) => (
-                        <div key={i} className="flex justify-between items-center p-3.5 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 rounded-xl">
+                        <div key={i} className="flex justify-between items-center p-3.5 bg-white dark:bg-neutral-900/60 border border-white/5 dark:border-white/5 border-slate-200/50 rounded-xl">
                           <span className="text-[11px] font-semibold text-slate-700 dark:text-neutral-300">{task.title}</span>
                           <span className={cn(
                             "text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full",
@@ -644,7 +644,7 @@ export default function Home() {
                         { time: "12:00 PM", act: "Hypertrophy Push Workout", duration: "60 min" },
                         { time: "03:30 PM", act: "Synchronous Team Sync", duration: "30 min" },
                       ].map((item, i) => (
-                        <div key={i} className="flex justify-between items-center p-3.5 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 rounded-xl">
+                        <div key={i} className="flex justify-between items-center p-3.5 bg-white dark:bg-neutral-900/60 border border-white/5 dark:border-white/5 border-slate-200/50 rounded-xl">
                           <div>
                             <span className="text-[9px] font-mono text-[#A78BFA] block">{item.time}</span>
                             <span className="text-[11px] font-bold text-[#09090B] dark:text-white">{item.act}</span>
@@ -663,14 +663,14 @@ export default function Home() {
                 <div className="space-y-6">
                   
                   {/* Routine Info header */}
-                  <div className="flex justify-between items-center p-4 bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 rounded-xl">
+                  <div className="flex justify-between items-center p-4 bg-white dark:bg-neutral-900/60 border border-white/5 dark:border-white/5 border-slate-200/50 rounded-xl">
                     <div>
                       <h4 className="text-xs font-bold text-[#09090B] dark:text-white">Monday - Chest & Triceps</h4>
                       <span className="text-[9px] text-slate-400 dark:text-neutral-500 mt-1 block uppercase tracking-wider">Volume Target: 5,400 kg</span>
                     </div>
                     
                     {/* Live Timer Controls in Preview */}
-                    <div className="flex items-center gap-3 bg-neutral-950 dark:bg-neutral-950 light:bg-slate-100 px-4 py-1.5 rounded-full border border-white/5 dark:border-white/5 light:border-slate-200">
+                    <div className="flex items-center gap-3 bg-slate-100 dark:bg-neutral-950 px-4 py-1.5 rounded-full border border-white/5 dark:border-white/5 border-slate-200">
                       <button 
                         onClick={() => setTimerActive(!timerActive)}
                         className="h-4 w-4 bg-[#A78BFA] rounded-full flex items-center justify-center text-black"
@@ -687,7 +687,7 @@ export default function Home() {
                       { name: "Incline Dumbbell Press", sets: "4 Sets × 8-10 reps", last: "40kg × 8 reps" },
                       { name: "Flat Barbell Bench Press", sets: "3 Sets × 6-8 reps", last: "100kg × 7 reps" },
                     ].map((ex, i) => (
-                      <div key={i} className="bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 p-4 rounded-xl space-y-2">
+                      <div key={i} className="bg-white dark:bg-neutral-900/60 border border-white/5 dark:border-white/5 border-slate-200/50 p-4 rounded-xl space-y-2">
                         <div className="flex justify-between items-start">
                           <span className="text-[11px] font-bold text-[#09090B] dark:text-white">{ex.name}</span>
                           <span className="text-[9px] text-slate-400 dark:text-neutral-500">{ex.sets}</span>
@@ -712,12 +712,12 @@ export default function Home() {
                     { label: "Workout Volume", val: "4,800 kg completed", progress: "100%" },
                     { label: "Task Completion", val: "4 / 5 completed", progress: "80%" },
                   ].map((m, i) => (
-                    <div key={i} className="bg-neutral-900/60 dark:bg-neutral-900/60 light:bg-white border border-white/5 dark:border-white/5 light:border-slate-200/50 p-4 rounded-xl space-y-3">
+                    <div key={i} className="bg-white dark:bg-neutral-900/60 border border-white/5 dark:border-white/5 border-slate-200/50 p-4 rounded-xl space-y-3">
                       <span className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">{m.label}</span>
                       <span className="text-sm font-extrabold text-[#09090B] dark:text-white block">{m.val}</span>
                       
                       <div className="space-y-1 pt-1">
-                        <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden border border-white/5 dark:border-white/5 light:border-slate-200">
+                        <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden border border-white/5 dark:border-white/5 border-slate-200">
                           <div className="h-full bg-gradient-to-r from-[#A78BFA] to-[#F9A8D4]" style={{ width: m.progress }} />
                         </div>
                         <span className="text-[8px] text-slate-400 dark:text-neutral-500 font-mono flex justify-end">{m.progress}</span>
@@ -737,7 +737,7 @@ export default function Home() {
           
           <div className="text-center mb-16 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#09090B] dark:text-white tracking-tight mb-4">Precision Engineering for the Mind & Body</h2>
-            <p className="text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl mx-auto">
+            <p className="text-sm md:text-base text-slate-600 dark:text-[#A1A1AA] max-w-xl mx-auto">
               Seamlessly integrate your physical habits and mental focus using our custom glassmorphism dashboard modules.
             </p>
           </div>
@@ -745,64 +745,64 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
             {/* Card 1: AI Coach */}
-            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col justify-between group hover:border-[#A78BFA]/30 dark:hover:border-[#A78BFA]/30 light:hover:border-[#A78BFA]/50 transition-all duration-500 relative overflow-hidden shadow-2xl">
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col justify-between group hover:border-[#A78BFA]/30 dark:hover:border-[#A78BFA]/30 hover:border-[#A78BFA]/50 transition-all duration-500 relative overflow-hidden shadow-2xl">
               {/* Highlight line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#A78BFA]/30 to-transparent"></div>
               
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-neutral-900 light:bg-slate-100 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 text-[#A78BFA]">
+                <div className="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-neutral-900 bg-slate-100 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 text-[#A78BFA]">
                   <Brain className="h-5 w-5" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3">AI Coach</h3>
-                <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 leading-relaxed">
+                <p className="text-xs md:text-sm text-slate-600 dark:text-[#A1A1AA] leading-relaxed">
                   Personalized suggestions powered by intelligent reasoning. Syncs metrics dynamically.
                 </p>
               </div>
 
               {/* Glowing decorative connection points */}
-              <div className="mt-8 pt-4 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-100 flex items-center justify-between text-[10px] text-neutral-500 font-semibold font-mono">
+              <div className="mt-8 pt-4 border-t border-white/5 dark:border-t-white/5 border-t-slate-100 flex items-center justify-between text-[10px] text-neutral-500 font-semibold font-mono">
                 <span>INTEL. SYSTEM</span>
                 <span className="text-[#A78BFA]">01_REASONING</span>
               </div>
             </div>
 
             {/* Card 2: Smart Analytics */}
-            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col justify-between group hover:border-[#F9A8D4]/30 dark:hover:border-[#F9A8D4]/30 light:hover:border-[#F9A8D4]/50 transition-all duration-500 relative overflow-hidden shadow-2xl">
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col justify-between group hover:border-[#F9A8D4]/30 dark:hover:border-[#F9A8D4]/30 hover:border-[#F9A8D4]/50 transition-all duration-500 relative overflow-hidden shadow-2xl">
               {/* Highlight line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#F9A8D4]/30 to-transparent"></div>
               
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-neutral-900 light:bg-slate-100 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 text-[#F9A8D4]">
+                <div className="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-neutral-900 bg-slate-100 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 text-[#F9A8D4]">
                   <Activity className="h-5 w-5" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Smart Analytics</h3>
-                <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 leading-relaxed">
+                <p className="text-xs md:text-sm text-slate-600 dark:text-[#A1A1AA] leading-relaxed">
                   Visual insights into productivity, health, and focus. Maps sleep vectors and HRV trends.
                 </p>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-100 flex items-center justify-between text-[10px] text-neutral-500 font-semibold font-mono">
+              <div className="mt-8 pt-4 border-t border-white/5 dark:border-t-white/5 border-t-slate-100 flex items-center justify-between text-[10px] text-neutral-500 font-semibold font-mono">
                 <span>GRAPH VECTORS</span>
                 <span className="text-[#F9A8D4]">02_BIOMETRICS</span>
               </div>
             </div>
 
             {/* Card 3: Habit Engine */}
-            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col justify-between group hover:border-[#FDBA74]/30 dark:hover:border-[#FDBA74]/30 light:hover:border-[#FDBA74]/50 transition-all duration-500 relative overflow-hidden shadow-2xl">
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col justify-between group hover:border-[#FDBA74]/30 dark:hover:border-[#FDBA74]/30 hover:border-[#FDBA74]/50 transition-all duration-500 relative overflow-hidden shadow-2xl">
               {/* Highlight line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#FDBA74]/30 to-transparent"></div>
               
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-neutral-900 light:bg-slate-100 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 text-[#FDBA74]">
+                <div className="w-12 h-12 rounded-2xl bg-neutral-900 dark:bg-neutral-900 bg-slate-100 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 text-[#FDBA74]">
                   <Calendar className="h-5 w-5" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Habit Engine</h3>
-                <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 leading-relaxed">
+                <p className="text-xs md:text-sm text-slate-600 dark:text-[#A1A1AA] leading-relaxed">
                   Build consistent routines with adaptive AI reminders. Keeps you focused day-by-day.
                 </p>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-100 flex items-center justify-between text-[10px] text-neutral-500 font-semibold font-mono">
+              <div className="mt-8 pt-4 border-t border-white/5 dark:border-t-white/5 border-t-slate-100 flex items-center justify-between text-[10px] text-neutral-500 font-semibold font-mono">
                 <span>CORE SCHEDULER</span>
                 <span className="text-[#FDBA74]">03_ROUTINES</span>
               </div>
@@ -812,7 +812,7 @@ export default function Home() {
         </section>
 
         {/* 4. METRICS / STATS SECTION */}
-        <section className="relative py-20 border-y border-white/[0.05] dark:border-white/[0.05] light:border-slate-200 bg-[#111114]/30 dark:bg-[#111114]/30 light:bg-slate-100/50 backdrop-blur-md">
+        <section className="relative py-20 border-y border-white/[0.05] dark:border-white/[0.05] border-slate-200 bg-[#111114]/30 dark:bg-[#111114]/30 bg-slate-100/50 backdrop-blur-md">
           <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
               
@@ -844,7 +844,7 @@ export default function Home() {
         <section className="relative py-24 max-w-[1280px] mx-auto px-6 md:px-10">
           <div className="text-center mb-16 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#09090B] dark:text-white tracking-tight mb-4">Early Adopter Acclaim</h2>
-            <p className="text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl mx-auto">
+            <p className="text-sm md:text-base text-slate-600 dark:text-[#A1A1AA] max-w-xl mx-auto">
               What our private beta users are saying about utilizing ZenithFlow ahead of the public launch.
             </p>
           </div>
@@ -881,8 +881,8 @@ export default function Home() {
                   </p>
                 </div>
                 
-                <div className="mt-8 flex items-center gap-3 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-100 pt-4">
-                  <div className="w-8 h-8 rounded-full bg-neutral-800 dark:bg-neutral-800 light:bg-slate-200 flex items-center justify-center font-bold text-xs text-[#A78BFA] font-mono">
+                <div className="mt-8 flex items-center gap-3 border-t border-white/5 dark:border-t-white/5 border-t-slate-100 pt-4">
+                  <div className="w-8 h-8 rounded-full bg-neutral-800 dark:bg-neutral-800 bg-slate-200 flex items-center justify-center font-bold text-xs text-[#A78BFA] font-mono">
                     {t.author.split(" ").map(n => n[0]).join("")}
                   </div>
                   <div>
@@ -902,7 +902,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#09090B] dark:text-white tracking-tight mb-4">Predictable Subscription Packages</h2>
             
             {/* Toggle yearly */}
-            <div className="inline-flex items-center gap-3 bg-slate-100 dark:bg-neutral-900/60 border border-white/5 dark:border-white/5 light:border-slate-200 px-3.5 py-1.5 rounded-full mt-4">
+            <div className="inline-flex items-center gap-3 bg-slate-100 dark:bg-neutral-900/60 border border-white/5 dark:border-white/5 border-slate-200 px-3.5 py-1.5 rounded-full mt-4">
               <button 
                 onClick={() => setIsYearly(false)}
                 className={cn("px-3.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all", !isYearly ? "bg-white text-black" : "text-neutral-500")}
@@ -935,14 +935,14 @@ export default function Home() {
               </div>
 
               <Link href="/register" className="mt-8">
-                <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white light:text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 light:border-slate-200">
+                <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200">
                   Deploy Starter
                 </button>
               </Link>
             </div>
 
             {/* Pro Plan (Highlighted + glowing purple ambient lighting) */}
-            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 bg-white dark:bg-[#111114]/80 border border-[#A78BFA]/30 dark:border-[#A78BFA]/30 light:border-[#A78BFA]/50 rounded-[24px] p-8 flex flex-col justify-between shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] dark:shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] light:shadow-[0_20px_40px_rgba(167,139,250,0.15)] relative">
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 bg-white dark:bg-[#111114]/80 border border-[#A78BFA]/30 dark:border-[#A78BFA]/30 border-[#A78BFA]/50 rounded-[24px] p-8 flex flex-col justify-between shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] dark:shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] shadow-[0_20px_40px_rgba(167,139,250,0.15)] relative">
               
               {/* Highlight Label Badge */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#A78BFA] to-[#F9A8D4] text-black text-[9px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full border border-white/20">
@@ -983,7 +983,7 @@ export default function Home() {
               </div>
 
               <Link href="/register" className="mt-8">
-                <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white light:text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 light:border-slate-200">
+                <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200">
                   Deploy Enterprise
                 </button>
               </Link>
