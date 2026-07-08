@@ -379,22 +379,58 @@ export default function PricingPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-700 dark:text-neutral-300">
                   <tr>
-                    <td className="py-4 font-medium">Workout Logging</td>
-                    <td className="py-4 text-neutral-400">Basic</td>
-                    <td className="py-4 font-bold">Unlimited</td>
-                    <td className="py-4 font-bold">Unlimited</td>
+                    <td className="py-4 font-medium">Workout &amp; Biomechanical Logging</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">Basic (7 days)</td>
+                    <td className="py-4 font-bold text-[#A78BFA]">Unlimited</td>
+                    <td className="py-4 font-bold text-slate-800 dark:text-white">Unlimited</td>
                   </tr>
                   <tr>
-                    <td className="py-4 font-medium">AI Insights</td>
-                    <td className="py-4 text-neutral-400">—</td>
-                    <td className="py-4"><Check className="h-4 w-4 text-[#A78BFA]" /></td>
-                    <td className="py-4"><Check className="h-4 w-4 text-[#A78BFA]" /></td>
+                    <td className="py-4 font-medium">AI Focus Coach Cognitive Insights</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">Basic (1 evaluation/day)</td>
+                    <td className="py-4 font-bold text-[#A78BFA]">Advanced (Llama-3.3)</td>
+                    <td className="py-4 font-bold text-slate-800 dark:text-white">Custom Model Access</td>
                   </tr>
                   <tr>
-                    <td className="py-4 font-medium">1-on-1 Coaching</td>
-                    <td className="py-4 text-neutral-400">—</td>
-                    <td className="py-4 text-neutral-400">—</td>
+                    <td className="py-4 font-medium">Calorie &amp; Macro Nutrition Tracker</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">Manual Logging</td>
+                    <td className="py-4 font-bold text-[#A78BFA]">Automated AI Scanning</td>
+                    <td className="py-4 font-bold text-slate-800 dark:text-white">Dedicated Nutritionist</td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-medium">Sprint Task Planner &amp; OKR Goals</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">Standard (5 Active)</td>
+                    <td className="py-4 font-bold text-[#A78BFA]">Unlimited Sprints</td>
+                    <td className="py-4 font-bold text-slate-800 dark:text-white">Team Workspaces</td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-medium">Historical Analytics &amp; Heatmaps</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">7 Days History</td>
+                    <td className="py-4 font-bold text-[#A78BFA]">Full History Access</td>
+                    <td className="py-4 font-bold text-slate-800 dark:text-white">Full History Access</td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-medium">Multi-device Cloud Synchronization</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">—</td>
                     <td className="py-4"><Check className="h-4 w-4 text-[#A78BFA]" /></td>
+                    <td className="py-4"><Check className="h-4 w-4 text-slate-800 dark:text-white" /></td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-medium">Custom Biomechanical Protocols</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">—</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">—</td>
+                    <td className="py-4 font-bold text-slate-800 dark:text-white">Custom Program Draft</td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-medium">1-on-1 Personalized Coaching</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">—</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">—</td>
+                    <td className="py-4 font-bold text-slate-800 dark:text-white">Live Weekly Sessions</td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-medium">Priority Support Response</td>
+                    <td className="py-4 text-slate-400 dark:text-neutral-500">Standard Email</td>
+                    <td className="py-4 font-bold text-[#A78BFA]">Priority Email</td>
+                    <td className="py-4 font-bold text-slate-800 dark:text-white">Dedicated Slack Channel</td>
                   </tr>
                 </tbody>
               </table>
