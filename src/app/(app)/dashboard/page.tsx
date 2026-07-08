@@ -77,11 +77,18 @@ export default function DashboardPage() {
       }
 
       try {
-        // Fetch food
+        // Build today's local date range (midnight → midnight, local time → ISO)
+        const nowLocal = new Date();
+        const todayStart = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), nowLocal.getDate(), 0, 0, 0, 0).toISOString();
+        const todayEnd   = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), nowLocal.getDate(), 23, 59, 59, 999).toISOString();
+
+        // Fetch TODAY's food
         const { data: foodData, error: foodError } = await supabase
           .from("food_logs")
           .select("calories, created_at")
-          .eq("profile_id", activeProfileId);
+          .eq("profile_id", activeProfileId)
+          .gte("created_at", todayStart)
+          .lte("created_at", todayEnd);
 
         let totalCal = 0;
         if (foodData && !foodError && foodData.length > 0) {
@@ -89,11 +96,13 @@ export default function DashboardPage() {
         }
         setCaloriesConsumed(totalCal);
 
-        // Fetch water
+        // Fetch TODAY's water
         const { data: waterData, error: waterError } = await supabase
           .from("water_logs")
           .select("amount_liters, created_at")
-          .eq("profile_id", activeProfileId);
+          .eq("profile_id", activeProfileId)
+          .gte("created_at", todayStart)
+          .lte("created_at", todayEnd);
 
         let totalWater = 0;
         if (waterData && !waterError && waterData.length > 0) {
@@ -101,11 +110,13 @@ export default function DashboardPage() {
         }
         setWaterConsumed(Number(totalWater.toFixed(2)));
 
-        // Fetch workouts
+        // Fetch TODAY's workouts
         const { data: workoutsData, error: workoutsError } = await supabase
           .from("gym_workouts")
           .select("id, start_time")
-          .eq("profile_id", activeProfileId);
+          .eq("profile_id", activeProfileId)
+          .gte("start_time", todayStart)
+          .lte("start_time", todayEnd);
 
         let totalWorkoutsTime = 0;
         if (workoutsData && !workoutsError && workoutsData.length > 0) {
@@ -113,19 +124,29 @@ export default function DashboardPage() {
         }
         setWorkoutMinutes(totalWorkoutsTime);
 
-        // Fetch tasks
+        // Fetch TODAY's tasks (active) + ALL tasks for completion ratio
         const { data: tasksData, error: tasksError } = await supabase
           .from("tasks")
           .select("id, title, status, created_at")
+          .eq("profile_id", activeProfileId)
+          .gte("created_at", todayStart)
+          .lte("created_at", todayEnd);
+
+        // Also fetch all-time tasks for completion score (not just today)
+        const { data: allTasksData } = await supabase
+          .from("tasks")
+          .select("id, status")
           .eq("profile_id", activeProfileId);
 
         let completedTasks = 0;
         let totalTasksCount = 0;
 
+        if (allTasksData) {
+          totalTasksCount = allTasksData.length;
+          completedTasks = allTasksData.filter(t => t.status === "completed").length;
+        }
+
         if (tasksData && !tasksError) {
-          totalTasksCount = tasksData.length;
-          completedTasks = tasksData.filter(t => t.status === "completed").length;
-          
           const activeTasks = tasksData.filter(t => t.status !== "completed").slice(0, 3);
           setTodoList(activeTasks.map(t => ({
             id: t.id,
