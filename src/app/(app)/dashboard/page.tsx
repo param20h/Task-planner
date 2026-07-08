@@ -77,70 +77,79 @@ export default function DashboardPage() {
       }
 
       try {
-        // Build today's local date range (midnight → midnight, local time → ISO)
-        const nowLocal = new Date();
-        const todayStart = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), nowLocal.getDate(), 0, 0, 0, 0).toISOString();
-        const todayEnd   = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), nowLocal.getDate(), 23, 59, 59, 999).toISOString();
-
-        // Fetch TODAY's food
+        // Fetch ALL food logs
         const { data: foodData, error: foodError } = await supabase
           .from("food_logs")
           .select("calories, created_at")
-          .eq("profile_id", activeProfileId)
-          .gte("created_at", todayStart)
-          .lte("created_at", todayEnd);
+          .eq("profile_id", activeProfileId);
 
-        let totalCal = 0;
-        if (foodData && !foodError && foodData.length > 0) {
-          totalCal = foodData.reduce((sum, item) => sum + item.calories, 0);
-        }
-        setCaloriesConsumed(totalCal);
-
-        // Fetch TODAY's water
+        // Fetch ALL water logs
         const { data: waterData, error: waterError } = await supabase
           .from("water_logs")
           .select("amount_liters, created_at")
-          .eq("profile_id", activeProfileId)
-          .gte("created_at", todayStart)
-          .lte("created_at", todayEnd);
+          .eq("profile_id", activeProfileId);
 
-        let totalWater = 0;
-        if (waterData && !waterError && waterData.length > 0) {
-          totalWater = waterData.reduce((sum, item) => sum + Number(item.amount_liters), 0);
-        }
-        setWaterConsumed(Number(totalWater.toFixed(2)));
-
-        // Fetch TODAY's workouts
+        // Fetch ALL workouts
         const { data: workoutsData, error: workoutsError } = await supabase
           .from("gym_workouts")
           .select("id, start_time")
-          .eq("profile_id", activeProfileId)
-          .gte("start_time", todayStart)
-          .lte("start_time", todayEnd);
+          .eq("profile_id", activeProfileId);
 
-        let totalWorkoutsTime = 0;
-        if (workoutsData && !workoutsError && workoutsData.length > 0) {
-          totalWorkoutsTime = workoutsData.length * 45;
-        }
-        setWorkoutMinutes(totalWorkoutsTime);
-
-        // Fetch TODAY's tasks (active)
+        // Fetch ALL tasks
         const { data: tasksData, error: tasksError } = await supabase
           .from("tasks")
           .select("id, title, status, created_at")
-          .eq("profile_id", activeProfileId)
-          .gte("created_at", todayStart)
-          .lte("created_at", todayEnd);
+          .eq("profile_id", activeProfileId);
 
+        // Build today's local date range (midnight → midnight, local time)
+        const nowLocal = new Date();
+        const todayStartMs = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), nowLocal.getDate(), 0, 0, 0, 0).getTime();
+        const todayEndMs   = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), nowLocal.getDate(), 23, 59, 59, 999).getTime();
+
+        const isToday = (dateStr: string) => {
+          if (!dateStr) return false;
+          const time = new Date(dateStr).getTime();
+          return time >= todayStartMs && time <= todayEndMs;
+        };
+
+        // Filter TODAY's metrics
+        const todayFood = foodData?.filter(f => f.created_at && isToday(f.created_at)) || [];
+        const todayWater = waterData?.filter(w => w.created_at && isToday(w.created_at)) || [];
+        const todayWorkouts = workoutsData?.filter(w => w.start_time && isToday(w.start_time)) || [];
+        const todayTasks = tasksData?.filter(t => t.created_at && isToday(t.created_at)) || [];
+
+        // Sum up today's quantities
+        let totalCal = 0;
+        if (todayFood.length > 0) {
+          totalCal = todayFood.reduce((sum, item) => sum + item.calories, 0);
+        }
+        setCaloriesConsumed(totalCal);
+
+        let totalWater = 0;
+        if (todayWater.length > 0) {
+          totalWater = todayWater.reduce((sum, item) => sum + Number(item.amount_liters), 0);
+        }
+        setWaterConsumed(Number(totalWater.toFixed(2)));
+
+        let totalWorkoutsTime = 0;
+        if (todayWorkouts.length > 0) {
+          totalWorkoutsTime = todayWorkouts.length * 45;
+        }
+        setWorkoutMinutes(totalWorkoutsTime);
+
+        // Compute today's tasks score
         let completedTasks = 0;
         let totalTasksCount = 0;
 
+        if (todayTasks.length > 0) {
+          totalTasksCount = todayTasks.length;
+          completedTasks = todayTasks.filter(t => t.status === "completed").length;
+        }
+
+        // Set the checklist with pending tasks from all time (so older tasks can be completed)
         if (tasksData && !tasksError) {
-          totalTasksCount = tasksData.length;
-          completedTasks = tasksData.filter(t => t.status === "completed").length;
-          
-          const activeTasks = tasksData.filter(t => t.status !== "completed").slice(0, 3);
-          setTodoList(activeTasks.map(t => ({
+          const activeTasksAllTime = tasksData.filter(t => t.status !== "completed").slice(0, 3);
+          setTodoList(activeTasksAllTime.map(t => ({
             id: t.id,
             title: t.title,
             completed: false
@@ -149,11 +158,15 @@ export default function DashboardPage() {
           setTodoList([]);
         }
 
-        // Build contribution heatmap map from actual DB timestamps
+        // Build contribution heatmap map from actual DB timestamps (historical)
         const dateMap: Record<string, number> = {};
         const addDate = (dateStr: string) => {
           if (!dateStr) return;
-          const dateOnly = dateStr.split("T")[0]; // YYYY-MM-DD
+          const d = new Date(dateStr);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          const dateOnly = `${year}-${month}-${day}`;
           dateMap[dateOnly] = (dateMap[dateOnly] || 0) + 1;
         };
 
@@ -173,7 +186,7 @@ export default function DashboardPage() {
         for (let i = 0; i < 7; i++) {
           const d = new Date(startOfWeek);
           d.setDate(startOfWeek.getDate() + i);
-          const dateStr = d.toISOString().split("T")[0];
+          const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
           scores[i] = dateMap[dateStr] || 0;
         }
         setWeeklyScores(scores);
