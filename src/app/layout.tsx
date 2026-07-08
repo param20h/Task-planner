@@ -18,8 +18,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ZenithFlow",
+  title: "ZenithFlow — Intelligent Workspace",
   description: "Your AI-powered personal productivity OS.",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png", sizes: "64x64" },
+    ],
+    apple: "/favicon.png",
+    shortcut: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
