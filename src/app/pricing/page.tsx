@@ -208,20 +208,20 @@ export default function PricingPage() {
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
-              <Link href="/login">
+              <Link href="/login" className="hidden sm:inline-flex">
                 <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-slate-500 dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white px-3 py-1">
                   Login
                 </Button>
               </Link>
               
-              <Link href="/register">
+              <Link href="/register" className="hidden sm:inline-flex">
                 <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_15px_rgba(167,139,250,0.3)]">
                   Register
                 </button>
               </Link>
 
               {/* Mobile hamburger menu */}
-              <button className="lg:hidden text-slate-600 dark:text-neutral-400 ml-1" onClick={() => setMenuOpen(!menuOpen)}>
+              <button className="lg:hidden text-slate-600 dark:text-neutral-400 ml-2" onClick={() => setMenuOpen(!menuOpen)}>
                 <Menu className="h-5 w-5" />
               </button>
             </div>
