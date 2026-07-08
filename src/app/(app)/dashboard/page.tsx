@@ -124,7 +124,7 @@ export default function DashboardPage() {
         }
         setWorkoutMinutes(totalWorkoutsTime);
 
-        // Fetch TODAY's tasks (active) + ALL tasks for completion ratio
+        // Fetch TODAY's tasks (active)
         const { data: tasksData, error: tasksError } = await supabase
           .from("tasks")
           .select("id, title, status, created_at")
@@ -132,21 +132,13 @@ export default function DashboardPage() {
           .gte("created_at", todayStart)
           .lte("created_at", todayEnd);
 
-        // Also fetch all-time tasks for completion score (not just today)
-        const { data: allTasksData } = await supabase
-          .from("tasks")
-          .select("id, status")
-          .eq("profile_id", activeProfileId);
-
         let completedTasks = 0;
         let totalTasksCount = 0;
 
-        if (allTasksData) {
-          totalTasksCount = allTasksData.length;
-          completedTasks = allTasksData.filter(t => t.status === "completed").length;
-        }
-
         if (tasksData && !tasksError) {
+          totalTasksCount = tasksData.length;
+          completedTasks = tasksData.filter(t => t.status === "completed").length;
+          
           const activeTasks = tasksData.filter(t => t.status !== "completed").slice(0, 3);
           setTodoList(activeTasks.map(t => ({
             id: t.id,
