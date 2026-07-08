@@ -1046,7 +1046,7 @@ export default function Home() {
               </div>
 
               {/* Product Column */}
-              <div className="lg:col-span-2 lg:col-start-7 space-y-4">
+              <div className="lg:col-span-3 lg:col-start-7 space-y-4">
                 <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Product</h4>
                 <ul className="space-y-3 text-xs font-medium text-slate-500 dark:text-neutral-400">
                   <li><a href="#features" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-200">Features</a></li>
@@ -1057,24 +1057,13 @@ export default function Home() {
               </div>
 
               {/* Resources Column */}
-              <div className="lg:col-span-2 space-y-4">
+              <div className="lg:col-span-3 space-y-4">
                 <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Resources</h4>
                 <ul className="space-y-3 text-xs font-medium text-slate-500 dark:text-neutral-400">
                   <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Documentation</a></li>
                   <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Tutorials</a></li>
                   <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Blog</a></li>
                   <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Support</a></li>
-                </ul>
-              </div>
-
-              {/* Company Column */}
-              <div className="lg:col-span-2 space-y-4">
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Company</h4>
-                <ul className="space-y-3 text-xs font-medium text-slate-500 dark:text-neutral-400">
-                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">About</a></li>
-                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Careers</a></li>
-                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Contact</a></li>
-                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Partners</a></li>
                 </ul>
               </div>
             </div>
@@ -1086,8 +1075,8 @@ export default function Home() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-neutral-500 font-medium">
               <span>© 2026 ZenithFlow. All rights reserved.</span>
               <div className="flex gap-6">
-                <a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Privacy Policy</a>
-                <a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Terms of Service</a>
+                <Link href="/privacy" className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Terms of Service</Link>
                 <a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Cookies Settings</a>
               </div>
             </div>
