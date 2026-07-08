@@ -16,15 +16,11 @@ interface SidebarContextProps {
   animate: boolean;
 }
 
-const SidebarContext = createContext<SidebarContextProps | undefined>(
-  undefined
-);
+const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
-  if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider");
-  }
+  if (!context) throw new Error("useSidebar must be used within a SidebarProvider");
   return context;
 };
 
@@ -40,12 +36,11 @@ export const SidebarProvider = ({
   animate?: boolean;
 }) => {
   const [openState, setOpenState] = useState(false);
-
   const open = openProp !== undefined ? openProp : openState;
   const setOpen = setOpenProp !== undefined ? setOpenProp : setOpenState;
 
   return (
-    <SidebarContext.Provider value={{ open, setOpen, animate: animate }}>
+    <SidebarContext.Provider value={{ open, setOpen, animate }}>
       {children}
     </SidebarContext.Provider>
   );
@@ -84,27 +79,28 @@ export const DesktopSidebar = ({
   ...props
 }: React.ComponentProps<typeof motion.div>) => {
   const { open, setOpen, animate } = useSidebar();
+
   return (
-    <>
-      <motion.div
-        className={cn(
-          "h-full px-4 py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[260px] shrink-0",
-          className
-        )}
-        animate={{
-          width: animate ? (open ? "260px" : "72px") : "260px",
-        }}
-        transition={{
-          duration: 0.25,
-          ease: "easeInOut",
-        }}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        {...props}
-      >
-        {children}
-      </motion.div>
-    </>
+    <motion.div
+      className={cn(
+        "h-full py-4 hidden md:flex md:flex-col shrink-0 overflow-hidden",
+        className
+      )}
+      animate={{
+        width: animate ? (open ? "220px" : "64px") : "220px",
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 280,
+        damping: 28,
+        mass: 0.8,
+      }}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      {...props}
+    >
+      {children}
+    </motion.div>
   );
 };
 
@@ -118,7 +114,7 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden  items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
+          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-neutral-100 dark:bg-neutral-800 w-full"
         )}
         {...props}
       >
@@ -135,8 +131,9 @@ export const MobileSidebar = ({
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: "-100%", opacity: 0 }}
               transition={{
-                duration: 0.3,
-                ease: "easeInOut",
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
               }}
               className={cn(
                 "fixed h-full w-full inset-0 bg-white dark:bg-neutral-900 p-10 z-[100] flex flex-col justify-between",
@@ -167,31 +164,42 @@ export const SidebarLink = ({
   className?: string;
 }) => {
   const { open, animate } = useSidebar();
+
   return (
     <a
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-2  group/sidebar py-2",
+        "flex items-center gap-2 group/sidebar py-2 relative",
         className
       )}
       {...props}
     >
-      {link.icon}
-
-      <motion.span
-        animate={{
-          width: animate ? (open ? "140px" : "0px") : "auto",
-          opacity: animate ? (open ? 1 : 0) : 1,
-          marginLeft: animate ? (open ? "8px" : "0px") : "8px",
-        }}
-        transition={{
-          duration: 0.25,
-          ease: "easeInOut",
-        }}
-        className="text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0 overflow-hidden"
+      <motion.div
+        className="shrink-0 flex items-center justify-center"
+        whileHover={{ scale: 1.08 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
-        {link.label}
-      </motion.span>
+        {link.icon}
+      </motion.div>
+
+      <AnimatePresence mode="wait">
+        {(animate ? open : true) && (
+          <motion.span
+            key="label"
+            initial={{ opacity: 0, x: -6, width: 0 }}
+            animate={{ opacity: 1, x: 0, width: "auto" }}
+            exit={{ opacity: 0, x: -4, width: 0 }}
+            transition={{
+              opacity: { duration: 0.18, ease: "easeOut" },
+              x: { type: "spring", stiffness: 350, damping: 28 },
+              width: { duration: 0.22, ease: [0.4, 0, 0.2, 1] },
+            }}
+            className="text-sm whitespace-nowrap overflow-hidden inline-block !p-0 !m-0"
+          >
+            {link.label}
+          </motion.span>
+        )}
+      </AnimatePresence>
     </a>
   );
 };

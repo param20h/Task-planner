@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutGrid,
   Calendar,
@@ -18,40 +19,37 @@ import {
   Sun,
   Moon
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 
-const Logo = () => {
+const Logo = ({ open }: { open: boolean }) => {
   return (
     <Link
       href="/dashboard"
-      className="relative z-20 flex items-center space-x-3 py-2 px-1 font-normal"
+      className="relative z-20 flex items-center space-x-2 py-2 px-1 font-normal overflow-hidden"
     >
       <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-lg shadow-sm border border-slate-200 dark:border-white/10">
         <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="28px" className="object-cover" />
       </div>
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-bold text-xl tracking-tight"
-      >
-        <span className="text-[#09090B] dark:text-white">zenith</span>
-        <span className="text-[#A78BFA]">flow</span>
-      </motion.span>
-    </Link>
-  );
-};
-
-const LogoIcon = () => {
-  return (
-    <Link
-      href="/dashboard"
-      className="relative z-20 flex items-center space-x-3 py-2 px-1 font-normal"
-    >
-      <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-lg shadow-sm border border-slate-200 dark:border-white/10">
-        <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="28px" className="object-cover" />
-      </div>
+      <AnimatePresence mode="wait">
+        {open && (
+          <motion.span
+            key="logotext"
+            initial={{ opacity: 0, x: -8, width: 0 }}
+            animate={{ opacity: 1, x: 0, width: "auto" }}
+            exit={{ opacity: 0, x: -6, width: 0 }}
+            transition={{
+              opacity: { duration: 0.15, ease: "easeOut" },
+              x: { type: "spring", stiffness: 350, damping: 28 },
+              width: { duration: 0.2, ease: [0.4, 0, 0.2, 1] },
+            }}
+            className="font-bold text-xl tracking-tight whitespace-nowrap overflow-hidden"
+          >
+            <span className="text-[#09090B] dark:text-white">zenith</span>
+            <span className="text-[#A78BFA]">flow</span>
+          </motion.span>
+        )}
+      </AnimatePresence>
     </Link>
   );
 };
@@ -197,11 +195,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="hidden md:flex flex-none z-20">
         <Sidebar open={open} setOpen={setOpen}>
           <SidebarBody className={cn(
-            "justify-between gap-10 bg-[#0D0D0E]/80 dark:bg-[#0D0D0E]/80 light:bg-white border-r border-slate-200 dark:border-white/5 shadow-2xl transition-all duration-300",
-            open ? "px-4" : "px-2"
+            "justify-between gap-10 bg-[#0D0D0E]/80 dark:bg-[#0D0D0E]/80 light:bg-white border-r border-slate-200 dark:border-white/5 shadow-2xl px-3"
           )}>
             <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-              {open ? <Logo /> : <LogoIcon />}
+              <Logo open={open} />
               <div className="mt-8 flex flex-col gap-1.5">
                 {links.map((link, idx) => (
                   <SidebarLink
