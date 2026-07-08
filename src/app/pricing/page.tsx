@@ -188,7 +188,7 @@ export default function PricingPage() {
             </Link>
 
             {/* Mid Links */}
-            <ul className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
+            <ul className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#A1A1AA]">
               <li><Link href="/#features" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Features</Link></li>
               <li><Link href="/pricing" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Pricing</Link></li>
               <li><Link href="/#coach" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">AI Coach</Link></li>
@@ -202,14 +202,14 @@ export default function PricingPage() {
               {/* Light/Dark Toggle */}
               <button 
                 onClick={toggleTheme} 
-                className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600"
+                className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-500 dark:text-[#A1A1AA]"
                 aria-label="Toggle Theme"
               >
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
               <Link href="/login">
-                <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 hover:text-[#09090B] dark:hover:text-white px-3 py-1">
+                <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-slate-500 dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white px-3 py-1">
                   Login
                 </Button>
               </Link>
@@ -254,12 +254,12 @@ export default function PricingPage() {
         <section className="relative py-24 max-w-[1280px] mx-auto px-6 md:px-10">
           <div className="text-center mb-16 reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out">
             <h1 className="text-5xl md:text-6.5xl font-serif tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-[#09090B] via-[#09090B] to-slate-700 dark:from-white dark:via-white dark:to-white mb-6">Choose Your Velocity</h1>
-            <p className="text-sm md:text-base text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-600 max-w-xl mx-auto mb-10 leading-relaxed">
+            <p className="text-sm md:text-base text-slate-500 dark:text-[#A1A1AA] max-w-xl mx-auto mb-10 leading-relaxed">
               Invest in your potential. Select the protocol that aligns with your performance goals.
             </p>
 
             {/* Monthly / Yearly Toggle */}
-            <div className="inline-flex items-center gap-4 bg-slate-100 dark:bg-neutral-900/60 border border-white/5 dark:border-white/5 light:border-slate-200 px-3.5 py-1.5 rounded-full backdrop-blur-xl">
+            <div className="inline-flex items-center gap-4 bg-slate-100 dark:bg-neutral-900/60 border border-slate-200 dark:border-white/5 px-3.5 py-1.5 rounded-full backdrop-blur-xl">
               <button 
                 onClick={() => setIsYearly(false)}
                 className={cn(
@@ -293,13 +293,13 @@ export default function PricingPage() {
                 <p className="text-xs text-neutral-400 mb-6 h-10">Core tracking for habits and simple workouts.</p>
                 <span className="text-3xl font-black text-slate-800 dark:text-white">{basePrice}</span>
               </div>
-              <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-neutral-300 dark:text-neutral-300 light:text-slate-600">
+              <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-slate-600 dark:text-neutral-300">
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Basic workout logging</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> 7-day history</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Standard metrics</li>
               </ul>
               <Link href="/register">
-                <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-white dark:text-white light:text-slate-700 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
+                <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
                   Start Free
                 </button>
               </Link>
@@ -307,7 +307,7 @@ export default function PricingPage() {
 
             {/* Pro Tier (Highlighted + glowing purple ambient lighting) */}
             <div className={cn(
-              "relative bg-white dark:bg-[#111114]/80 border border-[#A78BFA]/30 dark:border-[#A78BFA]/30 light:border-[#A78BFA]/50 rounded-[24px] p-8 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] md:-translate-y-4 shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] dark:shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)] light:shadow-[0_20px_40px_rgba(167,139,250,0.15)]",
+              "relative bg-white dark:bg-[#111114]/80 border border-[#A78BFA]/50 dark:border-[#A78BFA]/30 rounded-[24px] p-8 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] md:-translate-y-4 shadow-[0_20px_40px_rgba(167,139,250,0.15)] dark:shadow-[0_20px_45px_-10px_rgba(167,139,250,0.25)]",
               "reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out"
             )}>
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#A78BFA] to-[#F9A8D4] text-black text-[9px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full border border-white/20">
@@ -324,14 +324,14 @@ export default function PricingPage() {
                   <span className="text-xs text-neutral-400">{proPeriod}</span>
                 </div>
               </div>
-              <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-neutral-300 dark:text-neutral-300 light:text-slate-600 font-medium">
+              <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-slate-600 dark:text-neutral-300 font-medium">
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Everything in Base</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Full AI Coach insights</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Unlimited history &amp; logging</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Advanced visual analytics</li>
               </ul>
               <Link href="/register">
-                <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)]">
+                <button className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)]">
                   Upgrade to Pro
                 </button>
               </Link>
@@ -347,14 +347,14 @@ export default function PricingPage() {
                   <span className="text-xs text-neutral-400">{elitePeriod}</span>
                 </div>
               </div>
-              <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-neutral-300 dark:text-neutral-300 light:text-slate-600">
+              <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-slate-600 dark:text-neutral-300">
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Everything in Pro</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Custom training protocols</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Early access to AI models</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Priority human support</li>
               </ul>
               <Link href="/register">
-                <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-white dark:text-white light:text-slate-700 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
+                <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
                   Get Enterprise
                 </button>
               </Link>
@@ -370,14 +370,14 @@ export default function PricingPage() {
             <div className="w-full overflow-x-auto">
               <table className="w-full text-left text-xs md:text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 dark:border-b-white/10 light:border-b-slate-100 text-slate-500 dark:text-neutral-400 font-bold uppercase tracking-wider">
+                  <tr className="border-b border-slate-200 dark:border-b-white/10 text-slate-500 dark:text-neutral-400 font-bold uppercase tracking-wider">
                     <th className="py-4 font-semibold">Feature</th>
                     <th className="py-4 font-semibold">Base</th>
                     <th className="py-4 font-semibold text-[#A78BFA]">Pro</th>
                     <th className="py-4 font-semibold">Enterprise</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 dark:divide-white/5 light:divide-slate-100 text-slate-700 dark:text-neutral-300">
+                <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-700 dark:text-neutral-300">
                   <tr>
                     <td className="py-4 font-medium">Workout Logging</td>
                     <td className="py-4 text-neutral-400">Basic</td>
@@ -422,14 +422,14 @@ export default function PricingPage() {
                 onClick={() => toggleFaq(idx)}
               >
                 <div className="p-6 flex justify-between items-center select-none">
-                  <h4 className="text-sm md:text-base font-bold text-white dark:text-white light:text-slate-850">{faq.q}</h4>
+                  <h4 className="text-sm md:text-base font-bold text-slate-800 dark:text-white">{faq.q}</h4>
                   <ChevronDown className={cn(
-                    "h-5 w-5 text-neutral-400 transition-transform duration-300",
-                    faqOpen[idx] ? "transform rotate-180 text-white dark:text-white light:text-black" : ""
+                    "h-5 w-5 text-slate-500 dark:text-neutral-400 transition-transform duration-300",
+                    faqOpen[idx] ? "transform rotate-180 text-slate-800 dark:text-white" : ""
                   )} />
                 </div>
                 <div className={cn(
-                  "overflow-hidden transition-all duration-300 ease-out px-6 text-xs md:text-sm text-[#c7c4d7]/70 dark:text-[#c7c4d7]/70 light:text-slate-500 leading-relaxed",
+                  "overflow-hidden transition-all duration-300 ease-out px-6 text-xs md:text-sm text-slate-500 dark:text-[#c7c4d7]/70 leading-relaxed",
                   faqOpen[idx] ? "max-h-40 pb-6 opacity-100" : "max-h-0 opacity-0"
                 )}>
                   {faq.a}
@@ -441,58 +441,96 @@ export default function PricingPage() {
 
       </main>
 
-      {/* Footer (Same Layout as Home Page) */}
-      <footer className="w-full relative z-10 bg-[#09090B] dark:bg-[#09090B] light:bg-slate-100 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-200 transition-colors duration-500">
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
+      {/* ── Footer ── */}
+      <footer className="w-full relative z-10 bg-transparent py-12 transition-all duration-500">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10">
           
-          <div>
-            <div className="font-bold text-xl text-[#09090B] dark:text-white flex items-center gap-2">
-              <div className="relative h-5 w-5 rounded-md overflow-hidden flex items-center justify-center border border-slate-200 dark:border-white/10">
-                <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="20px" className="object-cover" />
+          {/* Inner card taking inspiration from Graphy footer style */}
+          <div className="bg-white dark:bg-[#0d0d0e]/60 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.06] rounded-[32px] p-8 md:p-16 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 transition-all duration-500">
+            
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              {/* Left Column (Brand + Desc + Socials) */}
+              <div className="lg:col-span-5 space-y-6">
+                <Link href="/" className="font-sans font-bold text-xl text-[#09090B] dark:text-white flex items-center gap-2.5 group">
+                  <div className="relative h-6 w-6 rounded-lg overflow-hidden flex items-center justify-center border border-slate-200 dark:border-white/10 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                    <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="24px" className="object-cover" />
+                  </div>
+                  <span className="font-extrabold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-white dark:to-neutral-300">
+                    ZenithFlow
+                  </span>
+                </Link>
+                <p className="text-xs md:text-sm text-slate-500 dark:text-neutral-400 leading-relaxed max-w-sm">
+                  ZenithFlow empowers individuals to synchronize biomechanical logging, nutrition tracking, and daily focus blocks — making performance easier to master, analyze, and sustain.
+                </p>
+                
+                {/* Social Links (Clean outline SVG format as inspired by Graphy) */}
+                <div className="flex items-center gap-5 pt-2 text-slate-400 dark:text-neutral-500">
+                  <a href="#" aria-label="X (Twitter)" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+                    <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="Instagram" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+                    <svg className="h-4.5 w-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="LinkedIn" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+                    <svg className="h-4 w-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                      <rect x="2" y="9" width="4" height="12"></rect>
+                      <circle cx="4" cy="4" r="2"></circle>
+                    </svg>
+                  </a>
+                  <a href="#" aria-label="GitHub" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
+                    <svg className="h-4.5 w-4.5 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                    </svg>
+                  </a>
+                </div>
               </div>
-              <span>ZenithFlow</span>
+
+              {/* Product Column */}
+              <div className="lg:col-span-3 lg:col-start-7 space-y-4">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Product</h4>
+                <ul className="space-y-3 text-xs font-medium text-slate-500 dark:text-neutral-400">
+                  <li><a href="#features" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-200">Features</a></li>
+                  <li><Link href="/pricing" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-200">Pricing</Link></li>
+                  <li><a href="#coach" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-200">AI Coach</a></li>
+                  <li><a href="#analytics" className="hover:text-slate-900 dark:hover:text-white transition-colors duration-200">Analytics</a></li>
+                </ul>
+              </div>
+
+              {/* Resources Column */}
+              <div className="lg:col-span-3 space-y-4">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide">Resources</h4>
+                <ul className="space-y-3 text-xs font-medium text-slate-500 dark:text-neutral-400">
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Documentation</a></li>
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Tutorials</a></li>
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Blog</a></li>
+                  <li><a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors duration-200">Support</a></li>
+                </ul>
+              </div>
             </div>
-            <p className="text-xs md:text-sm text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500 mt-4 max-w-sm leading-relaxed">
-              High-performance systems for individuals who refuse to stagnate.
-            </p>
-            <p className="text-xs text-[#A1A1AA]/50 mt-8">
-              © 2026 ZenithFlow AI. All rights reserved.
-            </p>
-          </div>
 
-          <div>
-            <h4 className="text-[10px] font-bold text-[#09090B] dark:text-white uppercase tracking-widest mb-6">Legal</h4>
-            <ul className="space-y-3 text-xs text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
-              <li><a className="hover:text-black dark:hover:text-white transition-colors" href="#">Privacy Policy</a></li>
-              <li><a className="hover:text-black dark:hover:text-white transition-colors" href="#">Terms of Service</a></li>
-              <li><a className="hover:text-black dark:hover:text-white transition-colors" href="#">Sitemap</a></li>
-            </ul>
-          </div>
+            {/* Divider line */}
+            <div className="h-px bg-slate-200/60 dark:bg-white/5 w-full my-8 md:my-10" />
 
-          <div>
-            <h4 className="text-[10px] font-bold text-[#09090B] dark:text-white uppercase tracking-widest mb-6">Connect</h4>
-            <ul className="space-y-3 text-xs text-[#A1A1AA] dark:text-[#A1A1AA] light:text-slate-500">
-              <li>
-                <a className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-2" href="#">
-                  <MessageSquare className="h-4 w-4" /> Contact Support
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-2" href="#">
-                  <Globe className="h-4 w-4" /> Twitter
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-2" href="#">
-                  <Camera className="h-4 w-4" /> Instagram
-                </a>
-              </li>
-            </ul>
-          </div>
+            {/* Bottom Row */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400 dark:text-neutral-500 font-medium">
+              <span>© 2026 ZenithFlow. All rights reserved.</span>
+              <div className="flex gap-6">
+                <Link href="/privacy" className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Terms of Service</Link>
+                <a className="hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors">Cookies Settings</a>
+              </div>
+            </div>
 
+          </div>
         </div>
       </footer>
-
     </div>
   );
 }
