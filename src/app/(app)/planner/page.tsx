@@ -25,6 +25,14 @@ export default function PlannerPage() {
   const [eventDesc, setEventDesc] = useState("");
   const [eventDuration, setEventDuration] = useState("1h 00m");
   const [eventDay, setEventDay] = useState(new Date().getDate());
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const handlePrevMonth = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+  const handleNextMonth = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
 
   useEffect(() => {
     setEventDay(selectedDay);
@@ -199,10 +207,9 @@ export default function PlannerPage() {
   };
   const days = getWeekDays();
 
-  const now = new Date();
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const calendarDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const calendarOffset = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+  const calendarOffset = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
 
   // Compute current week label dynamically
   const getWeeklyFocusLabel = () => {
@@ -216,8 +223,9 @@ export default function PlannerPage() {
     return `Weekly Focus: ${fmt(mon)} – ${fmt(sun)}, ${sun.getFullYear()}`;
   };
   const weeklyFocusLabel = getWeeklyFocusLabel();
-  const currentMonthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const todayDate = now.getDate();
+  const currentMonthLabel = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const todayDate = new Date().getDate();
+  const isCurrentMonth = currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
 
   return (
     <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
@@ -340,8 +348,8 @@ export default function PlannerPage() {
             <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex flex-row items-center justify-between">
               <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{currentMonthLabel}</span>
               <div className="flex gap-1">
-                <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full text-slate-400 dark:text-neutral-400"><ChevronLeft className="h-3 w-3" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full text-slate-400 dark:text-neutral-400"><ChevronRight className="h-3 w-3" /></Button>
+                <Button onClick={handlePrevMonth} size="icon" variant="ghost" className="h-6 w-6 rounded-full text-slate-400 dark:text-neutral-400"><ChevronLeft className="h-3 w-3" /></Button>
+                <Button onClick={handleNextMonth} size="icon" variant="ghost" className="h-6 w-6 rounded-full text-slate-400 dark:text-neutral-400"><ChevronRight className="h-3 w-3" /></Button>
               </div>
             </CardHeader>
             <CardContent className="px-0">
@@ -355,9 +363,14 @@ export default function PlannerPage() {
                 {calendarDays.map((d) => (
                   <span 
                     key={d} 
+                    onClick={() => setSelectedDay(d)}
                     className={cn(
-                      "w-6 h-6 flex items-center justify-center mx-auto rounded-full cursor-pointer hover:bg-slate-100 dark:hover:bg-white/10 transition-all duration-300",
-                      d === todayDate ? "bg-[#6068F0] text-white font-bold" : "text-slate-500 dark:text-neutral-400"
+                      "w-6 h-6 flex items-center justify-center mx-auto rounded-full cursor-pointer transition-all duration-300",
+                      d === selectedDay 
+                        ? "bg-[#6068F0] text-white font-bold" 
+                        : d === todayDate && isCurrentMonth
+                          ? "bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white font-bold" 
+                          : "text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-white/5"
                     )}
                   >
                     {d}
