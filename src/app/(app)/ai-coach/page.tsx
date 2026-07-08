@@ -24,7 +24,7 @@ export default function AiCoachPage() {
   const [isSending, setIsSending] = useState(false);
   const [groqKey, setGroqKey] = useState("");
   
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -34,7 +34,13 @@ export default function AiCoachPage() {
   }, []);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > 1 && chatContainerRef.current) {
+      const container = chatContainerRef.current;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {
@@ -125,7 +131,7 @@ export default function AiCoachPage() {
         className={cn(glassCardClass, "flex flex-col h-[65vh] relative z-10 p-6")}
       >
         {/* Chat History */}
-        <div className="flex-1 overflow-y-auto space-y-6 pr-2 scrollbar-thin">
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto space-y-6 pr-2 scrollbar-thin">
           {messages.map((msg, i) => (
             <motion.div 
               key={i} 
@@ -167,7 +173,6 @@ export default function AiCoachPage() {
               <span className="flex items-center gap-1">AI Coach is thinking<span className="animate-bounce">.</span><span className="animate-bounce delay-150">.</span><span className="animate-bounce delay-300">.</span></span>
             </motion.div>
           )}
-          <div ref={chatEndRef} />
         </div>
 
         {/* Input area */}
