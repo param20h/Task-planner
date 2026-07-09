@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -17,7 +17,8 @@ import {
   Brain,
   Settings,
   Sun,
-  Moon
+  Moon,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
@@ -57,7 +58,9 @@ const Logo = ({ open }: { open: boolean }) => {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Sync theme on load
@@ -84,8 +87,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       document.documentElement.style.setProperty('--glass-blur', '20px');
     }
 
-    async function ensureDefaultProfile() {
+    async function checkAuthAndSyncProfile() {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+
+        const nameVal = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
+        await supabase
+          .from("profiles")
+          .upsert({
+            id: user.id,
+            name: nameVal
+          }, { onConflict: "id" });
+
+        // Ensure default profile exists for fallbacks
         await supabase
           .from("profiles")
           .upsert({
@@ -93,22 +111,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             name: "Alex Chen"
           }, { onConflict: "id" });
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const nameVal = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
-          await supabase
-            .from("profiles")
-            .upsert({
-              id: user.id,
-              name: nameVal
-            }, { onConflict: "id" });
-        }
+        setLoading(false);
       } catch (err) {
-        console.error("Global profiles initialization failed:", err);
+        console.error("Auth verification failed:", err);
+        router.push("/login");
       }
     }
-    ensureDefaultProfile();
-  }, []);
+    checkAuthAndSyncProfile();
+  }, [router]);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (err) {
+      console.error("Failed to sign out:", err);
+    }
+  };
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
@@ -172,6 +191,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(167,139,250,0.05)_0%,transparent_65%)]" />
+        <div className="relative flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#A78BFA]/10 border border-[#A78BFA]/30 flex items-center justify-center text-[#A78BFA] animate-pulse">
+            <Brain className="h-5 w-5 animate-pulse" />
+          </div>
+          <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-neutral-500 animate-pulse font-sans">
+            Synchronizing Workspace...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("mx-auto flex h-screen w-full flex-col overflow-hidden bg-slate-50 dark:bg-black text-slate-700 dark:text-neutral-300 relative md:flex-row transition-colors duration-500")}>
       
@@ -231,7 +266,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {open && <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>}
               </button>
 
-              <SidebarLink
+               <SidebarLink
                 link={{
                   label: "Settings",
                   href: "/profile",
@@ -245,6 +280,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   pathname === "/profile" ? "bg-[#A78BFA]/10 text-[#A78BFA] border-[#A78BFA]/20 dark:bg-white/10 dark:text-white dark:border-white/10" : "text-neutral-400 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-white/5 dark:hover:text-neutral-200"
                 )}
               />
+
+              {/* Sign Out Button */}
+              <button
+                onClick={handleSignOut}
+                className={cn(
+                  "w-full transition-all duration-300 border border-transparent flex items-center gap-3 text-xs uppercase tracking-wider font-bold text-red-500 hover:text-red-400 dark:text-red-400/80 hover:bg-red-500/10",
+                  open ? "px-3 py-2.5 rounded-xl justify-start" : "p-2 rounded-full justify-center w-9 h-9 mx-auto"
+                )}
+              >
+                <LogOut className="h-5 w-5 shrink-0 stroke-[1.8px]" />
+                {open && <span>Sign Out</span>}
+              </button>
             </div>
           </SidebarBody>
         </Sidebar>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spotlight } from "@/components/ui/spotlight";
 import { 
@@ -26,12 +27,22 @@ import { supabase } from "@/lib/supabaseClient";
 const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-700 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-slate-300 dark:hover:border-white/15";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [profileId, setProfileId] = useState("alex_chen");
   const [name, setName] = useState("Alex Chen");
   const [email, setEmail] = useState("alexchen@gmail.com");
   const [phone, setPhone] = useState("(317) 251-7990");
   const [groqKey, setGroqKey] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("/AGENTS.png");
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (err) {
+      console.error("Failed to sign out:", err);
+    }
+  };
   
   // States for toggles
   const [emailDigests, setEmailDigests] = useState(true);
@@ -327,6 +338,16 @@ export default function ProfilePage() {
           >
             <Save className="h-4.5 w-4.5" />
             {isSaved ? "Settings Saved!" : "Save Profile"}
+          </Button>
+
+          {/* Sign Out Action block */}
+          <Button 
+            onClick={handleSignOut} 
+            variant="outline"
+            className="w-full border-red-500/30 dark:border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/10 rounded-xl flex items-center justify-center gap-2 py-3.5 font-bold transition-all duration-300 mt-2"
+          >
+            <LogOut className="h-4.5 w-4.5" />
+            Sign Out
           </Button>
 
         </div>
