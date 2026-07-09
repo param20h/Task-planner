@@ -18,11 +18,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function PricingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
   const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({});
+  const [userId, setUserId] = useState<string | null>(null);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   
   // Theme state: defaults to dark (#09090B) as requested
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -39,7 +42,41 @@ export default function PricingPage() {
     } else {
       document.documentElement.classList.add("dark");
     }
+
+    async function checkUser() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUserId(session.user.id);
+        }
+      } catch (err) {
+        console.error("Failed to load session on pricing page:", err);
+      }
+    }
+    checkUser();
   }, []);
+
+  const handleUpgrade = async () => {
+    if (!userId) return;
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({ id: userId, plan: "pro" }, { onConflict: "id" });
+      
+      if (!error) {
+        localStorage.setItem("momentum_plan", "pro");
+        setUpgradeSuccess(true);
+        setTimeout(() => {
+          setUpgradeSuccess(false);
+          window.location.href = "/dashboard";
+        }, 1500);
+      } else {
+        console.error("Supabase plan update failed:", error.message);
+      }
+    } catch (err) {
+      console.error("Upgrade simulation failed:", err);
+    }
+  };
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
@@ -330,11 +367,28 @@ export default function PricingPage() {
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Unlimited history &amp; logging</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Advanced visual analytics</li>
               </ul>
-              <Link href="/register">
-                <button className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)]">
-                  Upgrade to Pro
+              {userId ? (
+                <button 
+                  onClick={handleUpgrade}
+                  disabled={upgradeSuccess}
+                  className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)] flex items-center justify-center gap-2"
+                >
+                  {upgradeSuccess ? (
+                    <>
+                      <Check className="h-4 w-4 text-white animate-bounce" />
+                      Success! Unlocking Pro...
+                    </>
+                  ) : (
+                    "Upgrade to Pro"
+                  )}
                 </button>
-              </Link>
+              ) : (
+                <Link href="/register">
+                  <button className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)]">
+                    Upgrade to Pro
+                  </button>
+                </Link>
+              )}
             </div>
 
             {/* Enterprise Tier */}

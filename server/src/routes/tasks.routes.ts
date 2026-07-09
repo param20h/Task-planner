@@ -9,7 +9,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { data, error } = await supabaseAdmin
       .from("tasks")
-      .select("id, title, description, status, due_date, created_at")
+      .select("id, title, description, status, due_date, completed_at, created_at")
       .eq("profile_id", req.user!.id)
       .order("created_at", { ascending: false });
 
@@ -62,9 +62,16 @@ router.put("/:id", authMiddleware, async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { title, status, description, due_date } = req.body;
 
+    const updatePayload: any = { title, status, description, due_date };
+    if (status === "completed") {
+      updatePayload.completed_at = new Date().toISOString();
+    } else if (status === "pending" || status === "in_progress") {
+      updatePayload.completed_at = null;
+    }
+
     const { data, error } = await supabaseAdmin
       .from("tasks")
-      .update({ title, status, description, due_date })
+      .update(updatePayload)
       .eq("id", id)
       .eq("profile_id", req.user!.id)
       .select()

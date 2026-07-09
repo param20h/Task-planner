@@ -61,8 +61,9 @@ export default function JournalPage() {
 
     let reflectionResult = "";
 
-    if (!groqKey) {
-      reflectionResult = "I've saved your draft locally! Add your Groq API Key in Profile to unlock deep AI reflection, mood analysis, and mindfulness advice.";
+    const effectiveKey = process.env.NEXT_PUBLIC_GROQ_API_KEY || groqKey;
+    if (!effectiveKey) {
+      reflectionResult = "I've saved your draft locally! Please configure NEXT_PUBLIC_GROQ_API_KEY in your .env.local file to unlock deep AI reflection and mindfulness advice.";
       setReflection(reflectionResult);
       setIsAnalyzing(false);
     } else {
@@ -71,14 +72,14 @@ export default function JournalPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${groqKey}`
+            "Authorization": `Bearer ${effectiveKey}`
           },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
             messages: [
               {
                 role: "system",
-                content: "You are ZenithFlow AI, a premium personal health and mindfulness coach. Read the user's journal entry and mood, then provide a highly insightful, encouraging, and short (3 sentences max) reflection or mindfulness tip."
+                content: "You are ZenithFlow AI, a warm, conversational personal health and mindfulness coach. Read the user's journal entry and mood, then provide a highly encouraging, natural, and short (3 sentences max) reflection or mindfulness tip. Write naturally like a person. Do not use any Markdown formatting, bold asterisks (**), or bullet points."
               },
               {
                 role: "user",

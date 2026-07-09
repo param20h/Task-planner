@@ -61,6 +61,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [loading, setLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState("/AGENTS.png");
 
   useEffect(() => {
     // Sync theme on load
@@ -87,29 +88,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       document.documentElement.style.setProperty('--glass-blur', '20px');
     }
 
+    // Load profile avatar from local storage
+    const savedAvatar = localStorage.getItem("momentum_avatar");
+    if (savedAvatar) {
+      setAvatarUrl(savedAvatar);
+    }
+
     async function checkAuthAndSyncProfile() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
+        // Use offline-friendly getSession to avoid remote network hangs
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session || !session.user) {
           router.push("/login");
           return;
         }
 
+        const user = session.user;
         const nameVal = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
-        await supabase
+
+        // Run profile upsert asynchronously in background so slows/offs don't block render
+        supabase
           .from("profiles")
           .upsert({
             id: user.id,
             name: nameVal
-          }, { onConflict: "id" });
-
-        // Ensure default profile exists for fallbacks
-        await supabase
-          .from("profiles")
-          .upsert({
-            id: "alex_chen",
-            name: "Alex Chen"
-          }, { onConflict: "id" });
+          }, { onConflict: "id" })
+          .then(({ error }) => {
+            if (error) console.warn("Non-blocking profile sync error:", error);
+          });
 
         setLoading(false);
       } catch (err) {
@@ -188,6 +194,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       title: "AI Coach",
       href: "/ai-coach",
       icon: <Brain className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      badge: "PRO"
     },
   ];
 
@@ -297,15 +304,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Sidebar>
       </div>
 
+      {/* Mobile Top Header with Brand and Profile Avatar */}
+      <div className="md:hidden sticky top-0 w-full z-40 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-white/5 px-6 py-4 flex items-center justify-between shrink-0">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="relative h-6 w-6 rounded-md overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm">
+            <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="24px" className="object-cover" />
+          </div>
+          <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white font-sans">zenithflow</span>
+        </Link>
+        
+        <Link href="/profile" className="relative h-8 w-8 rounded-full overflow-hidden border border-slate-200 dark:border-white/20 bg-slate-100 dark:bg-white/10 flex items-center justify-center shadow-sm">
+          <Image src={avatarUrl} alt="User Profile" fill className="object-cover" />
+        </Link>
+      </div>
+
       {/* Main Content Pane */}
-      <main className="flex-1 relative overflow-y-auto pb-24 md:pb-0 z-10">
+      <main className="flex-1 relative overflow-y-auto pb-28 md:pb-0 z-10">
         {children}
       </main>
 
       {/* Mobile iOS Liquid Glass Nav */}
-      <div className="md:hidden fixed bottom-8 left-0 right-0 z-50 flex justify-center pointer-events-none px-4">
+      <div className="md:hidden fixed bottom-6 left-4 right-4 z-50 pointer-events-none flex justify-center">
         <div 
-          className="pointer-events-auto flex items-center p-1.5 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/10 bg-white/90 dark:bg-neutral-900/65 backdrop-blur-2xl"
+          className="pointer-events-auto flex items-center gap-2 p-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#0D0D0E]/90 backdrop-blur-2xl max-w-full overflow-x-auto scrollbar-none scroll-smooth px-3.5"
         >
           {links.map((link) => {
             const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
@@ -314,11 +335,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={link.label}
                 href={link.href}
                 className={cn(
-                  "relative flex items-center justify-center w-9 h-9 sm:w-12 sm:h-12 rounded-full transition-all duration-400 ease-out shrink-0",
-                  isActive ? "bg-[#A78BFA]/10 text-[#A78BFA] border-[#A78BFA]/20 dark:bg-white/10 dark:text-white dark:border-white/10" : "text-neutral-500 hover:text-neutral-300"
+                  "relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-400 ease-out shrink-0",
+                  isActive ? "bg-[#A78BFA]/10 text-[#A78BFA] border-[#A78BFA]/20 dark:bg-white/10 dark:text-white dark:border-white/10" : "text-neutral-500 hover:text-neutral-350"
                 )}
               >
-                <div className="[&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5 [&>svg]:stroke-[1.6px]">
+                <div className="[&>svg]:w-5.5 [&>svg]:h-5.5 [&>svg]:stroke-[1.8px] shrink-0">
                   {link.icon}
                 </div>
               </Link>
@@ -328,9 +349,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Mobile Theme Toggle Button */}
           <button
             onClick={toggleTheme}
-            className="relative flex items-center justify-center w-9 h-9 sm:w-12 sm:h-12 rounded-full text-neutral-500 hover:text-neutral-300 transition-all duration-400 shrink-0"
+            className="relative flex items-center justify-center w-12 h-12 rounded-full text-neutral-500 hover:text-neutral-350 transition-all duration-400 shrink-0"
           >
-            {theme === "dark" ? <Sun className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> : <Moon className="h-4.5 w-4.5 sm:h-5 sm:w-5" />}
+            {theme === "dark" ? <Sun className="h-5.5 w-5.5" /> : <Moon className="h-5.5 w-5.5" />}
           </button>
         </div>
       </div>

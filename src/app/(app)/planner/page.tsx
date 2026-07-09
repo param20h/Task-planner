@@ -104,7 +104,10 @@ export default function PlannerPage() {
     try {
       await supabase
         .from("tasks")
-        .update({ status: nextCompleted ? "completed" : "pending" })
+        .update({ 
+          status: nextCompleted ? "completed" : "pending",
+          completed_at: nextCompleted ? new Date().toISOString() : null
+        })
         .eq("id", id);
     } catch (err) {
       console.error("Failed to toggle task in Supabase:", err);

@@ -8,6 +8,7 @@ interface Links {
   label: string;
   href: string;
   icon: React.JSX.Element | React.ReactNode;
+  badge?: string;
 }
 
 interface SidebarContextProps {
@@ -194,9 +195,14 @@ export const SidebarLink = ({
               x: { type: "spring", stiffness: 350, damping: 28 },
               width: { duration: 0.22, ease: [0.4, 0, 0.2, 1] },
             }}
-            className="text-sm whitespace-nowrap overflow-hidden inline-block !p-0 !m-0"
+            className="text-sm whitespace-nowrap overflow-hidden inline-flex items-center gap-1.5 !p-0 !m-0"
           >
             {link.label}
+            {link.badge && (
+              <span className="text-[8px] font-black font-sans bg-gradient-to-r from-[#A78BFA] to-[#F9A8D4] text-black px-1.5 py-0.5 rounded-md leading-none select-none tracking-normal scale-90">
+                {link.badge}
+              </span>
+            )}
           </motion.span>
         )}
       </AnimatePresence>

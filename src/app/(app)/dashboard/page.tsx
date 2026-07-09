@@ -14,13 +14,18 @@ import {
   Check,
   Flame,
   X,
-  Trash2
+  Trash2,
+  Lock,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+// Responsive Glassmorphism Styles using CSS variables for live appearance adjustments
 import { Spotlight } from "@/components/ui/spotlight";
 import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
+import { FloatingWidgets } from "@/components/dashboard/FloatingWidgets";
+import { PWAInstallPrompt } from "@/components/ui/PWAInstallPrompt";
 
 // Responsive Glassmorphism Styles using CSS variables for live appearance adjustments
 const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
@@ -46,6 +51,7 @@ export default function DashboardPage() {
   const [todayScore, setTodayScore] = useState(0);
   const [contributionMap, setContributionMap] = useState<Record<string, number>>({});
   const [weeklyScores, setWeeklyScores] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [plan, setPlan] = useState<"free" | "pro">("free");
 
   // Refresh trigger to reload aggregates
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -74,6 +80,25 @@ export default function DashboardPage() {
       if (typeof window !== 'undefined') {
         const storedKey = localStorage.getItem("momentum_groq_key");
         if (storedKey) setGroqKey(storedKey);
+        
+        const savedPlan = localStorage.getItem("momentum_plan") as "free" | "pro";
+        if (savedPlan) setPlan(savedPlan);
+      }
+
+      try {
+        // Fetch plan from Supabase
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("plan")
+          .eq("id", activeProfileId)
+          .single();
+
+        if (profileData && profileData.plan) {
+          setPlan(profileData.plan as "free" | "pro");
+          localStorage.setItem("momentum_plan", profileData.plan);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch plan from database, using cached plan:", err);
       }
 
       try {
@@ -98,7 +123,7 @@ export default function DashboardPage() {
         // Fetch ALL tasks
         const { data: tasksData, error: tasksError } = await supabase
           .from("tasks")
-          .select("id, title, status, created_at")
+          .select("id, title, status, created_at, completed_at")
           .eq("profile_id", activeProfileId);
 
         // Build today's local date range (midnight → midnight, local time)
@@ -116,7 +141,12 @@ export default function DashboardPage() {
         const todayFood = foodData?.filter(f => f.created_at && isToday(f.created_at)) || [];
         const todayWater = waterData?.filter(w => w.created_at && isToday(w.created_at)) || [];
         const todayWorkouts = workoutsData?.filter(w => w.start_time && isToday(w.start_time)) || [];
-        const todayTasks = tasksData?.filter(t => t.created_at && isToday(t.created_at)) || [];
+        const todayTasks = tasksData?.filter(t => {
+          if (!t.created_at) return false;
+          const createdToday = isToday(t.created_at);
+          const completedToday = t.completed_at ? isToday(t.completed_at) : false;
+          return createdToday || completedToday;
+        }) || [];
 
         // Sum up today's quantities
         let totalCal = 0;
@@ -214,7 +244,10 @@ export default function DashboardPage() {
     try {
       const { error } = await supabase
         .from("tasks")
-        .update({ status: "completed" })
+        .update({ 
+          status: "completed",
+          completed_at: new Date().toISOString()
+        })
         .eq("id", id);
 
       if (!error) {
@@ -280,9 +313,10 @@ export default function DashboardPage() {
     setUserChatInput("");
     setIsSending(true);
 
-    if (!groqKey) {
+    const effectiveKey = process.env.NEXT_PUBLIC_GROQ_API_KEY || groqKey;
+    if (!effectiveKey) {
       setTimeout(() => {
-        setAiMessage(`I received: "${userMsg}". Set your Groq API Key in Profile to get smart AI Coaching!`);
+        setAiMessage(`I received: "${userMsg}". Please configure NEXT_PUBLIC_GROQ_API_KEY in .env.local to unlock AI Coaching!`);
         setIsSending(false);
       }, 1000);
       return;
@@ -293,14 +327,14 @@ export default function DashboardPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${groqKey}`
+          "Authorization": `Bearer ${effectiveKey}`
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
           messages: [
             {
               role: "system",
-              content: `You are ZenithFlow AI, a premium personal productivity and health coach. Provide extremely concise, encouraging, and smart advice based on user metrics: ${caloriesConsumed} kcal food, ${workoutMinutes} min workout, ${waterConsumed}L water, and ${todayScore}% today's score.`
+              content: `You are ZenithFlow AI, a warm, conversational personal productivity and health coach. Provide extremely concise, encouraging, and natural advice based on user metrics: ${caloriesConsumed} kcal food, ${workoutMinutes} min workout, ${waterConsumed}L water, and ${todayScore}% today's score. Write naturally like a person. Do not use any Markdown formatting, bold asterisks (**), or bullet points.`
             },
             {
               role: "user",
@@ -352,18 +386,26 @@ export default function DashboardPage() {
         if (count === 2) colorClass = "bg-[#6068F0]/60";
         if (count >= 3) colorClass = "bg-[#6068F0]";
 
+        // Reset hours for strict calendar date comparison
+        const cellDateZero = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
+        const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const isFuture = cellDateZero > todayZero;
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const isCellToday = dateStr === todayStr;
+
         // If the date is in the future, render it slightly faded/empty
-        if (cellDate > today) {
+        if (isFuture) {
           colorClass = "bg-slate-100 dark:bg-white/5 opacity-20";
         }
 
         rowCells.push(
           <div 
             key={`${r}-${c}`} 
-            title={`${dateStr}: ${count} activity logs`}
+            title={`${dateStr}${isCellToday ? " (Today)" : ""}: ${count} activity logs`}
             className={cn(
               "w-3 h-3 rounded-full transition-all duration-300 hover:scale-125 hover:ring-1 hover:ring-white/50 cursor-pointer",
-              colorClass
+              colorClass,
+              isCellToday && "ring-2 ring-[#6068F0] ring-offset-1 dark:ring-offset-black scale-110 shadow-[0_0_8px_rgba(96,104,240,0.5)]"
             )}
           />
         );
@@ -615,37 +657,63 @@ export default function DashboardPage() {
           </Card>
 
           {/* AI Coach interactive Chat Widget */}
-          <Card className={`${glassCardClass} border-[#6068F0]/20 bg-gradient-to-b from-slate-50 to-[#6068F0]/5 dark:from-[#0d0d0e]/60 dark:to-[#6068F0]/5 p-6 flex flex-col justify-between`}>
-            <div>
-              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-                <Brain className="h-5 w-5 text-[#6068F0]" />
-                AI Coach Insight
-              </CardTitle>
-              <div className="relative bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 p-4 rounded-xl text-xs text-slate-600 dark:text-neutral-300 italic leading-relaxed">
-                "{aiMessage}"
+          {plan === "pro" ? (
+            <Card className={`${glassCardClass} border-[#6068F0]/20 bg-gradient-to-b from-slate-50 to-[#6068F0]/5 dark:from-[#0d0d0e]/60 dark:to-[#6068F0]/5 p-6 flex flex-col justify-between`}>
+              <div>
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
+                  <Brain className="h-5 w-5 text-[#6068F0]" />
+                  AI Coach Insight
+                </CardTitle>
+                <div className="relative bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 p-4 rounded-xl text-xs text-slate-600 dark:text-neutral-300 italic leading-relaxed">
+                  "{aiMessage}"
+                </div>
               </div>
-            </div>
-            
-            <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
-              <input 
-                type="text" 
-                placeholder="Ask your coach..."
-                value={userChatInput}
-                onChange={(e) => setUserChatInput(e.target.value)}
-                className="flex-1 bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
-              />
-              <Button 
-                type="submit" 
-                size="icon" 
-                disabled={isSending || !userChatInput.trim()}
-                className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg shadow-[#6068F0]/20 p-2 h-auto"
-              >
-                <Send className="h-3.5 w-3.5" />
-              </Button>
-            </form>
-          </Card>
+              
+              <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Ask your coach..."
+                  value={userChatInput}
+                  onChange={(e) => setUserChatInput(e.target.value)}
+                  className="flex-1 bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                />
+                <Button 
+                  type="submit" 
+                  size="icon" 
+                  disabled={isSending || !userChatInput.trim()}
+                  className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg shadow-[#6068F0]/20 p-2 h-auto"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </Button>
+              </form>
+            </Card>
+          ) : (
+            <Card className={`${glassCardClass} border-dashed border-slate-300 dark:border-white/10 bg-slate-50/50 dark:bg-[#0d0d0e]/30 p-6 flex flex-col items-center text-center justify-center space-y-4`}>
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 dark:text-neutral-500 relative">
+                <Lock className="h-5 w-5" />
+                <Sparkles className="h-3 w-3 absolute -top-0.5 -right-0.5 text-amber-400 animate-pulse" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-white">AI Coach is Locked</h4>
+                <p className="text-[10px] text-slate-500 dark:text-neutral-500 leading-relaxed max-w-[200px] mx-auto">
+                  Upgrade to the Pro Plan to receive tailored focus recommendations and cognitive scheduling.
+                </p>
+              </div>
+              <Link href="/pricing" className="w-full">
+                <Button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black hover:opacity-95 font-bold py-2 rounded-xl text-[10px] uppercase tracking-wider transition-all duration-300 shadow-md">
+                  Unlock Coach
+                </Button>
+              </Link>
+            </Card>
+          )}
+
+          {/* Floating/Inline Widgets Panel */}
+          <FloatingWidgets profileId={profileId} onRefresh={() => setRefreshCounter(prev => prev + 1)} />
         </div>
       </div>
+      
+      {/* Install trigger prompt */}
+      <PWAInstallPrompt />
     </div>
   );
 }

@@ -21,6 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ZenithFlow — Intelligent Workspace",
   description: "Your AI-powered personal productivity OS.",
+  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png", sizes: "64x64" },
@@ -40,7 +41,33 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for (let registration of registrations) {
+                      registration.unregister();
+                      console.log('Local SW unregistered to prevent dev HMR loop');
+                    }
+                  });
+                } else {
+                  window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                      console.log('SW registered:', reg.scope);
+                    }).catch(function(err) {
+                      console.error('SW registration failed:', err);
+                    });
+                  });
+                }
+              }
+            `
+          }}
+        />
+      </body>
     </html>
   );
 }

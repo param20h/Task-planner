@@ -45,7 +45,7 @@ export default function AnalyticsPage() {
         // Fetch completed tasks data
         const { data: tasksData, error: tasksError } = await supabase
           .from("tasks")
-          .select("id, created_at")
+          .select("id, created_at, completed_at")
           .eq("profile_id", activeId)
           .eq("status", "completed");
 
@@ -60,8 +60,9 @@ export default function AnalyticsPage() {
 
         if (tasksData) {
           tasksData.forEach(task => {
-            if (task.created_at) {
-              const d = new Date(task.created_at);
+            const targetDate = task.completed_at || task.created_at;
+            if (targetDate) {
+              const d = new Date(targetDate);
               const diffTime = d.getTime() - startOfWeek.getTime();
               const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
               if (diffDays >= 0 && diffDays < 7) {
