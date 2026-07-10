@@ -258,6 +258,22 @@ class ApiClient {
       body: payload
     });
   }
+
+  // ─── Admin Dashboard ───────────────────────────────
+  async getAdminUsers() {
+    return this.request<any[]>("/admin/users");
+  }
+
+  async changeUserPlan(targetUserId: string, plan: "pro" | "free") {
+    return this.request<{ success: boolean; targetUserId: string; plan: string }>("/admin/change-plan", {
+      method: "POST",
+      body: { targetUserId, plan }
+    });
+  }
+
+  async getAdminPayments() {
+    return this.request<any[]>("/admin/payments");
+  }
 }
 
 export const api = new ApiClient();

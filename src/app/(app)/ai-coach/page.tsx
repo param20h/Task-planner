@@ -85,7 +85,7 @@ export default function AiCoachPage() {
       setTimeout(() => {
         setMessages(prev => [
           ...prev,
-          { role: "assistant", content: "Please configure your NEXT_PUBLIC_GROQ_API_KEY environment variable in your .env.local file to unlock full cognitive advice, meal planning, and detailed athletic calculations!" }
+          { role: "assistant", content: "I'm having trouble connecting to the AI Coach engine right now. Please try again in a few moments or contact support if this continues." }
         ]);
         setIsSending(false);
       }, 1000);

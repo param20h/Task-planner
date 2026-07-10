@@ -18,7 +18,8 @@ import {
   Settings,
   Sun,
   Moon,
-  LogOut
+  LogOut,
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
@@ -62,6 +63,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState("/AGENTS.png");
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     // Sync theme on load
@@ -94,6 +96,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       setAvatarUrl(savedAvatar);
     }
 
+    // Set up auth state listener to automatically synchronize session tokens for Express API calls
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.access_token) {
+        localStorage.setItem("momentum_token", session.access_token);
+      } else {
+        localStorage.removeItem("momentum_token");
+      }
+    });
+
     async function checkAuthAndSyncProfile() {
       try {
         // Use offline-friendly getSession to avoid remote network hangs
@@ -104,14 +115,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }
 
         const user = session.user;
+        setUserEmail(user.email || null);
         const nameVal = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
+
+        // Mirror token immediately on first load
+        if (session.access_token) {
+          localStorage.setItem("momentum_token", session.access_token);
+        }
 
         // Run profile upsert asynchronously in background so slows/offs don't block render
         supabase
           .from("profiles")
           .upsert({
             id: user.id,
-            name: nameVal
+            name: nameVal,
+            email: user.email
           }, { onConflict: "id" })
           .then(({ error }) => {
             if (error) console.warn("Non-blocking profile sync error:", error);
@@ -124,6 +142,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       }
     }
     checkAuthAndSyncProfile();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   const handleSignOut = async () => {
@@ -198,6 +220,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     },
   ];
 
+  const visibleLinks = [...links];
+  if (userEmail?.toLowerCase() === "parambrar862@gmail.com") {
+    visibleLinks.push({
+      label: "Admin",
+      title: "Admin Control",
+      href: "/admin",
+      icon: <Shield className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+    });
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] flex items-center justify-center relative overflow-hidden">
@@ -242,7 +274,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
               <Logo open={open} />
               <div className="mt-8 flex flex-col gap-1.5">
-                {links.map((link, idx) => (
+                {visibleLinks.map((link, idx) => (
                   <SidebarLink
                     key={idx}
                     link={link}
@@ -328,7 +360,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div 
           className="pointer-events-auto flex items-center gap-2 p-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#0D0D0E]/90 backdrop-blur-2xl max-w-full overflow-x-auto scrollbar-none scroll-smooth px-3.5"
         >
-          {links.map((link) => {
+          {visibleLinks.map((link) => {
             const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
             return (
               <Link

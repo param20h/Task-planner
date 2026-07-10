@@ -26,7 +26,7 @@ router.post("/register", async (req: AuthRequest, res: Response) => {
     // Upsert profile
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
-      .upsert({ id: data.user!.id, name }, { onConflict: "id" });
+      .upsert({ id: data.user!.id, name, email }, { onConflict: "id" });
 
     if (profileError) {
       return res.status(500).json({ error: profileError.message });

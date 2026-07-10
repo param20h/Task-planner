@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authMiddleware } from "../middleware/auth";
 import { supabaseAdmin } from "../config/supabase";
+import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
 const router = Router();
@@ -62,6 +63,29 @@ router.post("/create-order", authMiddleware, async (req: AuthRequest, res: Respo
     }
 
     const orderData = (await razorpayResponse.json()) as any;
+
+    // Log the created payment in the database using user's authenticated context
+    try {
+      const authHeaderUser = req.headers.authorization!;
+      const tokenUser = authHeaderUser.split(" ")[1];
+      const supabaseUserClient = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: { headers: { Authorization: `Bearer ${tokenUser}` } }
+      });
+
+      await supabaseUserClient
+        .from("payments")
+        .insert({
+          profile_id: req.user!.id,
+          razorpay_order_id: orderData.id,
+          amount: baseAmount,
+          currency: normalizedCurrency,
+          status: "created"
+        });
+    } catch (dbErr) {
+      console.warn("Failed to log payment order creation in DB:", dbErr);
+    }
+
     return res.status(200).json({
       id: orderData.id,
       amount: orderData.amount,
@@ -84,23 +108,51 @@ router.post("/verify-payment", authMiddleware, async (req: AuthRequest, res: Res
     }
 
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    
+    console.log("--- RAZORPAY VERIFICATION DEBUG ---");
+    console.log("Payment ID:", razorpay_payment_id);
+    console.log("Order ID:", razorpay_order_id);
+    console.log("Received Signature:", razorpay_signature);
+    console.log("Secret Available:", !!keySecret, keySecret ? `(Length: ${keySecret.length})` : "");
+
     if (!keySecret) {
       return res.status(500).json({ error: "Billing gateway signature secret not configured" });
     }
 
     // Verify payment signature
     const generatedSignature = crypto
-      .createHmac("sha256", keySecret)
+      .createHmac("sha256", keySecret.trim()) // trim to remove any accidental whitespace/newlines
       .update(razorpay_order_id + "|" + razorpay_payment_id)
       .digest("hex");
+
+    console.log("Generated Signature:", generatedSignature);
+    console.log("Match:", generatedSignature === razorpay_signature);
+    console.log("-----------------------------------");
 
     if (generatedSignature !== razorpay_signature) {
       console.warn("Invalid Razorpay payment signature verification attempt");
       return res.status(400).json({ error: "Invalid payment signature" });
     }
 
-    // Signature verified! Upgrade user's plan to pro in Supabase profiles
-    const { error } = await supabaseAdmin
+    // Signature verified! Create a Supabase client authenticated as the user using their access token
+    const authHeader = req.headers.authorization!;
+    const token = authHeader.split(" ")[1];
+    const supabaseUrl = process.env.SUPABASE_URL!;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
+
+    const supabaseUserClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      },
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    });
+
+    const { error } = await supabaseUserClient
       .from("profiles")
       .upsert(
         { 
@@ -109,6 +161,21 @@ router.post("/verify-payment", authMiddleware, async (req: AuthRequest, res: Res
         },
         { onConflict: "id" }
       );
+
+    // Update payment record status in database to captured
+    if (!error) {
+      try {
+        await supabaseUserClient
+          .from("payments")
+          .update({
+            status: "captured",
+            razorpay_payment_id: razorpay_payment_id
+          })
+          .eq("razorpay_order_id", razorpay_order_id);
+      } catch (payDbErr) {
+        console.warn("Failed to update payment record status to captured:", payDbErr);
+      }
+    }
 
     if (error) {
       console.error("Failed to upgrade user plan in profiles table:", error.message);

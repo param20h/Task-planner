@@ -316,7 +316,7 @@ export default function DashboardPage() {
     const effectiveKey = process.env.NEXT_PUBLIC_GROQ_API_KEY || groqKey;
     if (!effectiveKey) {
       setTimeout(() => {
-        setAiMessage(`I received: "${userMsg}". Please configure NEXT_PUBLIC_GROQ_API_KEY in .env.local to unlock AI Coaching!`);
+        setAiMessage("ZenithFlow Coach is currently connecting to our servers. Please try again shortly.");
         setIsSending(false);
       }, 1000);
       return;

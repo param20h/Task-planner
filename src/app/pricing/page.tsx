@@ -62,6 +62,9 @@ export default function PricingPage() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setUserId(session.user.id);
+          if (session.access_token) {
+            localStorage.setItem("momentum_token", session.access_token);
+          }
         }
       } catch (err) {
         console.error("Failed to load session on pricing page:", err);
