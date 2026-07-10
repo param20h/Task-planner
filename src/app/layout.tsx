@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 
 const outfit = Outfit({
   variable: "--font-serif",
@@ -67,6 +68,7 @@ export default function RootLayout({
             `
           }}
         />
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>
     </html>
   );

@@ -239,6 +239,25 @@ class ApiClient {
       tasksCompleted: number;
     }>("/analytics/dashboard");
   }
+
+  // ─── Razorpay Subscriptions ──────────────────────────
+  async createRazorpayOrder(currency: string, billingCycle: string) {
+    return this.request<{ id: string; amount: number; currency: string }>("/subscription/create-order", {
+      method: "POST",
+      body: { currency, billingCycle }
+    });
+  }
+
+  async verifyRazorpayPayment(payload: {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+  }) {
+    return this.request<{ success: boolean; plan: string }>("/subscription/verify-payment", {
+      method: "POST",
+      body: payload
+    });
+  }
 }
 
 export const api = new ApiClient();

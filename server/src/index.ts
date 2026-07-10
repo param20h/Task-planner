@@ -16,6 +16,7 @@ import plannerRoutes from "./routes/planner.routes";
 import journalRoutes from "./routes/journal.routes";
 import goalsRoutes from "./routes/goals.routes";
 import analyticsRoutes from "./routes/analytics.routes";
+import subscriptionRoutes from "./routes/subscription.routes";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -55,6 +56,7 @@ app.use("/api/planner", plannerRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/goals", goalsRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/subscription", subscriptionRoutes);
 
 // Global error handler
 app.use(

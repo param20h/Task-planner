@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
+import { api } from "@/lib/api";
 
 export default function PricingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,8 +28,21 @@ export default function PricingPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   
+  // Dynamic Currency Detection states
+  const [currencyCode, setCurrencyCode] = useState("USD");
+  const [currencySymbol, setCurrencySymbol] = useState("$");
+
   // Theme state: defaults to dark (#09090B) as requested
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  const CURRENCIES: Record<string, { symbol: string; monthly: number; yearly: number }> = {
+    INR: { symbol: "₹", monthly: 999, yearly: 9999 },
+    EUR: { symbol: "€", monthly: 11, yearly: 110 },
+    GBP: { symbol: "£", monthly: 10, yearly: 100 },
+    CAD: { symbol: "C$", monthly: 16, yearly: 160 },
+    AUD: { symbol: "A$", monthly: 18, yearly: 180 },
+    USD: { symbol: "$", monthly: 12, yearly: 120 }
+  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("momentum_theme") as "dark" | "light";
@@ -53,28 +67,103 @@ export default function PricingPage() {
         console.error("Failed to load session on pricing page:", err);
       }
     }
+
+    async function detectCurrency() {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.currency && CURRENCIES[data.currency]) {
+            setCurrencyCode(data.currency);
+            setCurrencySymbol(CURRENCIES[data.currency].symbol);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("IP geolocation failed, trying timezone check:", err);
+      }
+
+      // Fallback: approximate based on timezone
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (tz.includes("Kolkata") || tz.includes("Calcutta")) {
+          setCurrencyCode("INR");
+          setCurrencySymbol("₹");
+        } else if (tz.includes("Europe/London") || tz.includes("Europe/Belfast")) {
+          setCurrencyCode("GBP");
+          setCurrencySymbol("£");
+        } else if (tz.includes("Europe/")) {
+          setCurrencyCode("EUR");
+          setCurrencySymbol("€");
+        } else if (tz.includes("Australia/")) {
+          setCurrencyCode("AUD");
+          setCurrencySymbol("A$");
+        } else if (tz.includes("America/Toronto") || tz.includes("America/Vancouver")) {
+          setCurrencyCode("CAD");
+          setCurrencySymbol("C$");
+        }
+      } catch (e) {
+        console.warn("Timezone resolution failed, using default USD");
+      }
+    }
+
     checkUser();
+    detectCurrency();
   }, []);
 
   const handleUpgrade = async () => {
     if (!userId) return;
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({ id: userId, plan: "pro" }, { onConflict: "id" });
-      
-      if (!error) {
-        localStorage.setItem("momentum_plan", "pro");
-        setUpgradeSuccess(true);
-        setTimeout(() => {
-          setUpgradeSuccess(false);
-          window.location.href = "/dashboard";
-        }, 1500);
-      } else {
-        console.error("Supabase plan update failed:", error.message);
-      }
+      const cycle = isYearly ? "yearly" : "monthly";
+
+      // 1. Create order on backend Express API server
+      const order = await api.createRazorpayOrder(currencyCode, cycle);
+
+      // 2. Configure and launch Razorpay Checkout Modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TBloJct92Bl3h9",
+        amount: order.amount,
+        currency: order.currency,
+        name: "ZenithFlow Pro",
+        description: `Subscription Upgrade (${cycle})`,
+        order_id: order.id,
+        handler: async function (response: any) {
+          try {
+            // 3. Send payment tokens back to Express backend to verify signature
+            const verifyRes = await api.verifyRazorpayPayment({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            });
+
+            if (verifyRes.success) {
+              localStorage.setItem("momentum_plan", "pro");
+              setUpgradeSuccess(true);
+              setTimeout(() => {
+                setUpgradeSuccess(false);
+                window.location.href = "/dashboard";
+              }, 1500);
+            }
+          } catch (err) {
+            console.error("Signature verification failed:", err);
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: {
+          email: localStorage.getItem("momentum_email") || "",
+          name: localStorage.getItem("momentum_name") || ""
+        },
+        theme: {
+          color: "#6068F0"
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+
     } catch (err) {
-      console.error("Upgrade simulation failed:", err);
+      console.error("Razorpay payment initiation failed:", err);
+      alert("Failed to initiate checkout. Please try again.");
     }
   };
 
@@ -96,10 +185,23 @@ export default function PricingPage() {
     }));
   };
 
+  const ELITE_CATALOG: Record<string, { monthly: number; yearly: number }> = {
+    INR: { monthly: 2499, yearly: 24999 },
+    EUR: { monthly: 27, yearly: 270 },
+    GBP: { monthly: 24, yearly: 240 },
+    CAD: { monthly: 38, yearly: 380 },
+    AUD: { monthly: 42, yearly: 420 },
+    USD: { monthly: 29, yearly: 290 }
+  };
+
   const basePrice = "Free";
-  const proPrice = isYearly ? "$120" : "$12";
+  
+  const activePro = CURRENCIES[currencyCode] || CURRENCIES["USD"];
+  const proPrice = isYearly ? `${currencySymbol}${activePro.yearly}` : `${currencySymbol}${activePro.monthly}`;
   const proPeriod = isYearly ? "/yr" : "/mo";
-  const elitePrice = isYearly ? "$290" : "$29";
+  
+  const activeElite = ELITE_CATALOG[currencyCode] || ELITE_CATALOG["USD"];
+  const elitePrice = isYearly ? `${currencySymbol}${activeElite.yearly}` : `${currencySymbol}${activeElite.monthly}`;
   const elitePeriod = isYearly ? "/yr" : "/mo";
 
   const glassCardClass = "bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col h-full transition-all duration-300 hover:scale-[1.02] hover:border-white/20 shadow-2xl relative overflow-hidden";
