@@ -152,7 +152,7 @@ async function runMigrations() {
 app.listen(PORT, () => {
   console.log(`🚀 Momentum API server running on http://localhost:${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
-  runMigrations();
+  // runMigrations(); // Migrations successfully applied via Supabase Dashboard SQL Editor
 });
 
 export default app;
