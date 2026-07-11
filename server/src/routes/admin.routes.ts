@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authMiddleware } from "../middleware/auth";
 import { createClient } from "@supabase/supabase-js";
+import { sendProUpgradeEmail } from "../config/mail";
 
 const router = Router();
 
@@ -68,6 +69,14 @@ router.post("/change-plan", authMiddleware, adminOnly, async (req: AuthRequest, 
     }
 
     const userClient = getSupabaseUserClient(req);
+    
+    // Fetch user profile details first to get the email and name
+    const { data: profile } = await userClient
+      .from("profiles")
+      .select("email, name")
+      .eq("id", targetUserId)
+      .single();
+
     const { error } = await userClient
       .from("profiles")
       .update({ plan })
@@ -76,6 +85,13 @@ router.post("/change-plan", authMiddleware, adminOnly, async (req: AuthRequest, 
     if (error) {
       console.error("Admin update user plan DB query failed:", error.message);
       return res.status(500).json({ error: error.message });
+    }
+
+    // Send Pro upgrade welcome email to the user if plan is pro
+    if (plan === "pro" && profile && profile.email) {
+      sendProUpgradeEmail(profile.email, profile.name || "User").catch(err => {
+        console.warn("Failed to send Pro upgrade email from admin route:", err);
+      });
     }
 
     return res.status(200).json({ success: true, targetUserId, plan });

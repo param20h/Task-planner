@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabaseClient";
 
 // Types for Mock Dashboard Preview
 type DashboardTab = "ai" | "tasks" | "workout" | "metrics";
@@ -43,6 +44,7 @@ export default function Home() {
   
   // Theme state: defaults to dark (#09090B) as requested
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Dashboard preview state
   const [activePreviewTab, setActivePreviewTab] = useState<DashboardTab>("ai");
@@ -92,6 +94,30 @@ export default function Home() {
       localStorage.setItem("momentum_theme", "dark");
     }
     setCountersActive(true);
+
+    async function checkUser() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+          setIsLoggedIn(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch session on landing page:", err);
+      }
+    }
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && session.user) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const toggleTheme = () => {
@@ -316,17 +342,27 @@ export default function Home() {
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
-              <Link href="/login" className="hidden sm:inline-flex">
-                <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-slate-600 dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white px-3 py-1">
-                  Login
-                </Button>
-              </Link>
-              
-              <Link href="/register" className="hidden sm:inline-flex">
-                <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_15px_rgba(167,139,250,0.3)]">
-                  Register
-                </button>
-              </Link>
+              {isLoggedIn ? (
+                <Link href="/dashboard" className="hidden sm:inline-flex">
+                  <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_15px_rgba(167,139,250,0.3)]">
+                    Dashboard
+                  </button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" className="hidden sm:inline-flex">
+                    <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-slate-600 dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white px-3 py-1">
+                      Login
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/register" className="hidden sm:inline-flex">
+                    <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_15px_rgba(167,139,250,0.3)]">
+                      Register
+                    </button>
+                  </Link>
+                </>
+              )}
 
               {/* Mobile hamburger menu */}
               <button className="lg:hidden text-slate-600 dark:text-neutral-400 ml-1" onClick={() => setMenuOpen(!menuOpen)}>
@@ -347,12 +383,22 @@ export default function Home() {
           <a href="#coach" onClick={() => setMenuOpen(false)} className="hover:text-white">AI Coach</a>
           <a href="#analytics" onClick={() => setMenuOpen(false)} className="hover:text-white">Analytics</a>
           <a href="#about" onClick={() => setMenuOpen(false)} className="hover:text-white">About</a>
-          <Link href="/login" onClick={() => setMenuOpen(false)} className="text-white">Login</Link>
-          <Link href="/register" onClick={() => setMenuOpen(false)}>
-            <button className="bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-8 py-3 rounded-full text-sm font-extrabold tracking-widest">
-              Register
-            </button>
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
+              <button className="bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-8 py-3 rounded-full text-sm font-extrabold tracking-widest">
+                Dashboard
+              </button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" onClick={() => setMenuOpen(false)} className="text-white">Login</Link>
+              <Link href="/register" onClick={() => setMenuOpen(false)}>
+                <button className="bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-8 py-3 rounded-full text-sm font-extrabold tracking-widest">
+                  Register
+                </button>
+              </Link>
+            </>
+          )}
         </div>
       )}
 
@@ -385,9 +431,9 @@ export default function Home() {
 
               {/* Two CTA Buttons */}
               <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out flex flex-row items-center gap-4 pt-2">
-                <Link href="/register">
+                <Link href={isLoggedIn ? "/dashboard" : "/register"}>
                   <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-7 py-3.5 rounded-[18px] text-xs font-bold uppercase tracking-widest transition-all duration-300 shadow-[0_8px_25px_-5px_rgba(167,139,250,0.4)] hover:shadow-[0_8px_30px_rgba(167,139,250,0.6)] flex items-center justify-center gap-2 border border-white/20">
-                    Start Building
+                    {isLoggedIn ? "Go to Dashboard" : "Start Building"}
                     <ArrowRight className="h-3.5 w-3.5 text-black" />
                   </button>
                 </Link>
@@ -934,9 +980,9 @@ export default function Home() {
                 </ul>
               </div>
 
-              <Link href="/register" className="mt-8">
+              <Link href={isLoggedIn ? "/dashboard" : "/register"} className="mt-8">
                 <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200">
-                  Deploy Starter
+                  {isLoggedIn ? "Go to Dashboard" : "Deploy Starter"}
                 </button>
               </Link>
             </div>
@@ -961,9 +1007,9 @@ export default function Home() {
                 </ul>
               </div>
 
-              <Link href="/register" className="mt-8">
+              <Link href={isLoggedIn ? "/dashboard" : "/register"} className="mt-8">
                 <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-95 transition-opacity shadow-md shadow-[#A78BFA]/20">
-                  Upgrade to Pro
+                  {isLoggedIn ? "Go to Dashboard" : "Upgrade to Pro"}
                 </button>
               </Link>
             </div>
@@ -982,9 +1028,9 @@ export default function Home() {
                 </ul>
               </div>
 
-              <Link href="/register" className="mt-8">
+              <Link href={isLoggedIn ? "/dashboard" : "/register"} className="mt-8">
                 <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200">
-                  Deploy Enterprise
+                  {isLoggedIn ? "Go to Dashboard" : "Deploy Enterprise"}
                 </button>
               </Link>
             </div>

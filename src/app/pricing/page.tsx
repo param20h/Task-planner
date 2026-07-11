@@ -112,6 +112,22 @@ export default function PricingPage() {
 
     checkUser();
     detectCurrency();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        if (session.access_token) {
+          localStorage.setItem("momentum_token", session.access_token);
+        }
+      } else {
+        setUserId(null);
+        localStorage.removeItem("momentum_token");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleUpgrade = async () => {
@@ -160,6 +176,29 @@ export default function PricingPage() {
           color: "#6068F0"
         }
       };
+
+      if (typeof (window as any).Razorpay === "undefined") {
+        console.warn("Razorpay SDK not loaded. Simulating checkout verification in development mode.");
+        if (process.env.NODE_ENV === "development") {
+          const verifyRes = await api.verifyRazorpayPayment({
+            razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 10)}`,
+            razorpay_order_id: order.id,
+            razorpay_signature: "mock_signature_dev_override"
+          });
+
+          if (verifyRes.success) {
+            localStorage.setItem("momentum_plan", "pro");
+            setUpgradeSuccess(true);
+            setTimeout(() => {
+              setUpgradeSuccess(false);
+              window.location.href = "/dashboard";
+            }, 1500);
+          }
+        } else {
+          alert("Payment gateway could not be loaded. Please check your internet connection.");
+        }
+        return;
+      }
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
@@ -350,17 +389,27 @@ export default function PricingPage() {
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
-              <Link href="/login" className="hidden sm:inline-flex">
-                <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-slate-500 dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white px-3 py-1">
-                  Login
-                </Button>
-              </Link>
-              
-              <Link href="/register" className="hidden sm:inline-flex">
-                <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_15px_rgba(167,139,250,0.3)]">
-                  Register
-                </button>
-              </Link>
+              {userId ? (
+                <Link href="/dashboard" className="hidden sm:inline-flex">
+                  <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_15px_rgba(167,139,250,0.3)]">
+                    Dashboard
+                  </button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" className="hidden sm:inline-flex">
+                    <Button variant="ghost" className="text-xs uppercase tracking-widest font-bold text-slate-500 dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white px-3 py-1">
+                      Login
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/register" className="hidden sm:inline-flex">
+                    <button className="relative bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_15px_rgba(167,139,250,0.3)]">
+                      Register
+                    </button>
+                  </Link>
+                </>
+              )}
 
               {/* Mobile hamburger menu */}
               <button className="lg:hidden text-slate-600 dark:text-neutral-400 ml-2" onClick={() => setMenuOpen(!menuOpen)}>
@@ -381,12 +430,22 @@ export default function PricingPage() {
           <Link href="/#coach" onClick={() => setMenuOpen(false)} className="hover:text-white">AI Coach</Link>
           <Link href="/#analytics" onClick={() => setMenuOpen(false)} className="hover:text-white">Analytics</Link>
           <Link href="/#about" onClick={() => setMenuOpen(false)} className="hover:text-white">About</Link>
-          <Link href="/login" onClick={() => setMenuOpen(false)} className="text-white">Login</Link>
-          <Link href="/register" onClick={() => setMenuOpen(false)}>
-            <button className="bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-8 py-3 rounded-full text-sm font-extrabold tracking-widest">
-              Register
-            </button>
-          </Link>
+          {userId ? (
+            <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
+              <button className="bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-8 py-3 rounded-full text-sm font-extrabold tracking-widest">
+                Dashboard
+              </button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" onClick={() => setMenuOpen(false)} className="text-white">Login</Link>
+              <Link href="/register" onClick={() => setMenuOpen(false)}>
+                <button className="bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-8 py-3 rounded-full text-sm font-extrabold tracking-widest">
+                  Register
+                </button>
+              </Link>
+            </>
+          )}
         </div>
       )}
 
@@ -440,9 +499,9 @@ export default function PricingPage() {
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> 7-day history</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Standard metrics</li>
               </ul>
-              <Link href="/register">
+              <Link href={userId ? "/dashboard" : "/register"}>
                 <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
-                  Start Free
+                  {userId ? "Go to Dashboard" : "Start Free"}
                 </button>
               </Link>
             </div>
@@ -512,9 +571,9 @@ export default function PricingPage() {
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Early access to AI models</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Priority human support</li>
               </ul>
-              <Link href="/register">
+              <Link href={userId ? "/dashboard" : "/register"}>
                 <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
-                  Get Enterprise
+                  {userId ? "Go to Dashboard" : "Get Enterprise"}
                 </button>
               </Link>
             </div>

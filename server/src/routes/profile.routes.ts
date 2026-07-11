@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authMiddleware } from "../middleware/auth";
 import { supabaseAdmin } from "../config/supabase";
-import { Client } from "pg";
+import { createClient } from "@supabase/supabase-js";
 
 const router = Router();
 
@@ -51,28 +51,43 @@ router.put("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// DELETE / — delete current user's account and all associated data
+// DELETE / — delete current user's account and all associated data via HTTPS RPC
 router.delete("/", authMiddleware, async (req: AuthRequest, res: Response) => {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    return res.status(500).json({ error: "Database connection not configured" });
-  }
-
-  const client = new Client({
-    connectionString,
-    ssl: { rejectUnauthorized: false }
-  });
-
   try {
-    await client.connect();
-    // Delete user from auth.users which triggers cascading deletes across all profiles and tables
-    await client.query("DELETE FROM auth.users WHERE id = $1", [req.user!.id]);
+    const authHeader = req.headers.authorization!;
+    const token = authHeader.split(" ")[1];
+    const supabaseUrl = process.env.SUPABASE_URL!;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
+
+    // Create an client authenticated as the requesting user
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      },
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    });
+
+    const userId = req.user!.id;
+    console.log(`[Account Deletion] Triggering delete_my_account RPC for user ID: ${userId}`);
+
+    // Call the security definer Postgres RPC function over standard HTTPS
+    const { error } = await userClient.rpc("delete_my_account");
+
+    if (error) {
+      console.error("[Account Deletion Error] Database RPC execution failed:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    console.log(`[Account Deletion] User ${userId} successfully deleted.`);
     return res.status(200).json({ success: true, message: "Account deleted successfully" });
   } catch (err: any) {
-    console.error("Account deletion failed:", err);
+    console.error("[Account Deletion Error] Handler failed:", err);
     return res.status(500).json({ error: err.message || "Failed to delete account" });
-  } finally {
-    await client.end();
   }
 });
 
