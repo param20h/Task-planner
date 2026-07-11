@@ -46,7 +46,7 @@ export default function ProfilePage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirmText !== "DELETE") return;
+    if (deleteConfirmText.trim().toUpperCase() !== "DELETE") return;
     setIsDeleting(true);
     try {
       // 1. Trigger deletion query on Express server
@@ -450,7 +450,7 @@ export default function ProfilePage() {
                 type="text"
                 placeholder="Type DELETE..."
                 value={deleteConfirmText}
-                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
                 className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 text-xs font-bold tracking-widest text-center focus:border-red-500 transition-colors uppercase py-5"
               />
             </div>
@@ -465,7 +465,7 @@ export default function ProfilePage() {
               </Button>
               <Button
                 onClick={handleDeleteAccount}
-                disabled={deleteConfirmText !== "DELETE" || isDeleting}
+                disabled={deleteConfirmText.trim().toUpperCase() !== "DELETE" || isDeleting}
                 className="flex-1 bg-red-650 hover:bg-red-700 text-white rounded-xl shadow-lg shadow-red-500/15 py-3 font-bold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isDeleting ? "Wiping Data..." : "Delete Permanently"}
