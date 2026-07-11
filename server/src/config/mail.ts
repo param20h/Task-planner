@@ -190,6 +190,35 @@ export async function sendProUpgradeEmail(toEmail: string, userName: string): Pr
     </html>
   `;
 
+  // Try Resend HTTP API first if key is configured (Bypasses Render port blocks since it uses port 443 HTTPS REST API)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`
+        },
+        body: JSON.stringify({
+          from: `"${fromName}" <${fromEmail}>`,
+          to: toEmail,
+          subject: "⚡ ZenithFlow Pro Activated! Welcome to the premium zone.",
+          html: htmlContent
+        })
+      });
+      if (res.ok) {
+        console.log("Pro upgrade email sent successfully via Resend API to %s", toEmail);
+        return true;
+      } else {
+        const errText = await res.text();
+        console.error("Resend API failed to send Pro welcome email:", errText);
+      }
+    } catch (apiErr) {
+      console.error("Resend API call failed for Pro welcome email:", apiErr);
+    }
+  }
+
+  // Fallback to standard SMTP
   try {
     const info = await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
@@ -226,6 +255,35 @@ export async function sendEnterpriseRequestEmail(userName: string, userEmail: st
     </div>
   `;
 
+  // Try Resend HTTP API first if key is configured
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`
+        },
+        body: JSON.stringify({
+          from: `"${fromName}" <${fromEmail}>`,
+          to: [adminEmail, "parambrar862@gmail.com"],
+          subject: `💼 Enterprise Request from ${userName}`,
+          html: htmlContent
+        })
+      });
+      if (res.ok) {
+        console.log("Enterprise request email sent successfully via Resend API to admins");
+        return true;
+      } else {
+        const errText = await res.text();
+        console.error("Resend API failed for Enterprise request:", errText);
+      }
+    } catch (apiErr) {
+      console.error("Resend API call failed for Enterprise request:", apiErr);
+    }
+  }
+
+  // Fallback to standard SMTP
   try {
     const info = await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
