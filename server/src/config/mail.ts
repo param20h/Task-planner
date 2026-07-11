@@ -9,6 +9,19 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER || "no-reply@param20h.tech",
     pass: process.env.SMTP_PASS || "",
   },
+  tls: {
+    // Avoid handshake/greeting drops on cloud servers by allowing self-signed/unauthorized certificates
+    rejectUnauthorized: false
+  }
+});
+
+// Verify connection configuration on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ SMTP Mailer Connection Verification Failed:", error.message);
+  } else {
+    console.log("✅ SMTP Mailer is ready to deliver messages");
+  }
 });
 
 /**
