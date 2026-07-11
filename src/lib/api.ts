@@ -98,6 +98,10 @@ class ApiClient {
     return this.request("/profile", { method: "PUT", body: data });
   }
 
+  async deleteAccount() {
+    return this.request("/profile", { method: "DELETE" });
+  }
+
   // ─── Food ────────────────────────────────────────────
   async getFood(date?: string) {
     return this.request<any[]>("/food", {

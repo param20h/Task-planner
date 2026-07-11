@@ -16,7 +16,8 @@ import {
   CreditCard,
   LogOut,
   Save,
-  Sparkles
+  Sparkles,
+  Trash2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 
 // Styling constants using CSS variables for dynamic sliders
 const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-700 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-slate-300 dark:hover:border-white/15";
@@ -37,6 +39,32 @@ export default function ProfilePage() {
   const [groqKey, setGroqKey] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("/AGENTS.png");
   const [plan, setPlan] = useState<"free" | "pro">("free");
+
+  // Delete Account Modal States
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== "DELETE") return;
+    setIsDeleting(true);
+    try {
+      // 1. Trigger deletion query on Express server
+      await api.deleteAccount();
+      
+      // 2. Sign out of active Supabase session
+      await supabase.auth.signOut();
+      localStorage.clear();
+      
+      // 3. Force redirect to registration page
+      window.location.href = "/register";
+    } catch (err: any) {
+      alert(err.message || "Failed to delete account. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -237,10 +265,22 @@ export default function ProfilePage() {
             <Button 
               onClick={handleSignOut} 
               variant="outline"
-              className="w-full border-red-500/20 text-red-500 hover:bg-red-500/10 rounded-xl flex items-center justify-center gap-2 py-3.5 font-bold transition-all duration-300 text-xs"
+              className="w-full border-slate-200 dark:border-white/5 text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl flex items-center justify-center gap-2 py-3.5 font-bold transition-all duration-300 text-xs"
             >
               <LogOut className="h-4.5 w-4.5" />
               Sign Out
+            </Button>
+
+            <Button 
+              onClick={() => {
+                setDeleteConfirmText("");
+                setShowDeleteModal(true);
+              }} 
+              variant="outline"
+              className="w-full border-red-500/20 text-red-500 dark:text-red-400/80 hover:bg-red-500/10 rounded-xl flex items-center justify-center gap-2 py-3.5 font-bold transition-all duration-300 text-xs mt-2"
+            >
+              <Trash2 className="h-4.5 w-4.5" />
+              Delete Account
             </Button>
           </Card>
         </div>
@@ -384,6 +424,57 @@ export default function ProfilePage() {
           </Card>
         </div>
       </div>
+
+      {/* Delete Account Double-Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#111114] border border-slate-200 dark:border-white/10 rounded-[28px] max-w-[480px] w-full p-8 shadow-2xl space-y-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-amber-500" />
+            
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Delete Account permanently?</h3>
+              <p className="text-xs text-slate-400 dark:text-neutral-500 leading-relaxed">
+                This action is irreversible. All your biometrics, tasks, goals, workout routines, and subscription configurations will be permanently destroyed.
+              </p>
+            </div>
+
+            <div className="bg-red-500/5 dark:bg-red-500/10 border border-red-500/10 dark:border-red-500/20 p-4 rounded-2xl text-[11px] text-red-600 dark:text-red-400 font-semibold leading-relaxed">
+              ⚠️ Warning: If you proceed, you will be logged out instantly and all your data will be permanently wiped.
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase font-bold text-slate-400 dark:text-neutral-500 tracking-wider">
+                Type <span className="font-extrabold text-red-500 select-all">DELETE</span> to confirm
+              </label>
+              <Input
+                type="text"
+                placeholder="Type DELETE..."
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 text-xs font-bold tracking-widest text-center focus:border-red-500 transition-colors uppercase py-5"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowDeleteModal(false)}
+                variant="outline"
+                className="flex-1 rounded-xl border-slate-200 dark:border-white/5 text-slate-600 dark:text-neutral-450 hover:bg-slate-50 dark:hover:bg-white/5 py-3 font-bold text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== "DELETE" || isDeleting}
+                className="flex-1 bg-red-650 hover:bg-red-700 text-white rounded-xl shadow-lg shadow-red-500/15 py-3 font-bold text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? "Wiping Data..." : "Delete Permanently"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

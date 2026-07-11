@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authMiddleware } from "../middleware/auth";
 import { supabaseAdmin } from "../config/supabase";
+import { Client } from "pg";
 
 const router = Router();
 
@@ -47,6 +48,31 @@ router.put("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   } catch (err) {
     console.error("Update profile error:", err);
     return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// DELETE / — delete current user's account and all associated data
+router.delete("/", authMiddleware, async (req: AuthRequest, res: Response) => {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    return res.status(500).json({ error: "Database connection not configured" });
+  }
+
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false }
+  });
+
+  try {
+    await client.connect();
+    // Delete user from auth.users which triggers cascading deletes across all profiles and tables
+    await client.query("DELETE FROM auth.users WHERE id = $1", [req.user!.id]);
+    return res.status(200).json({ success: true, message: "Account deleted successfully" });
+  } catch (err: any) {
+    console.error("Account deletion failed:", err);
+    return res.status(500).json({ error: err.message || "Failed to delete account" });
+  } finally {
+    await client.end();
   }
 });
 
