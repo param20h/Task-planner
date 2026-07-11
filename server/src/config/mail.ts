@@ -32,7 +32,8 @@ transporter.verify((error, success) => {
  */
 export async function sendProUpgradeEmail(toEmail: string, userName: string): Promise<boolean> {
   const fromName = process.env.SMTP_FROM_NAME || "ZenithFlow";
-  const fromEmail = process.env.SMTP_FROM_EMAIL || "no-reply@param20h.tech";
+  const fromEmail = process.env.RESEND_API_KEY ? "hello@param20h.tech" : (process.env.SMTP_FROM_EMAIL || "no-reply@param20h.tech");
+  const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").replace(/\/$/, "");
 
   // HTML content matching the premium aesthetic of ZenithFlow (Dark theme, sleek design, gradients)
   const htmlContent = `
@@ -179,7 +180,7 @@ export async function sendProUpgradeEmail(toEmail: string, userName: string): Pr
             </div>
           </div>
           
-          <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard" class="cta-button">Go to Dashboard</a>
+          <a href="${clientUrl}/dashboard" class="cta-button">Go to Dashboard</a>
         </div>
         <div class="footer">
           <p>© ${new Date().getFullYear()} ZenithFlow. All rights reserved.</p>
@@ -224,7 +225,7 @@ export async function sendProUpgradeEmail(toEmail: string, userName: string): Pr
       from: `"${fromName}" <${fromEmail}>`,
       to: toEmail,
       subject: "⚡ ZenithFlow Pro Activated! Welcome to the premium zone.",
-      text: `Hello ${userName},\n\nWelcome to ZenithFlow Pro! Your account has been upgraded and you have unlocked all premium features, including the AI Coach, Unlimited Gym Log, and advanced Focus Analytics.\n\nVisit your dashboard at ${process.env.CLIENT_URL || "http://localhost:3000"}/dashboard to start exploring.\n\nBest,\nZenithFlow Team`,
+      text: `Hello ${userName},\n\nWelcome to ZenithFlow Pro! Your account has been upgraded and you have unlocked all premium features, including the AI Coach, Unlimited Gym Log, and advanced Focus Analytics.\n\nVisit your dashboard at ${clientUrl}/dashboard to start exploring.\n\nBest,\nZenithFlow Team`,
       html: htmlContent,
     });
 
@@ -241,7 +242,8 @@ export async function sendProUpgradeEmail(toEmail: string, userName: string): Pr
  */
 export async function sendEnterpriseRequestEmail(userName: string, userEmail: string, adminEmail: string): Promise<boolean> {
   const fromName = process.env.SMTP_FROM_NAME || "ZenithFlow";
-  const fromEmail = process.env.SMTP_FROM_EMAIL || "no-reply@param20h.tech";
+  const fromEmail = process.env.RESEND_API_KEY ? "hello@param20h.tech" : (process.env.SMTP_FROM_EMAIL || "no-reply@param20h.tech");
+  const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").replace(/\/$/, "");
 
   const htmlContent = `
     <div style="background-color: #09090b; color: #fafafa; padding: 40px; font-family: sans-serif; max-width: 600px; margin: auto; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);">
