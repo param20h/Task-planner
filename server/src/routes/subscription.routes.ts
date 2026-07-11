@@ -3,7 +3,7 @@ import { AuthRequest, authMiddleware } from "../middleware/auth";
 import { supabaseAdmin } from "../config/supabase";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
-import { sendProUpgradeEmail } from "../config/mail";
+import { sendProUpgradeEmail, sendEnterpriseRequestEmail } from "../config/mail";
 import nodemailer from "nodemailer";
 
 const router = Router();
@@ -225,47 +225,17 @@ router.post("/contact-enterprise", authMiddleware, async (req: AuthRequest, res:
   try {
     const userEmail = req.user!.email;
     const userName = req.user!.user_metadata?.full_name || req.user!.user_metadata?.name || userEmail.split("@")[0] || "User";
-
     const adminEmail = process.env.SMTP_USER || "no-reply@param20h.tech";
-    const fromName = process.env.SMTP_FROM_NAME || "ZenithFlow";
-    const fromEmail = process.env.SMTP_FROM_EMAIL || "no-reply@param20h.tech";
 
-    // Initialize transporter using our SMTP settings
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.hostinger.com",
-      port: parseInt(process.env.SMTP_PORT || "465"),
-      secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
-      auth: {
-        user: process.env.SMTP_USER || "no-reply@param20h.tech",
-        pass: process.env.SMTP_PASS || "",
-      },
-    });
-
-    const htmlContent = `
-      <div style="background-color: #09090b; color: #fafafa; padding: 40px; font-family: sans-serif; max-width: 600px; margin: auto; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);">
-        <h1 style="color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">⚡ Enterprise Plan Request</h1>
-        <p style="color: #a1a1aa; font-size: 16px;">A user has requested access to the <strong>Enterprise Plan</strong>.</p>
-        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.05);">
-          <p style="margin: 5px 0; color: #e4e4e7;"><strong>Name:</strong> ${userName}</p>
-          <p style="margin: 5px 0; color: #e4e4e7;"><strong>Email:</strong> ${userEmail}</p>
-          <p style="margin: 5px 0; color: #e4e4e7;"><strong>User ID:</strong> ${req.user!.id}</p>
-        </div>
-        <p style="color: #a1a1aa; font-size: 14px;">You can upgrade this user to the Pro or Enterprise plan using the Admin Dashboard or by contacting them directly.</p>
-      </div>
-    `;
-
-    await transporter.sendMail({
-      from: `"${fromName}" <${fromEmail}>`,
-      to: [adminEmail, "parambrar862@gmail.com"],
-      subject: `💼 Enterprise Request from ${userName}`,
-      text: `User ${userName} (${userEmail}) has requested Enterprise plan access on ZenithFlow.`,
-      html: htmlContent
-    });
-
-    return res.status(200).json({ success: true, message: "Enterprise request email sent to admin." });
+    const success = await sendEnterpriseRequestEmail(userName, userEmail, adminEmail);
+    if (success) {
+      return res.status(200).json({ success: true, message: "Enterprise request email sent to admin." });
+    } else {
+      return res.status(500).json({ error: "Failed to send request email" });
+    }
   } catch (err: any) {
     console.error("Failed to send Enterprise request email:", err);
-    return res.status(500).json({ error: "Failed to send request email" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

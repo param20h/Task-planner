@@ -187,6 +187,35 @@ export async function sendProUpgradeEmail(toEmail: string, userName: string): Pr
     </html>
   `;
 
+  // Try Resend HTTP API first if key is configured (Bypasses Render port blocks since it uses port 443 HTTPS REST API)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`
+        },
+        body: JSON.stringify({
+          from: `"${fromName}" <${fromEmail}>`,
+          to: toEmail,
+          subject: "⚡ ZenithFlow Pro Activated! Welcome to the premium zone.",
+          html: htmlContent
+        })
+      });
+      if (res.ok) {
+        console.log("Pro upgrade email sent successfully via Resend API to %s", toEmail);
+        return true;
+      } else {
+        const errText = await res.text();
+        console.error("Resend API failed to send Pro welcome email:", errText);
+      }
+    } catch (apiErr) {
+      console.error("Resend API call failed for Pro welcome email:", apiErr);
+    }
+  }
+
+  // Fallback to standard SMTP
   try {
     const info = await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
@@ -196,10 +225,74 @@ export async function sendProUpgradeEmail(toEmail: string, userName: string): Pr
       html: htmlContent,
     });
 
-    console.log("Pro upgrade email sent successfully to %s: %s", toEmail, info.messageId);
+    console.log("Pro upgrade email sent successfully via SMTP to %s: %s", toEmail, info.messageId);
     return true;
   } catch (err) {
-    console.error("Failed to send Pro upgrade email to %s:", toEmail, err);
+    console.error("Failed to send Pro upgrade email via SMTP to %s:", toEmail, err);
+    return false;
+  }
+}
+
+/**
+ * Sends an email notification to the administrator when a user requests access to the Enterprise Plan.
+ */
+export async function sendEnterpriseRequestEmail(userName: string, userEmail: string, adminEmail: string): Promise<boolean> {
+  const fromName = process.env.SMTP_FROM_NAME || "ZenithFlow";
+  const fromEmail = process.env.SMTP_FROM_EMAIL || "no-reply@param20h.tech";
+
+  const htmlContent = `
+    <div style="background-color: #09090b; color: #fafafa; padding: 40px; font-family: sans-serif; max-width: 600px; margin: auto; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);">
+      <h1 style="color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">⚡ Enterprise Plan Request</h1>
+      <p style="color: #a1a1aa; font-size: 16px;">A user has requested access to the <strong>Enterprise Plan</strong>.</p>
+      <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.05);">
+        <p style="margin: 5px 0; color: #e4e4e7;"><strong>Name:</strong> ${userName}</p>
+        <p style="margin: 5px 0; color: #e4e4e7;"><strong>Email:</strong> ${userEmail}</p>
+      </div>
+      <p style="color: #a1a1aa; font-size: 14px;">You can upgrade this user to the Pro or Enterprise plan using the Admin Dashboard or by contacting them directly.</p>
+    </div>
+  `;
+
+  // Try Resend HTTP API first if key is configured
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`
+        },
+        body: JSON.stringify({
+          from: `"${fromName}" <${fromEmail}>`,
+          to: [adminEmail, "parambrar862@gmail.com"],
+          subject: `💼 Enterprise Request from ${userName}`,
+          html: htmlContent
+        })
+      });
+      if (res.ok) {
+        console.log("Enterprise request email sent successfully via Resend API to admins");
+        return true;
+      } else {
+        const errText = await res.text();
+        console.error("Resend API failed for Enterprise request:", errText);
+      }
+    } catch (apiErr) {
+      console.error("Resend API call failed for Enterprise request:", apiErr);
+    }
+  }
+
+  // Fallback to standard SMTP
+  try {
+    const info = await transporter.sendMail({
+      from: `"${fromName}" <${fromEmail}>`,
+      to: [adminEmail, "parambrar862@gmail.com"],
+      subject: `💼 Enterprise Request from ${userName}`,
+      text: `User ${userName} (${userEmail}) has requested Enterprise plan access on ZenithFlow.`,
+      html: htmlContent,
+    });
+    console.log("Enterprise request email sent successfully via SMTP: %s", info.messageId);
+    return true;
+  } catch (err) {
+    console.error("Failed to send Enterprise request email via SMTP:", err);
     return false;
   }
 }
