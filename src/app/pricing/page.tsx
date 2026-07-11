@@ -27,6 +27,26 @@ export default function PricingPage() {
   const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({});
   const [userId, setUserId] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+
+  const [enterpriseRequested, setEnterpriseRequested] = useState(false);
+  const [enterpriseLoading, setEnterpriseLoading] = useState(false);
+
+  const handleEnterpriseClick = async (e: React.MouseEvent) => {
+    if (!userId) return; // Follow default Link route to /register
+    e.preventDefault();
+    setEnterpriseLoading(true);
+    try {
+      const res = await api.contactEnterprise();
+      if (res.success) {
+        setEnterpriseRequested(true);
+      }
+    } catch (err) {
+      console.error("Enterprise request failed:", err);
+      alert("Failed to send Enterprise request. Please try again.");
+    } finally {
+      setEnterpriseLoading(false);
+    }
+  };
   
   // Dynamic Currency Detection states
   const [currencyCode, setCurrencyCode] = useState("USD");
@@ -571,11 +591,21 @@ export default function PricingPage() {
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Early access to AI models</li>
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Priority human support</li>
               </ul>
-              <Link href={userId ? "/dashboard" : "/register"}>
-                <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
-                  {userId ? "Go to Dashboard" : "Get Enterprise"}
+              {userId ? (
+                <button 
+                  onClick={handleEnterpriseClick}
+                  disabled={enterpriseRequested || enterpriseLoading}
+                  className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 disabled:opacity-50"
+                >
+                  {enterpriseLoading ? "Sending..." : enterpriseRequested ? "Requested!" : "Contact Admin"}
                 </button>
-              </Link>
+              ) : (
+                <Link href="/register">
+                  <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
+                    Get Enterprise
+                  </button>
+                </Link>
+              )}
             </div>
 
           </div>

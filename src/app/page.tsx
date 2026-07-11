@@ -46,6 +46,27 @@ export default function Home() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  const [enterpriseRequested, setEnterpriseRequested] = useState(false);
+  const [enterpriseLoading, setEnterpriseLoading] = useState(false);
+
+  const handleEnterpriseClick = async (e: React.MouseEvent) => {
+    if (!isLoggedIn) return; // Follow default Link route to /register
+    e.preventDefault();
+    setEnterpriseLoading(true);
+    try {
+      const { api } = await import("@/lib/api");
+      const res = await api.contactEnterprise();
+      if (res.success) {
+        setEnterpriseRequested(true);
+      }
+    } catch (err) {
+      console.error("Enterprise request failed:", err);
+      alert("Failed to send Enterprise request. Please try again.");
+    } finally {
+      setEnterpriseLoading(false);
+    }
+  };
+
   // Dashboard preview state
   const [activePreviewTab, setActivePreviewTab] = useState<DashboardTab>("ai");
 
@@ -1028,11 +1049,21 @@ export default function Home() {
                 </ul>
               </div>
 
-              <Link href={isLoggedIn ? "/dashboard" : "/register"} className="mt-8">
-                <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200">
-                  {isLoggedIn ? "Go to Dashboard" : "Deploy Enterprise"}
+              {isLoggedIn ? (
+                <button 
+                  onClick={handleEnterpriseClick}
+                  disabled={enterpriseRequested || enterpriseLoading}
+                  className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200 mt-8 disabled:opacity-50"
+                >
+                  {enterpriseLoading ? "Sending..." : enterpriseRequested ? "Requested!" : "Contact Admin"}
                 </button>
-              </Link>
+              ) : (
+                <Link href="/register" className="mt-8">
+                  <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200">
+                    Deploy Enterprise
+                  </button>
+                </Link>
+              )}
             </div>
 
           </div>

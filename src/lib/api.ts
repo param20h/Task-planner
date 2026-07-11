@@ -278,6 +278,12 @@ class ApiClient {
   async getAdminPayments() {
     return this.request<any[]>("/admin/payments");
   }
+
+  async contactEnterprise() {
+    return this.request<{ success: boolean; message: string }>("/subscription/contact-enterprise", {
+      method: "POST"
+    });
+  }
 }
 
 export const api = new ApiClient();
