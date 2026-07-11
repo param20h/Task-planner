@@ -30,10 +30,10 @@ const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[v
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [profileId, setProfileId] = useState("alex_chen");
-  const [name, setName] = useState("Alex Chen");
-  const [email, setEmail] = useState("alexchen@gmail.com");
-  const [phone, setPhone] = useState("(317) 251-7990");
+  const [profileId, setProfileId] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [groqKey, setGroqKey] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("/AGENTS.png");
   const [plan, setPlan] = useState<"free" | "pro">("free");
@@ -60,13 +60,18 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function loadProfile() {
-      let activeId = "alex_chen";
+      let activeId = "";
+      let defaultName = "";
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           activeId = user.id;
           setProfileId(user.id);
           if (user.email) setEmail(user.email);
+          if (user.phone) setPhone(user.phone);
+          
+          defaultName = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
+          setName(defaultName);
         }
       } catch (err) {
         console.error("Failed to load user session:", err);
@@ -96,6 +101,8 @@ export default function ProfilePage() {
         setPlan(savedPlan);
       }
 
+      if (!activeId) return;
+
       // First try loading from Supabase
       try {
         const { data, error } = await supabase
@@ -106,14 +113,19 @@ export default function ProfilePage() {
 
         if (data && !error) {
           if (data.name) setName(data.name);
+          else if (defaultName) setName(defaultName);
+          
           if (data.groq_api_key) setGroqKey(data.groq_api_key);
           if (data.plan) setPlan(data.plan as "free" | "pro");
         } else {
+          // Fallback if profiles row not fully propagated
+          if (defaultName) setName(defaultName);
+          
           // Fallback to local storage
           const savedKey = localStorage.getItem("momentum_groq_key");
           const savedName = localStorage.getItem("momentum_name");
           if (savedKey) setGroqKey(savedKey);
-          if (savedName) setName(savedName);
+          if (savedName && !defaultName) setName(savedName);
         }
       } catch (err) {
         console.error("Failed to load profile from Supabase", err);
