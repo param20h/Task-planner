@@ -49,10 +49,12 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError(null);
     try {
+      const redirectToUrl = typeof window !== "undefined" ? `${window.location.origin}/dashboard` : undefined;
       const { data, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectToUrl,
           data: {
             full_name: name,
           }
