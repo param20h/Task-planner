@@ -174,6 +174,7 @@ export default function RegisterPage() {
                   placeholder="Create a password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
                   required 
                 />
               </div>
