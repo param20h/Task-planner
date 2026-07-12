@@ -9,6 +9,11 @@ export function PWAInstallPrompt() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // If user has dismissed it before, don't show
+    if (localStorage.getItem("pwa_prompt_dismissed") === "true") {
+      return;
+    }
+
     const handler = (e: Event) => {
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
@@ -42,30 +47,35 @@ export function PWAInstallPrompt() {
     setIsVisible(false);
   };
 
+  const handleDismiss = () => {
+    localStorage.setItem("pwa_prompt_dismissed", "true");
+    setIsVisible(false);
+  };
+
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-40 md:bottom-6 right-6 left-6 md:left-auto z-40 md:w-96 p-4 rounded-2xl bg-white/80 dark:bg-[#111114]/85 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl flex items-center justify-between gap-4 transition-all duration-500 hover:scale-[1.02]">
+    <div className="fixed top-20 md:top-auto md:bottom-6 right-4 left-4 md:left-auto z-[60] md:w-96 p-4 rounded-2xl bg-white/95 dark:bg-[#111114]/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl flex items-center justify-between gap-4 transition-all duration-500 hover:scale-[1.02] animate-in slide-in-from-top-4 duration-300">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-[#6068F0]/10 flex items-center justify-center text-[#6068F0]">
-          <Download className="h-5 w-5" />
+        <div className="w-9 h-9 rounded-xl bg-[#6068F0]/10 flex items-center justify-center text-[#6068F0] shrink-0">
+          <Download className="h-4.5 w-4.5" />
         </div>
         <div className="space-y-0.5">
-          <h4 className="text-xs font-bold text-slate-900 dark:text-white">Download ZenithFlow App</h4>
-          <p className="text-[10px] text-slate-500 dark:text-neutral-400 leading-normal">
-            Install on your home screen for quick offline access.
+          <h4 className="text-[11px] font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Install App</h4>
+          <p className="text-[10px] text-slate-500 dark:text-neutral-400 leading-tight">
+            Add to home screen for offline access.
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         <Button
           onClick={handleInstallClick}
-          className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-lg text-[10px] font-bold uppercase tracking-wider px-3.5 py-2 h-auto"
+          className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-lg text-[9px] font-extrabold uppercase tracking-wider px-3 py-1.5 h-auto"
         >
           Install
         </Button>
         <button
-          onClick={() => setIsVisible(false)}
+          onClick={handleDismiss}
           className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-white"
         >
           <X className="h-4 w-4" />
