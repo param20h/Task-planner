@@ -55,13 +55,33 @@ export default function PricingPage() {
   // Theme state: defaults to dark (#09090B) as requested
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
-  const CURRENCIES: Record<string, { symbol: string; monthly: number; yearly: number }> = {
-    INR: { symbol: "₹", monthly: 999, yearly: 9999 },
-    EUR: { symbol: "€", monthly: 11, yearly: 110 },
-    GBP: { symbol: "£", monthly: 10, yearly: 100 },
-    CAD: { symbol: "C$", monthly: 16, yearly: 160 },
-    AUD: { symbol: "A$", monthly: 18, yearly: 180 },
-    USD: { symbol: "$", monthly: 12, yearly: 120 }
+  const CURRENCIES: Record<string, { symbol: string; monthly: number; yearly: number; country: string }> = {
+    USD: { symbol: "$",   monthly: 12,    yearly: 120,   country: "US" },
+    INR: { symbol: "₹",   monthly: 999,   yearly: 9999,  country: "IN" },
+    EUR: { symbol: "€",   monthly: 11,    yearly: 110,   country: "EU" },
+    GBP: { symbol: "£",   monthly: 10,    yearly: 100,   country: "GB" },
+    CAD: { symbol: "C$",  monthly: 16,    yearly: 160,   country: "CA" },
+    AUD: { symbol: "A$",  monthly: 18,    yearly: 180,   country: "AU" },
+    BRL: { symbol: "R$",  monthly: 59,    yearly: 590,   country: "BR" },
+    JPY: { symbol: "¥",   monthly: 1800,  yearly: 18000, country: "JP" },
+    SGD: { symbol: "S$",  monthly: 16,    yearly: 160,   country: "SG" },
+    AED: { symbol: "د.إ", monthly: 44,    yearly: 440,   country: "AE" },
+    MXN: { symbol: "MX$", monthly: 200,   yearly: 2000,  country: "MX" },
+    CHF: { symbol: "Fr",  monthly: 11,    yearly: 110,   country: "CH" },
+    SEK: { symbol: "kr",  monthly: 130,   yearly: 1300,  country: "SE" },
+  };
+
+  // Country → currency code lookup for geo API responses
+  const COUNTRY_CURRENCY: Record<string, string> = {
+    US: "USD", IN: "INR", GB: "GBP", AU: "AUD", CA: "CAD",
+    BR: "BRL", JP: "JPY", SG: "SGD", AE: "AED", MX: "MXN",
+    CH: "CHF", SE: "SEK", NO: "SEK", DK: "SEK",
+    DE: "EUR", FR: "EUR", IT: "EUR", ES: "EUR", NL: "EUR",
+    BE: "EUR", AT: "EUR", PT: "EUR", FI: "EUR", IE: "EUR",
+    GR: "EUR", PL: "EUR", CZ: "EUR", SK: "EUR", SI: "EUR",
+    LU: "EUR", LT: "EUR", LV: "EUR", EE: "EUR", MT: "EUR", CY: "EUR",
+    HR: "EUR", RO: "EUR", BG: "EUR", HU: "EUR",
+    NZ: "AUD",
   };
 
   useEffect(() => {
@@ -92,42 +112,76 @@ export default function PricingPage() {
     }
 
     async function detectCurrency() {
+      // Helper to apply a resolved currency code
+      const applyCurrency = (code: string) => {
+        const entry = CURRENCIES[code];
+        if (entry) {
+          setCurrencyCode(code);
+          setCurrencySymbol(entry.symbol);
+          return true;
+        }
+        return false;
+      };
+
+      // ── Provider 1: ipapi.co ──────────────────────────────────────
       try {
-        const res = await fetch("https://ipapi.co/json/");
+        const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(4000) });
         if (res.ok) {
           const data = await res.json();
-          if (data.currency && CURRENCIES[data.currency]) {
-            setCurrencyCode(data.currency);
-            setCurrencySymbol(CURRENCIES[data.currency].symbol);
-            return;
+          // Try direct currency field first
+          if (data.currency && applyCurrency(data.currency)) return;
+          // Try mapping country_code → currency
+          if (data.country_code && COUNTRY_CURRENCY[data.country_code]) {
+            if (applyCurrency(COUNTRY_CURRENCY[data.country_code])) return;
           }
         }
-      } catch (err) {
-        console.warn("IP geolocation failed, trying timezone check:", err);
-      }
+      } catch { /* timeout or network error — try next provider */ }
 
-      // Fallback: approximate based on timezone
+      // ── Provider 2: ip-api.com (free, no key required) ────────────
+      try {
+        const res = await fetch("http://ip-api.com/json/?fields=countryCode,currency", { signal: AbortSignal.timeout(4000) });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.currency && applyCurrency(data.currency)) return;
+          if (data.countryCode && COUNTRY_CURRENCY[data.countryCode]) {
+            if (applyCurrency(COUNTRY_CURRENCY[data.countryCode])) return;
+          }
+        }
+      } catch { /* fallthrough to timezone */ }
+
+      // ── Provider 3: Intl timezone heuristic (offline fallback) ────
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (tz.includes("Kolkata") || tz.includes("Calcutta")) {
-          setCurrencyCode("INR");
-          setCurrencySymbol("₹");
-        } else if (tz.includes("Europe/London") || tz.includes("Europe/Belfast")) {
-          setCurrencyCode("GBP");
-          setCurrencySymbol("£");
-        } else if (tz.includes("Europe/")) {
-          setCurrencyCode("EUR");
-          setCurrencySymbol("€");
-        } else if (tz.includes("Australia/")) {
-          setCurrencyCode("AUD");
-          setCurrencySymbol("A$");
-        } else if (tz.includes("America/Toronto") || tz.includes("America/Vancouver")) {
-          setCurrencyCode("CAD");
-          setCurrencySymbol("C$");
-        }
-      } catch (e) {
-        console.warn("Timezone resolution failed, using default USD");
-      }
+        const tzMap: Record<string, string> = {
+          "Asia/Kolkata":         "INR",
+          "Asia/Calcutta":        "INR",
+          "Asia/Tokyo":           "JPY",
+          "Asia/Singapore":       "SGD",
+          "Asia/Dubai":           "AED",
+          "Asia/Riyadh":          "AED",
+          "America/Sao_Paulo":    "BRL",
+          "America/Mexico_City":  "MXN",
+          "America/Toronto":      "CAD",
+          "America/Vancouver":    "CAD",
+          "America/Edmonton":     "CAD",
+          "America/Winnipeg":     "CAD",
+          "Australia/Sydney":     "AUD",
+          "Australia/Melbourne":  "AUD",
+          "Australia/Brisbane":   "AUD",
+          "Australia/Perth":      "AUD",
+          "Pacific/Auckland":     "AUD",
+          "Europe/London":        "GBP",
+          "Europe/Belfast":       "GBP",
+          "Europe/Zurich":        "CHF",
+          "Europe/Stockholm":     "SEK",
+          "Europe/Oslo":          "SEK",
+          "Europe/Copenhagen":    "SEK",
+        };
+        // Exact match
+        if (tzMap[tz] && applyCurrency(tzMap[tz])) return;
+        // Prefix match for Europe/ → EUR
+        if (tz.startsWith("Europe/") && applyCurrency("EUR")) return;
+      } catch { /* give up, keep USD default */ }
     }
 
     checkUser();
@@ -248,12 +302,19 @@ export default function PricingPage() {
   };
 
   const ELITE_CATALOG: Record<string, { monthly: number; yearly: number }> = {
-    INR: { monthly: 2499, yearly: 24999 },
-    EUR: { monthly: 27, yearly: 270 },
-    GBP: { monthly: 24, yearly: 240 },
-    CAD: { monthly: 38, yearly: 380 },
-    AUD: { monthly: 42, yearly: 420 },
-    USD: { monthly: 29, yearly: 290 }
+    USD: { monthly: 29,    yearly: 290   },
+    INR: { monthly: 2499,  yearly: 24999 },
+    EUR: { monthly: 27,    yearly: 270   },
+    GBP: { monthly: 24,    yearly: 240   },
+    CAD: { monthly: 38,    yearly: 380   },
+    AUD: { monthly: 42,    yearly: 420   },
+    BRL: { monthly: 149,   yearly: 1490  },
+    JPY: { monthly: 4500,  yearly: 45000 },
+    SGD: { monthly: 40,    yearly: 400   },
+    AED: { monthly: 109,   yearly: 1090  },
+    MXN: { monthly: 499,   yearly: 4990  },
+    CHF: { monthly: 26,    yearly: 260   },
+    SEK: { monthly: 320,   yearly: 3200  },
   };
 
   const basePrice = "Free";
@@ -502,6 +563,30 @@ export default function PricingPage() {
                   2 Months Free
                 </span>
               </button>
+            </div>
+
+            {/* Currency detection badge */}
+            <div className="mt-5 flex items-center justify-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/80 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/[0.07] backdrop-blur-md">
+                {/* Globe icon */}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-[#A78BFA] shrink-0">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" opacity="0.6" />
+                  <path d="M12 2 Q7 12 12 22" opacity="0.6" />
+                  <path d="M12 2 Q17 12 12 22" opacity="0.6" />
+                </svg>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 uppercase tracking-widest">
+                  Prices in
+                </span>
+                <span className="text-[10px] font-extrabold text-slate-800 dark:text-white uppercase tracking-widest">
+                  {currencySymbol} {currencyCode}
+                </span>
+                {currencyCode !== "USD" && (
+                  <span className="text-[9px] text-slate-400 dark:text-neutral-500 font-medium normal-case tracking-normal">
+                    · auto-detected
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
