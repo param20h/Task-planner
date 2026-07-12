@@ -722,7 +722,7 @@ export default function PricingPage() {
                   <tr>
                     <td className="py-4 font-medium">AI Focus Coach Cognitive Insights</td>
                     <td className="py-4 text-slate-400 dark:text-neutral-500">Basic (1 evaluation/day)</td>
-                    <td className="py-4 font-bold text-[#A78BFA]">Advanced (Llama-3.3)</td>
+                    <td className="py-4 font-bold text-[#A78BFA]">Advanced</td>
                     <td className="py-4 font-bold text-[#FDBA74]">Custom Model Access</td>
                   </tr>
                   <tr>
