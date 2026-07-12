@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [groqKey, setGroqKey] = useState("");
+  const [hevyKey, setHevyKey] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("/AGENTS.png");
   const [plan, setPlan] = useState<"free" | "pro">("free");
 
@@ -135,7 +136,7 @@ export default function ProfilePage() {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("name, groq_api_key, plan")
+          .select("name, groq_api_key, hevy_api_key, plan")
           .eq("id", activeId)
           .single();
 
@@ -144,6 +145,7 @@ export default function ProfilePage() {
           else if (defaultName) setName(defaultName);
           
           if (data.groq_api_key) setGroqKey(data.groq_api_key);
+          if (data.hevy_api_key) setHevyKey(data.hevy_api_key || "");
           if (data.plan) setPlan(data.plan as "free" | "pro");
         } else {
           // Fallback if profiles row not fully propagated
@@ -151,8 +153,10 @@ export default function ProfilePage() {
           
           // Fallback to local storage
           const savedKey = localStorage.getItem("momentum_groq_key");
+          const savedHevy = localStorage.getItem("momentum_hevy_key");
           const savedName = localStorage.getItem("momentum_name");
           if (savedKey) setGroqKey(savedKey);
+          if (savedHevy) setHevyKey(savedHevy);
           if (savedName && !defaultName) setName(savedName);
         }
       } catch (err) {
@@ -181,6 +185,7 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     localStorage.setItem("momentum_groq_key", groqKey);
+    localStorage.setItem("momentum_hevy_key", hevyKey);
     localStorage.setItem("momentum_name", name);
     localStorage.setItem("momentum_appearance", String(appearance));
     localStorage.setItem("momentum_plan", plan);
@@ -193,6 +198,7 @@ export default function ProfilePage() {
           id: profileId,
           name: name,
           groq_api_key: groqKey,
+          hevy_api_key: hevyKey,
           plan: plan
         });
 
@@ -346,6 +352,40 @@ export default function ProfilePage() {
                       {plan === "pro" ? "Active" : "Standard"}
                     </span>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Developer API Keys Section */}
+            <div className="space-y-5">
+              <div className="border-b border-slate-100 dark:border-white/5 pb-3 flex items-center gap-2.5">
+                <Key className="h-4.5 w-4.5 text-[#6068F0]" />
+                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Integrations & API Keys</span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="groq-key" className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Groq API Key (AI Coach)</Label>
+                  <Input 
+                    id="groq-key"
+                    type="password"
+                    placeholder="gsk_..."
+                    value={groqKey} 
+                    onChange={(e) => setGroqKey(e.target.value)} 
+                    className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:border-[#6068F0]/40 transition-colors"
+                  />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <Label htmlFor="hevy-key" className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Hevy API Key (Gym Sync)</Label>
+                  <Input 
+                    id="hevy-key"
+                    type="password"
+                    placeholder="Enter Hevy Developer Key..."
+                    value={hevyKey} 
+                    onChange={(e) => setHevyKey(e.target.value)} 
+                    className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:border-[#6068F0]/40 transition-colors"
+                  />
                 </div>
               </div>
             </div>

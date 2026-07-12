@@ -18,12 +18,14 @@ import {
   Dumbbell,
   Play,
   Pause,
-  History
+  History,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
+import { api } from "@/lib/api";
 import { MuscleHeatmap } from "@/components/widgets/MuscleHeatmap";
 import { EXERCISE_PRESETS, getMuscleForExercise } from "@/lib/exerciseData";
 
@@ -141,6 +143,7 @@ export default function WorkoutPage() {
   // Active workout states
   const [workoutName, setWorkoutName] = useState("Push Day");
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Catalog exercises list
   const [searchQuery, setSearchQuery] = useState("");
@@ -292,6 +295,24 @@ export default function WorkoutPage() {
       }
     } catch (err) {
       console.error("Failed to query workouts:", err);
+    }
+  };
+
+  const handleSyncHevy = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await api.syncHevyWorkouts();
+      if (res && res.success) {
+        alert(`Successfully synced ${res.synced_count} new workouts from Hevy!`);
+        await loadWorkoutsFromDB();
+      } else {
+        alert("Hevy workouts are up-to-date!");
+      }
+    } catch (err: any) {
+      console.error("Hevy sync error:", err);
+      alert(err.message || "Failed to sync Hevy workouts. Check your API key in settings.");
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -495,8 +516,16 @@ export default function WorkoutPage() {
                    <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex flex-row items-center justify-between">
                     <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                       <History className="h-4.5 w-4.5 text-[#6068F0]" />
-                      Workout History (Supabase)
+                      Workout History
                     </CardTitle>
+                    <button
+                      onClick={handleSyncHevy}
+                      disabled={isSyncing}
+                      className="bg-[#6068F0]/10 border border-[#6068F0]/20 hover:bg-[#6068F0]/20 text-[#6068F0] dark:text-neutral-200 font-bold px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      <RefreshCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin")} />
+                      {isSyncing ? "Syncing..." : "Sync Hevy"}
+                    </button>
                   </CardHeader>
                   <CardContent className="px-0 space-y-4">
                     {pastWorkouts.length > 0 ? (

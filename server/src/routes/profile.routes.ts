@@ -10,7 +10,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .select("name, groq_api_key")
+      .select("name, groq_api_key, hevy_api_key")
       .eq("id", req.user!.id)
       .single();
 
@@ -29,12 +29,12 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
 // PUT / — update current user's profile
 router.put("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, groq_api_key } = req.body;
+    const { name, groq_api_key, hevy_api_key } = req.body;
 
     const { data, error } = await supabaseAdmin
       .from("profiles")
       .upsert(
-        { id: req.user!.id, name, groq_api_key },
+        { id: req.user!.id, name, groq_api_key, hevy_api_key },
         { onConflict: "id" }
       )
       .select()
