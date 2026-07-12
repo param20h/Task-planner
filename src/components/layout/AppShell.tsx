@@ -15,6 +15,7 @@ import {
   LineChart,
   BookOpenText,
   Brain,
+  GraduationCap,
   Settings,
   Sun,
   Moon,
@@ -23,6 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
+import { AlarmWidget } from "@/components/widgets/AlarmWidget";
 
 const Logo = ({ open }: { open: boolean }) => {
   return (
@@ -186,6 +188,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       title: "Food",
       href: "/food",
       icon: <Apple className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+    },
+    {
+      label: "Study",
+      title: "Study",
+      href: "/study",
+      icon: <GraduationCap className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
       label: "Workout",
@@ -387,6 +395,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </div>
+      
+      {/* Global Alarm Widget */}
+      <AlarmWidget />
     </div>
   );
 }

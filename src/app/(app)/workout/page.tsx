@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
+import { MuscleHeatmap } from "@/components/widgets/MuscleHeatmap";
+import { EXERCISE_PRESETS, getMuscleForExercise } from "@/lib/exerciseData";
 
 // Styling constants
 const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
@@ -145,33 +147,11 @@ export default function WorkoutPage() {
   const [selectedMuscleFilter, setSelectedMuscleFilter] = useState("All");
   const [alertPr, setAlertPr] = useState<string | null>("New PR! Bench Press 100kg");
 
-  const exerciseCatalog = [
-    { name: "Barbell Bench Press", category: "Chest", type: "Barbell" },
-    { name: "Incline Dumbbell Bench Press", category: "Chest", type: "Dumbbells" },
-    { name: "Incline Smith Machine Bench Press", category: "Chest", type: "Machine" },
-    { name: "Cable Fly", category: "Chest", type: "Cables" },
-    { name: "Weighted Chest Dips", category: "Chest", type: "Bodyweight" },
-    { name: "Barbell Squat", category: "Legs", type: "Barbell" },
-    { name: "Leg Press", category: "Legs", type: "Machine" },
-    { name: "Romanian Deadlift", category: "Legs", type: "Barbell" },
-    { name: "Leg Extension", category: "Legs", type: "Machine" },
-    { name: "Seated Calf Raise", category: "Legs", type: "Machine" },
-    { name: "Pull-up", category: "Back", type: "Bodyweight" },
-    { name: "Lat Pulldown", category: "Back", type: "Machine" },
-    { name: "Bent Over Barbell Row", category: "Back", type: "Barbell" },
-    { name: "Seated Cable Row", category: "Back", type: "Cables" },
-    { name: "Face Pull", category: "Back", type: "Cables" },
-    { name: "Dumbbell Shoulder Press", category: "Shoulders", type: "Dumbbells" },
-    { name: "Lateral Raise", category: "Shoulders", type: "Dumbbells" },
-    { name: "Rear Delt Fly", category: "Shoulders", type: "Dumbbells" },
-    { name: "EZ Bar Bicep Curl", category: "Arms", type: "Barbell" },
-    { name: "Incline Dumbbell Curl", category: "Arms", type: "Dumbbells" },
-    { name: "Tricep Rope Pushdown", category: "Arms", type: "Cables" },
-    { name: "Overhead Tricep Extension", category: "Arms", type: "Cables" },
-    { name: "Cable Crunch", category: "Abs", type: "Cables" },
-    { name: "Hanging Leg Raise", category: "Abs", type: "Bodyweight" },
-    { name: "Plank", category: "Abs", type: "Bodyweight" }
-  ];
+  const exerciseCatalog = EXERCISE_PRESETS.map(e => ({
+    name: e.name,
+    category: e.category,
+    type: e.primaryMuscle
+  }));
 
   // Overview aggregates
   const [weeklyDuration, setWeeklyDuration] = useState("4h 30m");
@@ -179,6 +159,7 @@ export default function WorkoutPage() {
   const [recoveryScore, setRecoveryScore] = useState(88);
   const [trainingLoad, setTrainingLoad] = useState(72);
   const [pastWorkouts, setPastWorkouts] = useState<any[]>([]);
+  const [muscleSets, setMuscleSets] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (activeTab === "log" && timerRunning) {
@@ -275,6 +256,25 @@ export default function WorkoutPage() {
         });
 
         setPastWorkouts(workoutsList);
+        
+        // Calculate muscle sets over past 7 days
+        const setsCount: Record<string, number> = {};
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        data.forEach(w => {
+          const workoutDate = new Date(w.start_time);
+          if (workoutDate >= sevenDaysAgo && w.gym_exercises) {
+            w.gym_exercises.forEach((ex: any) => {
+              const muscle = getMuscleForExercise(ex.exercise_name);
+              const numSets = Array.isArray(ex.sets) ? ex.sets.length : 0;
+              if (numSets > 0) {
+                setsCount[muscle] = (setsCount[muscle] || 0) + numSets;
+              }
+            });
+          }
+        });
+        setMuscleSets(setsCount);
         
         // Update aggregates
         const hrs = Math.floor(totalDuration / 60);
@@ -588,6 +588,9 @@ export default function WorkoutPage() {
                     <p>• <strong className="text-slate-900 dark:text-white">Form Target:</strong> Aim for 1-2 Reps in Reserve (RIR) on compounds.</p>
                   </div>
                 </Card>
+
+                {/* Visual Body Muscle Heatmap */}
+                <MuscleHeatmap muscleSets={muscleSets} />
               </div>
             </div>
           </div>

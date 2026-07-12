@@ -11,12 +11,14 @@ import {
   Utensils, 
   Salad, 
   Cookie, 
-  Droplet
+  Droplet,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
+import { FOOD_PRESETS, FoodPreset } from "@/lib/foodData";
 
 // Styling constants
 const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
@@ -35,6 +37,11 @@ export default function FoodPage() {
   const [customProt, setCustomProt] = useState("");
   const [customCarb, setCustomCarb] = useState("");
   const [customFat, setCustomFat] = useState("");
+
+  const [filteredPresets, setFilteredPresets] = useState<FoodPreset[]>([]);
+  const [showPresets, setShowPresets] = useState(false);
+  const [groqKey, setGroqKey] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   // Dynamic week days generation
   const getWeekDays = () => {
@@ -70,6 +77,8 @@ export default function FoodPage() {
         if (user) {
           setProfileId(user.id);
         }
+        const storedKey = localStorage.getItem("momentum_groq_key");
+        if (storedKey) setGroqKey(storedKey);
       } catch (err) {
         console.error("Failed to load session:", err);
       }
@@ -232,6 +241,78 @@ export default function FoodPage() {
     setCustomProt("");
     setCustomCarb("");
     setCustomFat("");
+  };
+
+  const handleFoodNameChange = (val: string) => {
+    setCustomName(val);
+    if (!val.trim()) {
+      setFilteredPresets([]);
+      setShowPresets(false);
+      return;
+    }
+    const filtered = FOOD_PRESETS.filter(p =>
+      p.name.toLowerCase().includes(val.toLowerCase())
+    ).slice(0, 5);
+    setFilteredPresets(filtered);
+    setShowPresets(filtered.length > 0);
+  };
+
+  const selectPreset = (preset: FoodPreset) => {
+    setCustomName(preset.name);
+    setCustomCal(String(preset.calories));
+    setCustomProt(String(preset.protein));
+    setCustomCarb(String(preset.carbs));
+    setCustomFat(String(preset.fats));
+    setShowPresets(false);
+  };
+
+  const handleAIEstimate = async () => {
+    if (!customName.trim()) {
+      alert("Please enter a food description first.");
+      return;
+    }
+    
+    const key = process.env.NEXT_PUBLIC_GROQ_API_KEY || groqKey;
+    if (!key) {
+      alert("Please configure your Groq API Key in your Profile/Settings page first to use AI estimation.");
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      const prompt = `You are a nutritional database expert. Analyze this food description: "${customName}" and estimate the calories (kcal), protein (g), carbs (g), and fats (g). Return ONLY a JSON object with keys: "food_name" (short summary), "calories", "protein", "carbs", "fats". Do not explain. Example response: {"food_name": "Ham Sandwich", "calories": 250, "protein": 14, "carbs": 24, "fats": 8}`;
+
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.1,
+          response_format: { type: "json_object" }
+        })
+      });
+
+      if (!res.ok) throw new Error("Groq API error");
+      const resultData = await res.json();
+      const content = resultData.choices?.[0]?.message?.content;
+      if (content) {
+        const parsed = JSON.parse(content);
+        if (parsed.food_name) setCustomName(parsed.food_name);
+        if (parsed.calories !== undefined) setCustomCal(String(parsed.calories));
+        if (parsed.protein !== undefined) setCustomProt(String(parsed.protein));
+        if (parsed.carbs !== undefined) setCustomCarb(String(parsed.carbs));
+        if (parsed.fats !== undefined) setCustomFat(String(parsed.fats));
+      }
+    } catch (err) {
+      console.error("AI Estimation failed:", err);
+      alert("Failed to get AI estimation. Please double-check your Groq API key or enter macros manually.");
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const handleDeleteFoodItem = async (id: any) => {
@@ -470,14 +551,50 @@ export default function FoodPage() {
               <form onSubmit={handleLogCustomFood} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Food Name</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Avocado Toast" 
-                    value={customName}
-                    onChange={(e) => setCustomName(e.target.value)}
-                    className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
-                    required
-                  />
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Avocado Toast" 
+                      value={customName}
+                      onChange={(e) => handleFoodNameChange(e.target.value)}
+                      onFocus={() => {
+                        if (customName.trim() && filteredPresets.length > 0) {
+                          setShowPresets(true);
+                        }
+                      }}
+                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 pr-20 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                      required
+                    />
+                    
+                    {/* AI Estimate Button overlay */}
+                    <button
+                      type="button"
+                      onClick={handleAIEstimate}
+                      disabled={aiLoading}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#6068F0]/10 border border-[#6068F0]/20 text-[#6068F0] hover:bg-[#6068F0]/20 font-bold px-2 py-1 rounded-md text-[9px] uppercase tracking-wider transition-colors flex items-center gap-1 disabled:opacity-50"
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      {aiLoading ? "Thinking..." : "AI"}
+                    </button>
+
+                    {/* Autocomplete Dropdown list */}
+                    {showPresets && (
+                      <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-[#111114] border border-slate-200 dark:border-white/10 rounded-xl shadow-lg z-50 overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+                        {filteredPresets.map((preset, index) => (
+                          <div
+                            key={index}
+                            onClick={() => selectPreset(preset)}
+                            className="px-4 py-2 text-xs hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-slate-700 dark:text-neutral-350"
+                          >
+                            <span className="font-bold">{preset.name}</span>
+                            <span className="text-[10px] text-neutral-400 font-mono">
+                              {preset.serving} | {preset.calories} kcal | {preset.protein}g P
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

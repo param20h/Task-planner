@@ -284,6 +284,23 @@ class ApiClient {
       method: "POST"
     });
   }
+
+  async getStudyLogs() {
+    return this.request<any[]>("/study");
+  }
+
+  async createStudyLog(subject: string, duration_minutes: number, notes?: string) {
+    return this.request<any>("/study", {
+      method: "POST",
+      body: { subject, duration_minutes, notes }
+    });
+  }
+
+  async deleteStudyLog(id: string) {
+    return this.request<{ success: boolean; message: string }>(`/study/${id}`, {
+      method: "DELETE"
+    });
+  }
 }
 
 export const api = new ApiClient();

@@ -19,6 +19,7 @@ import goalsRoutes from "./routes/goals.routes";
 import analyticsRoutes from "./routes/analytics.routes";
 import subscriptionRoutes from "./routes/subscription.routes";
 import adminRoutes from "./routes/admin.routes";
+import studyRoutes from "./routes/study.routes";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -62,6 +63,7 @@ app.use("/api/goals", goalsRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/study", studyRoutes);
 
 // Global error handler
 app.use(
