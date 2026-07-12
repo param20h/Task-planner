@@ -605,12 +605,12 @@ export default function WorkoutPage() {
               
               {/* Logger header */}
               <Card className={`${glassCardClass} p-6 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6`}>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
                   <input 
                     type="text" 
                     value={workoutName} 
                     onChange={(e) => setWorkoutName(e.target.value)} 
-                    className="bg-transparent text-2xl font-extrabold text-slate-900 dark:text-white focus:outline-none border-b border-dashed border-slate-200 dark:border-white/20 focus:border-[#6068F0] pb-0.5" 
+                    className="w-full max-w-xs sm:max-w-md bg-transparent text-2xl font-extrabold text-slate-900 dark:text-white focus:outline-none border-b border-dashed border-slate-200 dark:border-white/20 focus:border-[#6068F0] pb-0.5 truncate" 
                   />
                   
                   {/* Manual start/stop controls */}
