@@ -316,6 +316,172 @@ export default function WorkoutPage() {
     }
   };
 
+  const parseCSVRow = (text: string): string[] => {
+    const result = [];
+    let curVal = "";
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      if (char === '"' || char === "'") {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(curVal.trim().replace(/^["']|["']$/g, ""));
+        curVal = "";
+      } else {
+        curVal += char;
+      }
+    }
+    result.push(curVal.trim().replace(/^["']|["']$/g, ""));
+    return result;
+  };
+
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+
+      setIsSyncing(true);
+      try {
+        const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) {
+          alert("Empty CSV file.");
+          setIsSyncing(false);
+          return;
+        }
+
+        const headers = lines[0].split(",").map(h => h.replace(/^["']|["']$/g, "").trim());
+        const dateIdx = headers.indexOf("Date");
+        const nameIdx = headers.indexOf("Workout Name");
+        const exIdx = headers.indexOf("Exercise Name");
+        const wtIdx = headers.indexOf("Weight");
+        const repsIdx = headers.indexOf("Reps");
+        const noteIdx = headers.indexOf("Workout Notes");
+        const durIdx = headers.indexOf("Workout Duration");
+
+        if (dateIdx === -1 || nameIdx === -1 || exIdx === -1) {
+          alert("Invalid CSV format. Please export your history directly from the Hevy app.");
+          setIsSyncing(false);
+          return;
+        }
+
+        const workoutsMap: Record<string, {
+          date: string;
+          name: string;
+          notes: string;
+          durationMin: number;
+          exercises: Record<string, {
+            name: string;
+            sets: { reps: number; weight: number; completed: boolean }[];
+          }>;
+        }> = {};
+
+        for (let i = 1; i < lines.length; i++) {
+          const row = parseCSVRow(lines[i]);
+          if (row.length < headers.length) continue;
+
+          const dateVal = row[dateIdx];
+          const nameVal = row[nameIdx] || "Workout";
+          const exName = row[exIdx];
+          if (!dateVal || !exName) continue;
+
+          const key = `${dateVal}_${nameVal}`;
+          if (!workoutsMap[key]) {
+            let durVal = row[durIdx] || "";
+            let durMins = 45;
+            if (durVal) {
+              const cleaned = durVal.toLowerCase().replace(/[^0-9]/g, "");
+              const parsedDur = parseInt(cleaned);
+              if (!isNaN(parsedDur) && parsedDur > 0) durMins = parsedDur;
+            }
+
+            workoutsMap[key] = {
+              date: dateVal,
+              name: nameVal,
+              notes: row[noteIdx] || "Imported from Hevy CSV",
+              durationMin: durMins,
+              exercises: {}
+            };
+          }
+
+          const wObj = workoutsMap[key];
+          if (!wObj.exercises[exName]) {
+            wObj.exercises[exName] = {
+              name: exName,
+              sets: []
+            };
+          }
+
+          const wt = parseFloat(row[wtIdx]) || 0;
+          const reps = parseInt(row[repsIdx]) || 0;
+          wObj.exercises[exName].sets.push({
+            weight: wt,
+            reps: reps,
+            completed: true
+          });
+        }
+
+        let importedCount = 0;
+        for (const [_, w] of Object.entries(workoutsMap)) {
+          const formattedDate = w.date.replace(" ", "T") + ".000Z";
+
+          const { data: existing } = await supabase
+            .from("gym_workouts")
+            .select("id")
+            .eq("profile_id", profileId)
+            .eq("start_time", formattedDate)
+            .maybeSingle();
+
+          if (existing) continue;
+
+          const start = new Date(formattedDate);
+          const end = new Date(start.getTime() + w.durationMin * 60000);
+
+          const { data: newW, error: wErr } = await supabase
+            .from("gym_workouts")
+            .insert({
+              profile_id: profileId,
+              name: w.name,
+              start_time: start.toISOString(),
+              end_time: end.toISOString(),
+              notes: w.notes
+            })
+            .select()
+            .single();
+
+          if (wErr || !newW) {
+            console.error("Failed to insert imported workout:", wErr);
+            continue;
+          }
+
+          const exercisesList = Object.values(w.exercises);
+          for (const ex of exercisesList) {
+            await supabase
+              .from("gym_exercises")
+              .insert({
+                workout_id: newW.id,
+                exercise_name: ex.name,
+                sets: ex.sets.map(s => ({ reps: s.reps, weight: s.weight }))
+              });
+          }
+          importedCount++;
+        }
+
+        alert(`Successfully imported ${importedCount} workouts from your CSV!`);
+        await loadWorkoutsFromDB();
+      } catch (err) {
+        console.error("CSV import error:", err);
+        alert("Failed to parse CSV file. Please verify it is a valid Hevy CSV.");
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   useEffect(() => {
     async function getSession() {
       let activeId = "alex_chen";
@@ -518,14 +684,31 @@ export default function WorkoutPage() {
                       <History className="h-4.5 w-4.5 text-[#6068F0]" />
                       Workout History
                     </CardTitle>
-                    <button
-                      onClick={handleSyncHevy}
-                      disabled={isSyncing}
-                      className="bg-[#6068F0]/10 border border-[#6068F0]/20 hover:bg-[#6068F0]/20 text-[#6068F0] dark:text-neutral-200 font-bold px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1.5 disabled:opacity-50"
-                    >
-                      <RefreshCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin")} />
-                      {isSyncing ? "Syncing..." : "Sync Hevy"}
-                    </button>
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        id="hevy-csv-input"
+                        accept=".csv"
+                        onChange={handleImportCSV}
+                        className="hidden"
+                      />
+                      <button
+                        onClick={() => document.getElementById("hevy-csv-input")?.click()}
+                        disabled={isSyncing}
+                        className="bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        <RefreshCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin")} />
+                        {isSyncing ? "Importing..." : "Import CSV"}
+                      </button>
+                      <button
+                        onClick={handleSyncHevy}
+                        disabled={isSyncing}
+                        className="bg-[#6068F0]/10 border border-[#6068F0]/20 hover:bg-[#6068F0]/20 text-[#6068F0] dark:text-neutral-200 font-bold px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        <RefreshCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin")} />
+                        {isSyncing ? "Syncing..." : "Sync API"}
+                      </button>
+                    </div>
                   </CardHeader>
                   <CardContent className="px-0 space-y-4">
                     {pastWorkouts.length > 0 ? (
