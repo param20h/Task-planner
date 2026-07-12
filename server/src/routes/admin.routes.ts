@@ -77,9 +77,10 @@ router.post("/change-plan", authMiddleware, adminOnly, async (req: AuthRequest, 
       .eq("id", targetUserId)
       .single();
 
+    const planExpiresAt = plan === "pro" ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null;
     const { error } = await userClient
       .from("profiles")
-      .update({ plan })
+      .update({ plan, plan_expires_at: planExpiresAt })
       .eq("id", targetUserId);
 
     if (error) {

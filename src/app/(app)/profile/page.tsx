@@ -39,6 +39,7 @@ export default function ProfilePage() {
   const [groqKey, setGroqKey] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("/AGENTS.png");
   const [plan, setPlan] = useState<"free" | "pro">("free");
+  const [planExpiresAt, setPlanExpiresAt] = useState<string | null>(null);
 
   // Delete Account Modal States
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -135,7 +136,7 @@ export default function ProfilePage() {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("name, groq_api_key, plan")
+          .select("name, groq_api_key, plan, plan_expires_at")
           .eq("id", activeId)
           .single();
 
@@ -145,6 +146,7 @@ export default function ProfilePage() {
           
           if (data.groq_api_key) setGroqKey(data.groq_api_key);
           if (data.plan) setPlan(data.plan as "free" | "pro");
+          if (data.plan_expires_at) setPlanExpiresAt(data.plan_expires_at);
         } else {
           // Fallback if profiles row not fully propagated
           if (defaultName) setName(defaultName);
@@ -330,21 +332,36 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 col-span-1 md:col-span-2">
                   <Label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Subscription Plan</Label>
-                  <div className="flex items-center justify-between bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 min-h-[38px]">
-                    <span className="text-xs font-bold text-slate-800 dark:text-neutral-200 capitalize flex items-center gap-1.5">
-                      {plan === "pro" ? <Sparkles className="h-3.5 w-3.5 text-[#A78BFA] animate-pulse" /> : null}
-                      {plan === "pro" ? "Pro Plan" : "Free Tier"}
-                    </span>
-                    <span className={cn(
-                      "text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-md border tracking-wider",
-                      plan === "pro" 
-                        ? "bg-[#A78BFA]/15 text-[#A78BFA] border-[#A78BFA]/30" 
-                        : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-neutral-550 border-slate-200 dark:border-white/10"
-                    )}>
-                      {plan === "pro" ? "Active" : "Standard"}
-                    </span>
+                  <div className="flex flex-col gap-2.5 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 dark:text-neutral-200 capitalize flex items-center gap-1.5">
+                        {plan === "pro" ? <Sparkles className="h-3.5 w-3.5 text-[#A78BFA] animate-pulse" /> : null}
+                        {plan === "pro" ? "Pro Plan Upgrade" : "Free Tier Access"}
+                      </span>
+                      <span className={cn(
+                        "text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-md border tracking-wider",
+                        plan === "pro" 
+                          ? "bg-[#A78BFA]/15 text-[#A78BFA] border-[#A78BFA]/30" 
+                          : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-neutral-550 border-slate-200 dark:border-white/10"
+                      )}>
+                        {plan === "pro" ? "Active" : "Standard"}
+                      </span>
+                    </div>
+                    
+                    {plan === "pro" && planExpiresAt && (
+                      <p className="text-[10px] font-semibold text-slate-400 dark:text-neutral-500 border-t border-slate-200/50 dark:border-white/5 pt-2 flex items-center gap-1.5">
+                        <span>📅 Your Pro subscription will expire on:</span>
+                        <span className="text-slate-800 dark:text-[#A78BFA] font-bold">
+                          {new Date(planExpiresAt).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric"
+                          })}
+                        </span>
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

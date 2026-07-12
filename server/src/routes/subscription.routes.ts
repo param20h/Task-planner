@@ -172,12 +172,14 @@ router.post("/verify-payment", authMiddleware, async (req: AuthRequest, res: Res
       }
     });
 
+    const planExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     const { error } = await supabaseUserClient
       .from("profiles")
       .upsert(
         { 
           id: req.user!.id, 
-          plan: "pro" 
+          plan: "pro",
+          plan_expires_at: planExpiresAt
         },
         { onConflict: "id" }
       );

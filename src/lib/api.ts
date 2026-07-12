@@ -91,7 +91,7 @@ class ApiClient {
 
   // ─── Profile ─────────────────────────────────────────
   async getProfile() {
-    return this.request<{ name: string; groq_api_key: string }>("/profile");
+    return this.request<{ name: string; groq_api_key: string; plan: string; plan_expires_at?: string | null }>("/profile");
   }
 
   async updateProfile(data: { name: string; groq_api_key: string }) {

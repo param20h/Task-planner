@@ -10,13 +10,30 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .select("name, groq_api_key")
+      .select("name, groq_api_key, plan, plan_expires_at")
       .eq("id", req.user!.id)
       .single();
 
     if (error) {
       // Return empty object if profile not found
       return res.status(200).json({});
+    }
+
+    // Auto-expire Pro plan if current date is past plan_expires_at
+    if (data && data.plan === "pro" && data.plan_expires_at) {
+      const expiresAt = new Date(data.plan_expires_at);
+      const now = new Date();
+      if (expiresAt < now) {
+        // Update database to revert user plan back to free
+        await supabaseAdmin
+          .from("profiles")
+          .update({ plan: "free", plan_expires_at: null })
+          .eq("id", req.user!.id);
+        
+        data.plan = "free";
+        data.plan_expires_at = null;
+        console.log(`[Subscription Expiry] User ${req.user!.id} subscription expired and reverted to Free tier.`);
+      }
     }
 
     return res.status(200).json(data);
