@@ -350,25 +350,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Developer API Keys Section */}
-            <div className="space-y-5">
-              <div className="border-b border-slate-100 dark:border-white/5 pb-3 flex items-center gap-2.5">
-                <Key className="h-4.5 w-4.5 text-[#6068F0]" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Integrations & API Keys</span>
-              </div>
-              
-              <div className="space-y-1.5">
-                <Label htmlFor="groq-key" className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Groq API Key (AI Coach)</Label>
-                <Input 
-                  id="groq-key"
-                  type="password"
-                  placeholder="gsk_..."
-                  value={groqKey} 
-                  onChange={(e) => setGroqKey(e.target.value)} 
-                  className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:border-[#6068F0]/40 transition-colors"
-                />
-              </div>
-            </div>
 
             {/* Customization Preferences Section */}
             <div className="space-y-5">
@@ -417,29 +398,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Cloud & Data Synchronizer Section */}
-            <div className="space-y-5">
-              <div className="border-b border-slate-100 dark:border-white/5 pb-3 flex items-center gap-2.5">
-                <Database className="h-4.5 w-4.5 text-[#6068F0]" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Cloud Synchronizer</span>
-              </div>
-              
-              <div className="bg-slate-50 dark:bg-black/30 border border-slate-150 dark:border-white/5 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-1">
-                  <span className="text-xs font-bold text-slate-800 dark:text-neutral-200">Supabase DB Sync</span>
-                  <p className="text-[10px] text-slate-400 dark:text-neutral-550 leading-relaxed">Workspace data is securely backed up and synced in real-time.</p>
-                </div>
-                <div className="w-full md:w-64 space-y-1.5 shrink-0">
-                  <div className="flex justify-between text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
-                    <span>Storage limit</span>
-                    <span className="text-[#6068F0] font-extrabold">12.5 KB / 10 MB</span>
-                  </div>
-                  <div className="h-2 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#6068F0] to-[#A78BFA] rounded-full" style={{ width: "2%" }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
           </Card>
         </div>
