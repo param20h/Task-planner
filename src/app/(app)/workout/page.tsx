@@ -873,73 +873,104 @@ export default function WorkoutPage() {
 
                       {/* Set rows */}
                       <div className="space-y-2.5">
-                        <div className="grid grid-cols-12 gap-3 text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest px-2">
-                          <span className="col-span-2">Set</span>
-                          <span className="col-span-3">Target / Prev</span>
-                          <span className="col-span-3">KG</span>
-                          <span className="col-span-3">Reps</span>
-                          <span className="col-span-1 text-center">✓</span>
+                        <div className="grid grid-cols-12 gap-3 text-[10px] font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest px-2">
+                          <span className="col-span-2 text-center">Set</span>
+                          <span className="col-span-3 text-center">Target / Prev</span>
+                          <span className="col-span-3 text-center">Weight (kg)</span>
+                          <span className="col-span-3 text-center">Reps</span>
+                          <span className="col-span-1 text-center">✔</span>
                         </div>
 
                         {ex.sets.map((set, setIdx) => (
                           <div 
                             key={setIdx} 
                             className={cn(
-                              "grid grid-cols-12 gap-3 items-center p-1.5 rounded-xl border transition-all duration-300",
+                              "grid grid-cols-12 gap-3 items-center p-2 rounded-2xl border transition-all duration-350 ease-out",
                               set.completed 
-                                ? "bg-[#6068F0]/10 border-[#6068F0]/30" 
-                                : "bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5"
+                                ? "bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-500/5 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.03)]" 
+                                : "bg-slate-50 dark:bg-[#0c0d0f]/60 border-slate-200 dark:border-white/5 hover:border-[#6068F0]/30 hover:bg-slate-100 dark:hover:bg-[#111216]/85"
                             )}
                           >
-                            <span className="col-span-2 text-xs font-bold text-center text-slate-700 dark:text-white">{setIdx + 1}</span>
-                            <span className="col-span-3 text-[10px] text-slate-400 dark:text-neutral-500">{set.previous}</span>
+                            {/* Set Number Circular Badge */}
+                            <div className="col-span-2 flex justify-center">
+                              <span className={cn(
+                                "h-6 w-6 rounded-full border text-[10px] font-black flex items-center justify-center transition-all duration-300",
+                                set.completed 
+                                  ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-550 dark:text-emerald-400"
+                                  : "bg-slate-200/50 dark:bg-white/5 border-slate-300/40 dark:border-white/10 text-slate-600 dark:text-neutral-400"
+                              )}>
+                                {setIdx + 1}
+                              </span>
+                            </div>
+
+                            {/* Previous Perf / Target */}
+                            <span className={cn(
+                              "col-span-3 text-[10px] font-semibold tracking-tight truncate flex items-center justify-center gap-1",
+                              set.completed ? "text-emerald-600/70 dark:text-emerald-400/60" : "text-slate-400 dark:text-neutral-500"
+                            )}>
+                              {set.previous || "6–8 reps"}
+                            </span>
                             
+                            {/* Weight input */}
                             <div className="col-span-3">
                               <input 
                                 type="number" 
-                                placeholder="KG" 
-                                value={set.weight} 
+                                placeholder="0" 
+                                value={set.weight || ""} 
                                 onChange={(e) => handleUpdateSet(exIdx, setIdx, "weight", e.target.value)}
                                 disabled={set.completed}
-                                className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg py-1 px-2 text-xs text-center text-slate-900 dark:text-white focus:outline-none focus:border-[#6068F0]" 
+                                className={cn(
+                                  "w-full text-center text-xs font-black rounded-xl py-1.5 px-2 transition-all duration-300 outline-none",
+                                  set.completed
+                                    ? "bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 cursor-not-allowed"
+                                    : "bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:ring-1 focus:ring-[#6068F0]/30 focus:border-[#6068F0]"
+                                )}
                               />
                             </div>
 
+                            {/* Reps input */}
                             <div className="col-span-3">
                               <input 
                                 type="number" 
-                                placeholder="Reps" 
-                                value={set.reps} 
+                                placeholder="0" 
+                                value={set.reps || ""} 
                                 onChange={(e) => handleUpdateSet(exIdx, setIdx, "reps", e.target.value)}
                                 disabled={set.completed}
-                                className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg py-1 px-2 text-xs text-center text-slate-900 dark:text-white focus:outline-none focus:border-[#6068F0]" 
+                                className={cn(
+                                  "w-full text-center text-xs font-black rounded-xl py-1.5 px-2 transition-all duration-300 outline-none",
+                                  set.completed
+                                    ? "bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 cursor-not-allowed"
+                                    : "bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white focus:ring-1 focus:ring-[#6068F0]/30 focus:border-[#6068F0]"
+                                )}
                               />
                             </div>
 
+                            {/* Toggle completed button */}
                             <div className="col-span-1 flex justify-center">
                               <button 
                                 onClick={() => handleToggleSet(exIdx, setIdx)}
                                 className={cn(
-                                  "h-5 w-5 rounded-full border flex items-center justify-center transition-all duration-300",
+                                  "h-5 w-5 rounded-full border flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95",
                                   set.completed 
-                                    ? "bg-[#6068F0] border-[#6068F0] text-white" 
-                                    : "border-slate-200 dark:border-white/20 hover:border-slate-300 dark:hover:border-white/40"
+                                    ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.4)]" 
+                                    : "border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-white/5 hover:border-emerald-500/50 hover:bg-emerald-500/10 text-transparent hover:text-emerald-500"
                                 )}
                               >
-                                {set.completed && <Check className="h-3 w-3" />}
+                                <Check className="h-3 w-3 font-extrabold" />
                               </button>
                             </div>
                           </div>
                         ))}
                       </div>
 
-                      <Button 
+                      {/* Add Set Button */}
+                      <button 
                         onClick={() => handleAddSet(exIdx)}
-                        className="w-full border border-dashed border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white rounded-xl py-2 flex items-center justify-center gap-1.5 transition-all duration-300"
+                        className="w-full border border-dashed border-[#6068F0]/25 hover:border-[#6068F0]/60 bg-[#6068F0]/5 hover:bg-[#6068F0]/10 text-[#6068F0] font-bold rounded-2xl py-3 text-xs tracking-wider transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-[0_0_15px_rgba(96,104,240,0.15)]"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         Add Set
-                      </Button>
+                      </button>
                     </CardContent>
                   </Card>
                 ))
