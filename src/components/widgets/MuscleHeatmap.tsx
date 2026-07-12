@@ -8,16 +8,16 @@ type MuscleHeatmapProps = {
 };
 
 export function MuscleHeatmap({ muscleSets }: MuscleHeatmapProps) {
-  // Highlight opacity based on sets completed
+  // Highlight opacity based on sets completed to simulate glowing intensity
   const getGlowOpacity = (sets: number) => {
     if (!sets || sets === 0) return 0;
-    return Math.min(0.9, 0.4 + sets * 0.1);
+    return Math.min(0.95, 0.35 + sets * 0.12);
   };
 
   const getIntensityText = (sets: number) => {
     if (!sets || sets === 0) return "Inactive";
     if (sets < 3) return "Light Load";
-    if (sets < 6) return "Optimal Load";
+    if (sets < 6) return "Optimal";
     return "High Intensity";
   };
 
@@ -41,7 +41,7 @@ export function MuscleHeatmap({ muscleSets }: MuscleHeatmapProps) {
       <span className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-6">Muscle Heatmap</span>
 
       {/* Silhouettes Layout */}
-      <div className="flex justify-center items-center gap-12 mb-8 flex-wrap">
+      <div className="flex justify-center items-center gap-16 mb-8 flex-wrap">
         
         {/* FRONT VIEW */}
         <div className="flex flex-col items-center">
@@ -50,8 +50,8 @@ export function MuscleHeatmap({ muscleSets }: MuscleHeatmapProps) {
           <svg className="w-36 h-72" viewBox="0 0 100 240" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               {/* Blur filter to generate organic glow */}
-              <filter id="soft-glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="3.5" result="blur" />
+              <filter id="soft-glow-front" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4.5" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
@@ -62,43 +62,45 @@ export function MuscleHeatmap({ muscleSets }: MuscleHeatmapProps) {
             {/* ── BASE BODY SILHOUETTE (FRONT) ── */}
             <g opacity="0.95">
               {/* Head */}
-              <ellipse cx="50" cy="24" rx="4.5" ry="6.5" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <ellipse cx="50" cy="24" rx="4.5" ry="7" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Neck */}
-              <rect x="49" y="30.5" width="2" height="4.5" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <rect x="49" y="31" width="2" height="5" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Torso */}
-              <path d="M 36 35 H 64 L 57 90 H 43 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 37 36 H 63 V 86 H 37 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
+              {/* Pelvis/Hips */}
+              <path d="M 43 86 H 57 V 98 H 43 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Left Arm */}
-              <path d="M 36 35 L 24 41 L 27 80 H 31 L 35 52 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 37 36 L 20 42 L 23 90 H 28 L 31 52 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Right Arm */}
-              <path d="M 64 35 L 76 41 L 73 80 H 69 L 65 52 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 63 36 L 80 42 L 77 90 H 72 L 69 52 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Left Leg */}
-              <path d="M 43 92 H 49.5 V 210 H 46.5 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 43 98 H 49.5 V 215 H 46.5 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Right Leg */}
-              <path d="M 57 92 H 50.5 V 210 H 53.5 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 57 98 H 50.5 V 215 H 53.5 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
             </g>
 
             {/* ── GLOWING MUSCLE OVERLAYS (FRONT) ── */}
             {/* Shoulders */}
-            <circle cx="28" cy="42" r="4" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Shoulders"] || 0)} />
-            <circle cx="72" cy="42" r="4" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Shoulders"] || 0)} />
+            <circle cx="23" cy="44" r="5" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Shoulders"] || 0)} />
+            <circle cx="77" cy="44" r="5" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Shoulders"] || 0)} />
 
             {/* Chest */}
-            <ellipse cx="50" cy="47" rx="7.5" ry="4" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Chest"] || 0)} />
+            <ellipse cx="50" cy="48" rx="8" ry="5.5" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Chest"] || 0)} />
 
             {/* Biceps */}
-            <ellipse cx="28.5" cy="54" rx="2" ry="4" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Biceps"] || 0)} />
-            <ellipse cx="71.5" cy="54" rx="2" ry="4" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Biceps"] || 0)} />
+            <ellipse cx="23" cy="58" rx="2.5" ry="5.5" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Biceps"] || 0)} />
+            <ellipse cx="77" cy="58" rx="2.5" ry="5.5" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Biceps"] || 0)} />
 
             {/* Forearms */}
-            <ellipse cx="29" cy="68" rx="1.5" ry="3.5" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Forearms"] || 0)} />
-            <ellipse cx="71" cy="68" rx="1.5" ry="3.5" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Forearms"] || 0)} />
+            <ellipse cx="25.5" cy="76" rx="2" ry="5" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Forearms"] || 0)} />
+            <ellipse cx="74.5" cy="76" rx="2" ry="5" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Forearms"] || 0)} />
 
             {/* Abs */}
-            <ellipse cx="50" cy="64" rx="4.5" ry="8" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Abs"] || 0)} />
+            <ellipse cx="50" cy="68" rx="5" ry="9" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Abs"] || 0)} />
 
             {/* Quads */}
-            <ellipse cx="44" cy="115" rx="3.5" ry="12" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Quads"] || 0)} />
-            <ellipse cx="56" cy="115" rx="3.5" ry="12" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Quads"] || 0)} />
+            <ellipse cx="45" cy="128" rx="3.5" ry="14" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Quads"] || 0)} />
+            <ellipse cx="55" cy="128" rx="3.5" ry="14" fill="#3b82f6" filter="url(#soft-glow-front)" opacity={getGlowOpacity(muscleSets["Quads"] || 0)} />
           </svg>
         </div>
 
@@ -107,50 +109,63 @@ export function MuscleHeatmap({ muscleSets }: MuscleHeatmapProps) {
           <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-wider mb-4">Back View</span>
           
           <svg className="w-36 h-72" viewBox="0 0 100 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              {/* Blur filter to generate organic glow */}
+              <filter id="soft-glow-back" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
             {/* ── BASE BODY SILHOUETTE (BACK) ── */}
             <g opacity="0.95">
               {/* Head */}
-              <ellipse cx="50" cy="24" rx="4.5" ry="6.5" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <ellipse cx="50" cy="24" rx="4.5" ry="7" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Neck */}
-              <rect x="49" y="30.5" width="2" height="4.5" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <rect x="49" y="31" width="2" height="5" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Torso */}
-              <path d="M 36 35 H 64 L 57 90 H 43 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 37 36 H 63 V 86 H 37 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
+              {/* Pelvis/Hips */}
+              <path d="M 43 86 H 57 V 98 H 43 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Left Arm */}
-              <path d="M 36 35 L 24 41 L 27 80 H 31 L 35 52 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 37 36 L 20 42 L 23 90 H 28 L 31 52 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Right Arm */}
-              <path d="M 64 35 L 76 41 L 73 80 H 69 L 65 52 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 63 36 L 80 42 L 77 90 H 72 L 69 52 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Left Leg */}
-              <path d="M 43 92 H 49.5 V 210 H 46.5 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 43 98 H 49.5 V 215 H 46.5 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
               {/* Right Leg */}
-              <path d="M 57 92 H 50.5 V 210 H 53.5 Z" fill="#1b1c1e" stroke="#2a2b2f" strokeWidth="0.5" />
+              <path d="M 57 98 H 50.5 V 215 H 53.5 Z" fill="#1b1c1e" stroke="#2d2f34" strokeWidth="0.8" />
             </g>
 
             {/* ── GLOWING MUSCLE OVERLAYS (BACK) ── */}
             {/* Shoulders */}
-            <circle cx="28" cy="42" r="4" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Shoulders"] || 0)} />
-            <circle cx="72" cy="42" r="4" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Shoulders"] || 0)} />
+            <circle cx="23" cy="44" r="5" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Shoulders"] || 0)} />
+            <circle cx="77" cy="44" r="5" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Shoulders"] || 0)} />
 
             {/* Upper Back */}
-            <ellipse cx="50" cy="44" rx="7" ry="4" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Upper Back"] || 0)} />
+            <ellipse cx="50" cy="48" rx="8" ry="4.5" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Upper Back"] || 0)} />
 
             {/* Lats */}
-            <ellipse cx="50" cy="58" rx="6" ry="9" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Lats"] || 0)} />
+            <ellipse cx="50" cy="68" rx="6" ry="10" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Lats"] || 0)} />
 
             {/* Triceps */}
-            <ellipse cx="28.5" cy="54" rx="2" ry="4.5" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Triceps"] || 0)} />
-            <ellipse cx="71.5" cy="54" rx="2" ry="4.5" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Triceps"] || 0)} />
+            <ellipse cx="23" cy="58" rx="2.5" ry="5.5" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Triceps"] || 0)} />
+            <ellipse cx="77" cy="58" rx="2.5" ry="5.5" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Triceps"] || 0)} />
 
             {/* Forearms */}
-            <ellipse cx="29" cy="68" rx="1.5" ry="3.5" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Forearms"] || 0)} />
-            <ellipse cx="71" cy="68" rx="1.5" ry="3.5" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Forearms"] || 0)} />
+            <ellipse cx="25.5" cy="76" rx="2" ry="5" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Forearms"] || 0)} />
+            <ellipse cx="74.5" cy="76" rx="2" ry="5" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Forearms"] || 0)} />
 
             {/* Hamstrings */}
-            <ellipse cx="44" cy="115" rx="3.5" ry="12" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Hamstrings"] || 0)} />
-            <ellipse cx="56" cy="115" rx="3.5" ry="12" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Hamstrings"] || 0)} />
+            <ellipse cx="45" cy="128" rx="3.5" ry="14" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Hamstrings"] || 0)} />
+            <ellipse cx="55" cy="128" rx="3.5" ry="14" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Hamstrings"] || 0)} />
 
             {/* Calves */}
-            <ellipse cx="43.5" cy="158" rx="2.5" ry="8" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Calves"] || 0)} />
-            <ellipse cx="56.5" cy="158" rx="2.5" ry="8" fill="#3b82f6" filter="url(#soft-glow)" opacity={getGlowOpacity(muscleSets["Calves"] || 0)} />
+            <ellipse cx="45" cy="172" rx="3.2" ry="10" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Calves"] || 0)} />
+            <ellipse cx="55" cy="172" rx="3.2" ry="10" fill="#3b82f6" filter="url(#soft-glow-back)" opacity={getGlowOpacity(muscleSets["Calves"] || 0)} />
           </svg>
         </div>
 
