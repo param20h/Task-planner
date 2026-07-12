@@ -298,3 +298,91 @@ export const CustomCookieIcon = ({ size, className, ...props }: IconProps) => (
     <circle cx="13" cy="15" r="1" fill="currentColor" stroke="none" />
   </svg>
 );
+
+// ── Landing-page only icons ───────────────────────────────────────────────────
+
+// Habit Engine icon — interlocking chain links with a gradient glow
+export const CustomHabitIcon = ({ size, className, ...props }: IconProps) => (
+  <svg {...baseSvgProps(size)} className={className} {...props}>
+    <defs>
+      <linearGradient id="habitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#FDBA74" stopOpacity="0.55" />
+        <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.08" />
+      </linearGradient>
+      <radialGradient id="habitGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#FDBA74" stopOpacity="0.3" />
+        <stop offset="100%" stopColor="#FDBA74" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    <circle cx="12" cy="12" r="9" fill="url(#habitGlow)" />
+    {/* Outer ring */}
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none" />
+    {/* Inner pattern — a recurring check loop */}
+    <path d="M8 12l2.5 2.5L16 9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    {/* Orbit arc top */}
+    <path d="M7 5.5 Q12 3 17 5.5" stroke="url(#habitGrad)" strokeWidth="1.5" fill="none" strokeDasharray="3 2" />
+    {/* Orbit arc bottom */}
+    <path d="M7 18.5 Q12 21 17 18.5" stroke="url(#habitGrad)" strokeWidth="1.5" fill="none" strokeDasharray="3 2" />
+  </svg>
+);
+
+// Globe icon — meridian arcs with radial glow for the "worldwide" feel
+export const CustomGlobeIcon = ({ size, className, ...props }: IconProps) => (
+  <svg {...baseSvgProps(size)} className={className} {...props}>
+    <defs>
+      <linearGradient id="globeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#6068F0" stopOpacity="0.5" />
+        <stop offset="100%" stopColor="#A78BFA" stopOpacity="0.08" />
+      </linearGradient>
+    </defs>
+    <circle cx="12" cy="12" r="10" fill="url(#globeGrad)" stroke="currentColor" strokeWidth="2" />
+    {/* Horizontal equator */}
+    <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="1.5" opacity="0.7" />
+    {/* Vertical prime meridian */}
+    <line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" strokeWidth="1.5" opacity="0.7" />
+    {/* Curved latitude arcs */}
+    <path d="M6 7.5 Q12 5 18 7.5" stroke="currentColor" strokeWidth="1.3" fill="none" opacity="0.6" />
+    <path d="M6 16.5 Q12 19 18 16.5" stroke="currentColor" strokeWidth="1.3" fill="none" opacity="0.6" />
+    {/* Longitude arcs */}
+    <path d="M12 2 Q7 12 12 22" stroke="currentColor" strokeWidth="1.3" fill="none" opacity="0.6" />
+    <path d="M12 2 Q17 12 12 22" stroke="currentColor" strokeWidth="1.3" fill="none" opacity="0.6" />
+  </svg>
+);
+
+// Camera icon — stylised lens aperture with gradient fill
+export const CustomCameraIcon = ({ size, className, ...props }: IconProps) => (
+  <svg {...baseSvgProps(size)} className={className} {...props}>
+    <defs>
+      <radialGradient id="camGrad" cx="50%" cy="55%" r="50%">
+        <stop offset="0%" stopColor="#A78BFA" stopOpacity="0.4" />
+        <stop offset="100%" stopColor="#6068F0" stopOpacity="0.04" />
+      </radialGradient>
+    </defs>
+    {/* Body */}
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" fill="url(#camGrad)" stroke="currentColor" strokeWidth="2" />
+    {/* Lens outer */}
+    <circle cx="12" cy="13" r="4" fill="none" stroke="currentColor" strokeWidth="2" />
+    {/* Lens inner highlight dot */}
+    <circle cx="12" cy="13" r="1.5" fill="currentColor" fillOpacity="0.35" stroke="none" />
+    {/* Flash indicator */}
+    <line x1="6.5" y1="9" x2="6.5" y2="9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+  </svg>
+);
+
+// Message/Chat icon — speech bubble with a neural dot pattern inside
+export const CustomMessageIcon = ({ size, className, ...props }: IconProps) => (
+  <svg {...baseSvgProps(size)} className={className} {...props}>
+    <defs>
+      <linearGradient id="msgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#A78BFA" stopOpacity="0.4" />
+        <stop offset="100%" stopColor="#6068F0" stopOpacity="0.06" />
+      </linearGradient>
+    </defs>
+    {/* Bubble shape */}
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="url(#msgGrad)" stroke="currentColor" strokeWidth="2" />
+    {/* Inner dot pattern mimicking a thinking signal */}
+    <circle cx="9" cy="10.5" r="1" fill="currentColor" fillOpacity="0.6" stroke="none" />
+    <circle cx="12" cy="10.5" r="1" fill="currentColor" fillOpacity="0.6" stroke="none" />
+    <circle cx="15" cy="10.5" r="1" fill="currentColor" fillOpacity="0.6" stroke="none" />
+  </svg>
+);

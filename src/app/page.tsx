@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Triangle, 
   Brain, 
@@ -385,9 +385,18 @@ export default function Home() {
                 </>
               )}
 
-              {/* Mobile hamburger menu */}
-              <button className="lg:hidden text-slate-600 dark:text-neutral-400 ml-1" onClick={() => setMenuOpen(!menuOpen)}>
-                <Menu className="h-5 w-5" />
+              {/* Mobile hamburger — animated ☰ / ✕ toggle */}
+              <button
+                className="lg:hidden flex items-center justify-center h-8 w-8 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ml-1"
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-label="Toggle navigation"
+              >
+                <motion.div
+                  animate={menuOpen ? { rotate: 90, opacity: 0.7 } : { rotate: 0, opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Menu className="h-4 w-4" />
+                </motion.div>
               </button>
             </div>
 
@@ -395,33 +404,90 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Mobile Drawer Navigation */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-40 bg-[#09090B]/95 backdrop-blur-2xl flex flex-col justify-center items-center gap-8 text-xl font-bold uppercase tracking-widest text-[#A1A1AA] border-b border-white/10">
-          <button className="absolute top-8 right-8 text-white text-3xl" onClick={() => setMenuOpen(false)}>✕</button>
-          <a href="#features" onClick={() => setMenuOpen(false)} className="hover:text-white">Features</a>
-          <Link href="/pricing" onClick={() => setMenuOpen(false)} className="hover:text-white">Pricing</Link>
-          <a href="#coach" onClick={() => setMenuOpen(false)} className="hover:text-white">AI Coach</a>
-          <a href="#analytics" onClick={() => setMenuOpen(false)} className="hover:text-white">Analytics</a>
-          <a href="#about" onClick={() => setMenuOpen(false)} className="hover:text-white">About</a>
-          {isLoggedIn ? (
-            <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
-              <button className="bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-8 py-3 rounded-full text-sm font-extrabold tracking-widest">
-                Dashboard
-              </button>
-            </Link>
-          ) : (
-            <>
-              <Link href="/login" onClick={() => setMenuOpen(false)} className="text-white">Login</Link>
-              <Link href="/register" onClick={() => setMenuOpen(false)}>
-                <button className="bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black px-8 py-3 rounded-full text-sm font-extrabold tracking-widest">
-                  Register
-                </button>
-              </Link>
-            </>
-          )}
-        </div>
-      )}
+      {/* Mobile Dropdown Navigation — slides down from navbar, no backdrop */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            key="mobile-nav-dropdown"
+            initial={{ opacity: 0, y: -12, scaleY: 0.95 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: -12, scaleY: 0.95 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: "top center" }}
+            className="fixed top-[64px] left-4 right-4 z-40 lg:hidden rounded-2xl border border-slate-200/60 dark:border-white/[0.08] bg-white/95 dark:bg-[#0e0e10]/95 backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.25)] overflow-hidden"
+          >
+            {/* Subtle top gradient line */}
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-[#A78BFA]/40 to-transparent" />
+
+            <div className="p-4 space-y-1">
+              {[
+                { label: "Features",  href: "#features",   isLink: false },
+                { label: "Pricing",   href: "/pricing",    isLink: true  },
+                { label: "AI Coach",  href: "#coach",      isLink: false },
+                { label: "Analytics", href: "#analytics",  isLink: false },
+                { label: "About",     href: "#about",      isLink: false },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.04 + i * 0.045, duration: 0.2 }}
+                >
+                  {item.isLink ? (
+                    <Link
+                      href={item.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center w-full px-4 py-3 rounded-xl text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#A78BFA] transition-colors duration-150"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={item.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center w-full px-4 py-3 rounded-xl text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-[#A78BFA] transition-colors duration-150"
+                    >
+                      {item.label}
+                    </a>
+                  )}
+                </motion.div>
+              ))}
+
+              {/* Divider */}
+              <div className="my-2 border-t border-slate-100 dark:border-white/5" />
+
+              {/* Auth buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.28, duration: 0.2 }}
+                className="flex flex-col gap-2 px-1 pt-1"
+              >
+                {isLoggedIn ? (
+                  <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
+                    <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3 rounded-xl text-sm font-extrabold tracking-widest transition-opacity hover:opacity-90">
+                      Dashboard →
+                    </button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/login" onClick={() => setMenuOpen(false)}>
+                      <button className="w-full border border-slate-200 dark:border-white/10 text-slate-700 dark:text-neutral-300 py-2.5 rounded-xl text-sm font-bold tracking-wider hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                        Login
+                      </button>
+                    </Link>
+                    <Link href="/register" onClick={() => setMenuOpen(false)}>
+                      <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3 rounded-xl text-sm font-extrabold tracking-widest transition-opacity hover:opacity-90">
+                        Register
+                      </button>
+                    </Link>
+                  </>
+                )}
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Main Layout ── */}
       <main className="relative z-10 pt-24">
