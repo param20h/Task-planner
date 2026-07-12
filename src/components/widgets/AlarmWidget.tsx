@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Clock, Bell, BellOff, Plus, Trash2, X, Play, Volume2, VolumeX } from "lucide-react";
+import { Bell, BellOff, Plus, Trash2, X, Play, Volume2, VolumeX } from "lucide-react";
+import { CustomClockIcon } from "@/components/ui/CustomIcons";
 import { cn } from "@/lib/utils";
 
 // Types
@@ -240,7 +241,7 @@ export function AlarmWidget() {
           <div className="bg-[#111114]/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 w-80 rounded-[24px] shadow-2xl p-5 mb-4 animate-slide-up text-slate-800 dark:text-neutral-300">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 mb-4">
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-[#A78BFA]" />
+                <CustomClockIcon className="h-4 w-4 text-[#A78BFA]" />
                 <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-white uppercase">Zenith Alarms</span>
               </div>
               <div className="flex items-center gap-1">
@@ -352,7 +353,7 @@ export function AlarmWidget() {
               : "bg-white dark:bg-[#111114]/90 text-[#A78BFA] border-slate-200 dark:border-white/10 hover:scale-105"
           )}
         >
-          {isOpen ? <X className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
+          {isOpen ? <X className="h-5 w-5" /> : <CustomClockIcon className="h-5 w-5" />}
         </button>
       </div>
     </>

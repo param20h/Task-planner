@@ -7,21 +7,23 @@ import { usePathname, useRouter } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  LayoutGrid,
-  Calendar,
-  Apple,
-  Dumbbell,
-  Target,
-  LineChart,
-  BookOpenText,
-  Brain,
-  GraduationCap,
-  Settings,
   Sun,
   Moon,
   LogOut,
   Shield
 } from "lucide-react";
+import {
+  CustomDashboardIcon,
+  CustomPlannerIcon,
+  CustomFoodIcon,
+  CustomStudyIcon,
+  CustomWorkoutIcon,
+  CustomGoalsIcon,
+  CustomAnalyticsIcon,
+  CustomJournalIcon,
+  CustomCoachIcon,
+  CustomSettingsIcon
+} from "@/components/ui/CustomIcons";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { AlarmWidget } from "@/components/widgets/AlarmWidget";
@@ -175,55 +177,55 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       label: "Dashboard",
       title: "Dashboard",
       href: "/dashboard",
-      icon: <LayoutGrid className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      icon: <CustomDashboardIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
       label: "Planner",
       title: "Planner",
       href: "/planner",
-      icon: <Calendar className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      icon: <CustomPlannerIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
       label: "Food",
       title: "Food",
       href: "/food",
-      icon: <Apple className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      icon: <CustomFoodIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
       label: "Study",
       title: "Study",
       href: "/study",
-      icon: <GraduationCap className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      icon: <CustomStudyIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
       label: "Workout",
       title: "Workout",
       href: "/workout",
-      icon: <Dumbbell className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      icon: <CustomWorkoutIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
       label: "Goals",
       title: "Goals",
       href: "/goals",
-      icon: <Target className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      icon: <CustomGoalsIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
       label: "Analytics",
       title: "Analytics",
       href: "/analytics",
-      icon: <LineChart className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      icon: <CustomAnalyticsIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
       label: "Journal",
       title: "Journal",
       href: "/journal",
-      icon: <BookOpenText className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      icon: <CustomJournalIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
       label: "AI Coach",
       title: "AI Coach",
       href: "/ai-coach",
-      icon: <Brain className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      icon: <CustomCoachIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
       badge: "PRO"
     },
   ];
@@ -244,7 +246,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(167,139,250,0.05)_0%,transparent_65%)]" />
         <div className="relative flex flex-col items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-[#A78BFA]/10 border border-[#A78BFA]/30 flex items-center justify-center text-[#A78BFA] animate-pulse">
-            <Brain className="h-5 w-5 animate-pulse" />
+            <CustomCoachIcon className="h-5 w-5 animate-pulse" />
           </div>
           <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-neutral-500 animate-pulse font-sans">
             Synchronizing Workspace...
@@ -317,7 +319,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 link={{
                   label: "Settings",
                   href: "/profile",
-                  icon: <Settings className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+                  icon: <CustomSettingsIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
                 }}
                 className={cn(
                   "transition-all duration-300 border border-transparent flex items-center group/sidebar",

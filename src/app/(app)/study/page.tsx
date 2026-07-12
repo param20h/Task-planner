@@ -3,21 +3,22 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  Timer, 
   Play, 
   Pause, 
   RotateCcw, 
   BookOpen, 
   Plus, 
   Trash2, 
-  GraduationCap, 
   Calendar,
   Volume2,
   VolumeX,
-  Clock,
   CheckCircle,
   FileText
 } from "lucide-react";
+import {
+  CustomClockIcon,
+  CustomStudyIcon
+} from "@/components/ui/CustomIcons";
 import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
@@ -307,7 +308,7 @@ export default function StudyPage() {
         <Spotlight className="-top-40 left-10 text-[#A78BFA]" />
         <div className="flex flex-col gap-1.5">
           <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase flex items-center gap-3">
-            <GraduationCap className="h-8 w-8 text-[#A78BFA]" />
+            <CustomStudyIcon className="h-8 w-8 text-[#A78BFA]" />
             Study Tracker
           </h1>
           <p className="text-xs text-slate-500 dark:text-neutral-400 font-bold uppercase tracking-wider pl-1">
@@ -321,7 +322,7 @@ export default function StudyPage() {
         <Card className={glassCardClass}>
           <CardContent className="p-6 flex items-center gap-4">
             <div className={glassIconWrapperClass}>
-              <Clock className="h-5 w-5 text-[#A78BFA]" />
+              <CustomClockIcon className="h-5 w-5 text-[#A78BFA]" />
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest">Time Studied Today</p>
@@ -363,7 +364,7 @@ export default function StudyPage() {
           <Card className={`${glassCardClass} p-6 flex flex-col items-center`}>
             <CardHeader className="w-full px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-6 flex-row items-center justify-between">
               <CardTitle className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                <Timer className="h-4 w-4 text-[#A78BFA]" />
+                <CustomClockIcon className="h-4 w-4 text-[#A78BFA]" />
                 Pomodoro Focus Timer
               </CardTitle>
               

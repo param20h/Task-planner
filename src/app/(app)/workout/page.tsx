@@ -5,22 +5,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Heart, 
   Activity, 
-  Flame, 
   ShieldAlert, 
-  Sparkles, 
   Plus, 
   Check, 
   Trash2, 
   Award, 
   Search, 
-  Timer,
-  ChevronDown,
-  Dumbbell,
-  Play,
-  Pause,
-  History,
+  ChevronDown, 
+  Play, 
+  Pause, 
   RefreshCw
 } from "lucide-react";
+import {
+  CustomWorkoutIcon,
+  CustomFlameIcon,
+  CustomClockIcon,
+  CustomSparklesIcon
+} from "@/components/ui/CustomIcons";
 import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
@@ -646,7 +647,7 @@ export default function WorkoutPage() {
                       <span className="text-xl font-extrabold text-slate-900 dark:text-white mt-1 block">{weeklyDuration}</span>
                     </div>
                     <div className="h-9 w-9 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center">
-                      <Timer className="h-5 w-5 text-[#6068F0]" />
+                      <CustomClockIcon className="h-5 w-5 text-[#6068F0]" />
                     </div>
                   </Card>
 
@@ -656,7 +657,7 @@ export default function WorkoutPage() {
                       <span className="text-xl font-extrabold text-slate-900 dark:text-white mt-1 block">{caloriesBurned} kcal</span>
                     </div>
                     <div className="h-9 w-9 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center">
-                      <Flame className="h-5 w-5 text-rose-500" />
+                      <CustomFlameIcon className="h-5 w-5 text-rose-500" />
                     </div>
                   </Card>
                 </div>
@@ -664,7 +665,7 @@ export default function WorkoutPage() {
                 <Card className={`${glassCardClass} p-6`}>
                    <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex flex-row items-center justify-between">
                     <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                      <History className="h-4.5 w-4.5 text-[#6068F0]" />
+                      <CustomClockIcon className="h-4.5 w-4.5 text-[#6068F0]" />
                       Workout History
                     </CardTitle>
                     <div className="flex gap-2">
@@ -695,7 +696,7 @@ export default function WorkoutPage() {
                           <div className="flex justify-between items-center">
                             <div className="flex items-center gap-3">
                               <div className="p-2 bg-[#6068F0]/10 border border-[#6068F0]/20 rounded-xl">
-                                <Dumbbell className="h-4.5 w-4.5 text-[#6068F0]" />
+                                <CustomWorkoutIcon className="h-4.5 w-4.5 text-[#6068F0]" />
                               </div>
                               <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{w.name}</h4>
                             </div>
@@ -765,7 +766,7 @@ export default function WorkoutPage() {
                 {/* Workout tips */}
                 <Card className={`${glassCardClass} p-6 border-[#6068F0]/20 bg-gradient-to-b from-slate-50 to-[#6068F0]/5 dark:from-[#0d0d0e]/60 dark:to-[#6068F0]/5`}>
                   <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-                    <Sparkles className="h-4.5 w-4.5 text-[#6068F0]" />
+                    <CustomSparklesIcon className="h-4.5 w-4.5 text-[#6068F0]" />
                     Coach Insights
                   </CardTitle>
                   <div className="space-y-3.5 text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">

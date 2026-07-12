@@ -5,15 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Plus, 
   Trash2, 
-  Apple, 
-  Flame, 
-  Coffee, 
-  Utensils, 
-  Salad, 
-  Cookie, 
-  Droplet,
-  Sparkles
 } from "lucide-react";
+import {
+  CustomFoodIcon,
+  CustomFlameIcon,
+  CustomCoffeeIcon,
+  CustomUtensilsIcon,
+  CustomSaladIcon,
+  CustomCookieIcon,
+  CustomSparklesIcon
+} from "@/components/ui/CustomIcons";
 import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
@@ -340,10 +341,10 @@ export default function FoodPage() {
   };
 
   const mealCards = [
-    { type: "Breakfast", icon: <Coffee className="h-5 w-5 text-amber-500" />, defaultName: "Oatmeal & Whey Protein", c: 450, p: 35, carb: 50, f: 8 },
-    { type: "Lunch", icon: <Utensils className="h-5 w-5 text-emerald-500" />, defaultName: "Chicken Breast & White Rice", c: 600, p: 50, carb: 70, f: 10 },
-    { type: "Dinner", icon: <Salad className="h-5 w-5 text-indigo-500" />, defaultName: "Salmon & Sweet Potato", c: 550, p: 40, carb: 45, f: 18 },
-    { type: "Snacks", icon: <Cookie className="h-5 w-5 text-purple-500" />, defaultName: "Greek Yogurt & Berries", c: 250, p: 20, carb: 25, f: 3 }
+    { type: "Breakfast", icon: <CustomCoffeeIcon className="h-5 w-5 text-amber-500" />, defaultName: "Oatmeal & Whey Protein", c: 450, p: 35, carb: 50, f: 8 },
+    { type: "Lunch", icon: <CustomUtensilsIcon className="h-5 w-5 text-emerald-500" />, defaultName: "Chicken Breast & White Rice", c: 600, p: 50, carb: 70, f: 10 },
+    { type: "Dinner", icon: <CustomSaladIcon className="h-5 w-5 text-indigo-500" />, defaultName: "Salmon & Sweet Potato", c: 550, p: 40, carb: 45, f: 18 },
+    { type: "Snacks", icon: <CustomCookieIcon className="h-5 w-5 text-purple-500" />, defaultName: "Greek Yogurt & Berries", c: 250, p: 20, carb: 25, f: 3 }
   ];
 
   return (
@@ -382,7 +383,7 @@ export default function FoodPage() {
                   <span className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1 block">{caloriesConsumed} / 2,500 kcal</span>
                 </div>
                 <div className="h-12 w-12 rounded-full border-2 border-dashed border-[#6068F0]/30 flex items-center justify-center">
-                  <Flame className="h-6 w-6 text-[#6068F0]" />
+                  <CustomFlameIcon className="h-6 w-6 text-[#6068F0]" />
                 </div>
               </div>
               <div className="space-y-4">
@@ -543,7 +544,7 @@ export default function FoodPage() {
           <Card className={`${glassCardClass} p-6`}>
             <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex items-center justify-between">
               <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                <Apple className="h-4 w-4 text-[#6068F0]" />
+                <CustomFoodIcon className="h-4 w-4 text-[#6068F0]" />
                 Log Custom Food
               </CardTitle>
             </CardHeader>
@@ -559,7 +560,7 @@ export default function FoodPage() {
                       onChange={(e) => handleFoodNameChange(e.target.value)}
                       onFocus={() => {
                         if (customName.trim() && filteredPresets.length > 0) {
-                          setShowPresets(true);
+                           setShowPresets(true);
                         }
                       }}
                       className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2 pr-20 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
@@ -573,7 +574,7 @@ export default function FoodPage() {
                       disabled={aiLoading}
                       className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#6068F0]/10 border border-[#6068F0]/20 text-[#6068F0] hover:bg-[#6068F0]/20 font-bold px-2 py-1 rounded-md text-[9px] uppercase tracking-wider transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
-                      <Sparkles className="h-3 w-3" />
+                      <CustomSparklesIcon className="h-3 w-3" />
                       {aiLoading ? "Thinking..." : "AI"}
                     </button>
 

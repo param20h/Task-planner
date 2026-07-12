@@ -4,20 +4,22 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   CheckSquare, 
-  Dumbbell, 
-  Apple, 
-  Droplet, 
-  TrendingUp, 
-  Brain,
   Send,
   Plus,
   Check,
-  Flame,
   X,
   Trash2,
   Lock,
-  Sparkles
 } from "lucide-react";
+import {
+  CustomWorkoutIcon,
+  CustomFoodIcon,
+  CustomDropletIcon,
+  CustomAnalyticsIcon,
+  CustomCoachIcon,
+  CustomFlameIcon,
+  CustomSparklesIcon
+} from "@/components/ui/CustomIcons";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 // Responsive Glassmorphism Styles using CSS variables for live appearance adjustments
@@ -478,7 +480,7 @@ export default function DashboardPage() {
               <Card className={glassCardClass}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Nutrition</span>
-                  <Apple className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
+                  <CustomFoodIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                 </CardHeader>
                 <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
                   <div>
@@ -486,7 +488,7 @@ export default function DashboardPage() {
                     <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 2,500 goal</div>
                   </div>
                   <div className="flex items-center justify-center p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl mt-6">
-                    <Flame className="h-6 w-6 text-[#6068F0] animate-pulse" />
+                    <CustomFlameIcon className="h-6 w-6 text-[#6068F0] animate-pulse" />
                   </div>
                 </CardContent>
               </Card>
@@ -495,7 +497,7 @@ export default function DashboardPage() {
               <Card className={glassCardClass}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Training</span>
-                  <Dumbbell className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
+                  <CustomWorkoutIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                 </CardHeader>
                 <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
                   <div>
@@ -503,7 +505,7 @@ export default function DashboardPage() {
                     <div className="text-[10px] text-slate-400 dark:text-neutral-500">Active time</div>
                   </div>
                   <div className="flex items-center justify-center p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl mt-6">
-                    <Dumbbell className="h-6 w-6 text-[#6068F0] animate-pulse" />
+                    <CustomWorkoutIcon className="h-6 w-6 text-[#6068F0] animate-pulse" />
                   </div>
                 </CardContent>
               </Card>
@@ -512,7 +514,7 @@ export default function DashboardPage() {
               <Card className={glassCardClass}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Water</span>
-                  <Droplet className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
+                  <CustomDropletIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                 </CardHeader>
                 <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
                   <div>
@@ -551,7 +553,7 @@ export default function DashboardPage() {
             <Card className={`${glassCardClass} md:col-span-5 p-6 flex flex-col justify-between`}>
               <div>
                 <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
+                  <CustomAnalyticsIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
                   Weekly Performance
                 </CardTitle>
                 <p className="text-xs text-slate-400 dark:text-neutral-500">Average weekly workload index</p>
@@ -661,7 +663,7 @@ export default function DashboardPage() {
             <Card className={`${glassCardClass} border-[#6068F0]/20 bg-gradient-to-b from-slate-50 to-[#6068F0]/5 dark:from-[#0d0d0e]/60 dark:to-[#6068F0]/5 p-6 flex flex-col justify-between`}>
               <div>
                 <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-                  <Brain className="h-5 w-5 text-[#6068F0]" />
+                  <CustomCoachIcon className="h-5 w-5 text-[#6068F0]" />
                   AI Coach Insight
                 </CardTitle>
                 <div className="relative bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 p-4 rounded-xl text-xs text-slate-600 dark:text-neutral-300 italic leading-relaxed">
@@ -691,7 +693,7 @@ export default function DashboardPage() {
             <Card className={`${glassCardClass} border-dashed border-slate-300 dark:border-white/10 bg-slate-50/50 dark:bg-[#0d0d0e]/30 p-6 flex flex-col items-center text-center justify-center space-y-4`}>
               <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 dark:text-neutral-500 relative">
                 <Lock className="h-5 w-5" />
-                <Sparkles className="h-3 w-3 absolute -top-0.5 -right-0.5 text-amber-400 animate-pulse" />
+                <CustomSparklesIcon className="h-3 w-3 absolute -top-0.5 -right-0.5 text-amber-400 animate-pulse" />
               </div>
               <div className="space-y-1">
                 <h4 className="text-xs font-bold text-slate-800 dark:text-white">AI Coach is Locked</h4>
