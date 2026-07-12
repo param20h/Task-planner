@@ -298,23 +298,6 @@ export default function WorkoutPage() {
     }
   };
 
-  const handleSyncHevy = async () => {
-    setIsSyncing(true);
-    try {
-      const res = await api.syncHevyWorkouts();
-      if (res && res.success) {
-        alert(`Successfully synced ${res.synced_count} new workouts from Hevy!`);
-        await loadWorkoutsFromDB();
-      } else {
-        alert("Hevy workouts are up-to-date!");
-      }
-    } catch (err: any) {
-      console.error("Hevy sync error:", err);
-      alert(err.message || "Failed to sync Hevy workouts. Check your API key in settings.");
-    } finally {
-      setIsSyncing(false);
-    }
-  };
 
   const parseCSVRow = (text: string): string[] => {
     const result = [];
@@ -699,14 +682,6 @@ export default function WorkoutPage() {
                       >
                         <RefreshCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin")} />
                         {isSyncing ? "Importing..." : "Import CSV"}
-                      </button>
-                      <button
-                        onClick={handleSyncHevy}
-                        disabled={isSyncing}
-                        className="bg-[#6068F0]/10 border border-[#6068F0]/20 hover:bg-[#6068F0]/20 text-[#6068F0] dark:text-neutral-200 font-bold px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1.5 disabled:opacity-50"
-                      >
-                        <RefreshCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin")} />
-                        {isSyncing ? "Syncing..." : "Sync API"}
                       </button>
                     </div>
                   </CardHeader>

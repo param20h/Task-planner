@@ -91,10 +91,10 @@ class ApiClient {
 
   // ─── Profile ─────────────────────────────────────────
   async getProfile() {
-    return this.request<{ name: string; groq_api_key: string; hevy_api_key?: string }>("/profile");
+    return this.request<{ name: string; groq_api_key: string }>("/profile");
   }
 
-  async updateProfile(data: { name: string; groq_api_key: string; hevy_api_key?: string }) {
+  async updateProfile(data: { name: string; groq_api_key: string }) {
     return this.request("/profile", { method: "PUT", body: data });
   }
 
@@ -161,10 +161,6 @@ class ApiClient {
 
   async updateWorkout(id: string, data: { end_time?: string; notes?: string }) {
     return this.request(`/workouts/${id}`, { method: "PUT", body: data });
-  }
-
-  async syncHevyWorkouts() {
-    return this.request<{ success: boolean; synced_count: number }>("/workouts/sync", { method: "POST" });
   }
 
   // ─── Tasks ───────────────────────────────────────────

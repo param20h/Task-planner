@@ -95,7 +95,6 @@ async function runMigrations() {
     console.log("⚙️  Running database schema auto-migrations and RLS security policies...");
     await client.query(`
       ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email TEXT;
-      ALTER TABLE profiles ADD COLUMN IF NOT EXISTS hevy_api_key TEXT;
       
       CREATE TABLE IF NOT EXISTS payments (
         id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
