@@ -1107,7 +1107,7 @@ export default function Home() {
             <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col justify-between shadow-xl">
               <div>
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Starter</h3>
-                <span className="text-2xl font-black text-slate-800 dark:text-white">{basePrice}</span>
+                <span className="text-2xl font-black text-slate-800 dark:text-white">Free</span>
                 
                 <ul className="space-y-3.5 text-xs text-neutral-400 mt-8 font-medium">
                   <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Basic Task Management</li>
@@ -1117,8 +1117,8 @@ export default function Home() {
               </div>
 
               <Link href={isLoggedIn ? "/dashboard" : "/register"} className="mt-8">
-                <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200">
-                  {isLoggedIn ? "Go to Dashboard" : "Deploy Starter"}
+                <button className="w-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-slate-200 dark:border-white/5">
+                  Go to Dashboard
                 </button>
               </Link>
             </div>
@@ -1145,22 +1145,24 @@ export default function Home() {
 
               <Link href={isLoggedIn ? "/dashboard" : "/register"} className="mt-8">
                 <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-95 transition-opacity shadow-md shadow-[#A78BFA]/20">
-                  {isLoggedIn ? "Go to Dashboard" : "Upgrade to Pro"}
+                  Go to Dashboard
                 </button>
               </Link>
             </div>
 
             {/* Enterprise Plan */}
-            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-[24px] p-8 flex flex-col justify-between shadow-xl">
+            <div className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 bg-white dark:bg-[#111114]/65 border border-[#FDBA74]/20 dark:border-[#FDBA74]/15 rounded-[24px] p-8 flex flex-col justify-between shadow-xl relative overflow-hidden">
+              {/* Subtle gold top accent */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#FDBA74]/40 to-transparent" />
               <div>
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Enterprise</h3>
                 <span className="text-2xl font-black text-slate-800 dark:text-white">{elitePrice} <span className="text-xs text-neutral-400 font-normal">{elitePeriod}</span></span>
                 
                 <ul className="space-y-3.5 text-xs text-neutral-400 mt-8">
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Custom Workspace Teams Integration</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Dedicated Coach consult sessions</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Priority Server Speed response</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Single Sign-On (SSO) Support</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#FDBA74]" /> Custom Workspace Teams Integration</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#FDBA74]" /> Dedicated Coach consult sessions</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#FDBA74]" /> Priority Server Speed response</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#FDBA74]" /> Single Sign-On (SSO) Support</li>
                 </ul>
               </div>
 
@@ -1168,14 +1170,14 @@ export default function Home() {
                 <button 
                   onClick={handleEnterpriseClick}
                   disabled={enterpriseRequested || enterpriseLoading}
-                  className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200 mt-8 disabled:opacity-50"
+                  className="w-full mt-8 bg-gradient-to-r from-[#FDBA74]/20 to-[#F59E0B]/10 border border-[#FDBA74]/30 text-[#FDBA74] py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:from-[#FDBA74]/30 transition-all disabled:opacity-50"
                 >
-                  {enterpriseLoading ? "Sending..." : enterpriseRequested ? "Requested!" : "Contact Admin"}
+                  {enterpriseLoading ? "Sending..." : enterpriseRequested ? "✓ Requested!" : "Contact Admin"}
                 </button>
               ) : (
                 <Link href="/register" className="mt-8">
-                  <button className="w-full bg-slate-100 dark:bg-white/5 text-white dark:text-white text-slate-700 py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-white/5 dark:border-white/5 border-slate-200">
-                    Deploy Enterprise
+                  <button className="w-full bg-gradient-to-r from-[#FDBA74]/20 to-[#F59E0B]/10 border border-[#FDBA74]/30 text-[#FDBA74] py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:from-[#FDBA74]/30 transition-all">
+                    Contact Admin
                   </button>
                 </Link>
               )}

@@ -592,21 +592,21 @@ export default function PricingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
             
-            {/* Base Tier */}
+            {/* Starter Tier */}
             <div className={cn(glassCardClass, "reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-100 ease-out")}>
               <div className="mb-8">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Starter</h3>
                 <p className="text-xs text-neutral-400 mb-6 h-10">Core tracking for habits and simple workouts.</p>
-                <span className="text-3xl font-black text-slate-800 dark:text-white">{basePrice}</span>
+                <span className="text-3xl font-black text-slate-800 dark:text-white">Free</span>
               </div>
               <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-slate-600 dark:text-neutral-300">
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Basic workout logging</li>
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> 7-day history</li>
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Standard metrics</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Basic Task Management</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Simple Gym Log History</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Manual Water Intake logging</li>
               </ul>
               <Link href={userId ? "/dashboard" : "/register"}>
                 <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
-                  {userId ? "Go to Dashboard" : "Start Free"}
+                  Go to Dashboard
                 </button>
               </Link>
             </div>
@@ -617,11 +617,11 @@ export default function PricingPage() {
               "reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-200 ease-out"
             )}>
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#A78BFA] to-[#F9A8D4] text-black text-[9px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full border border-white/20">
-                Recommended
+                Most Popular
               </div>
               <div className="mb-8">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
-                  ZenithFlow Pro 
+                  Pro
                   <Bolt className="h-5 w-5 text-[#A78BFA] fill-[#A78BFA]/20 animate-pulse" />
                 </h3>
                 <p className="text-xs text-neutral-400 mb-6 h-10">Advanced analytics and unlimited logging.</p>
@@ -631,13 +631,13 @@ export default function PricingPage() {
                 </div>
               </div>
               <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-slate-600 dark:text-neutral-300 font-medium">
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Everything in Base</li>
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Full AI Coach insights</li>
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Unlimited history &amp; logging</li>
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Advanced visual analytics</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Everything in Starter</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Full AI Coach Biometric Feedback</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Unlimited Workout Volume tracking</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Advanced Focus Analytics trend graphs</li>
               </ul>
               {userId ? (
-                <button 
+                <button
                   onClick={handleUpgrade}
                   disabled={upgradeSuccess}
                   className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)] flex items-center justify-center gap-2"
@@ -648,46 +648,48 @@ export default function PricingPage() {
                       Success! Unlocking Pro...
                     </>
                   ) : (
-                    "Upgrade to Pro"
+                    "Go to Dashboard"
                   )}
                 </button>
               ) : (
                 <Link href="/register">
                   <button className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)]">
-                    Upgrade to Pro
+                    Go to Dashboard
                   </button>
                 </Link>
               )}
             </div>
 
             {/* Enterprise Tier */}
-            <div className={cn(glassCardClass, "reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-300 ease-out")}>
+            <div className={cn(glassCardClass, "reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 delay-300 ease-out border-[#FDBA74]/20 dark:border-[#FDBA74]/15")}>
+              {/* Subtle gold top accent */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#FDBA74]/40 to-transparent" />
               <div className="mb-8">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Enterprise</h3>
-                <p className="text-xs text-neutral-400 mb-6 h-10">Personalized protocols and 1-on-1 integrations.</p>
+                <p className="text-xs text-neutral-400 mb-6 h-10">Custom workspace, SSO &amp; dedicated coaching.</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-black text-slate-800 dark:text-white transition-all duration-300">{elitePrice}</span>
                   <span className="text-xs text-neutral-400">{elitePeriod}</span>
                 </div>
               </div>
               <ul className="flex flex-col gap-4 mb-10 flex-grow text-xs text-slate-600 dark:text-neutral-300">
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Everything in Pro</li>
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Custom training protocols</li>
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Early access to AI models</li>
-                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Priority human support</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#FDBA74]" /> Custom Workspace Teams Integration</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#FDBA74]" /> Dedicated Coach consult sessions</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#FDBA74]" /> Priority Server Speed response</li>
+                <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#FDBA74]" /> Single Sign-On (SSO) Support</li>
               </ul>
               {userId ? (
-                <button 
+                <button
                   onClick={handleEnterpriseClick}
                   disabled={enterpriseRequested || enterpriseLoading}
-                  className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-[#FDBA74]/20 to-[#F59E0B]/10 border border-[#FDBA74]/30 text-[#FDBA74] py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:from-[#FDBA74]/30 disabled:opacity-50"
                 >
-                  {enterpriseLoading ? "Sending..." : enterpriseRequested ? "Requested!" : "Contact Admin"}
+                  {enterpriseLoading ? "Sending..." : enterpriseRequested ? "✓ Requested!" : "Contact Admin"}
                 </button>
               ) : (
                 <Link href="/register">
-                  <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
-                    Get Enterprise
+                  <button className="w-full bg-gradient-to-r from-[#FDBA74]/20 to-[#F59E0B]/10 border border-[#FDBA74]/30 text-[#FDBA74] py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:from-[#FDBA74]/30">
+                    Contact Admin
                   </button>
                 </Link>
               )}
@@ -705,9 +707,9 @@ export default function PricingPage() {
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-b-white/10 text-slate-500 dark:text-neutral-400 font-bold uppercase tracking-wider">
                     <th className="py-4 font-semibold">Feature</th>
-                    <th className="py-4 font-semibold">Base</th>
+                    <th className="py-4 font-semibold">Starter</th>
                     <th className="py-4 font-semibold text-[#A78BFA]">Pro</th>
-                    <th className="py-4 font-semibold">Enterprise</th>
+                    <th className="py-4 font-semibold text-[#FDBA74]">Enterprise</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-white/5 text-slate-700 dark:text-neutral-300">
