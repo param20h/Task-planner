@@ -42,7 +42,35 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('momentum_theme') || 'dark';
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                  
+                  var val = localStorage.getItem('momentum_appearance');
+                  if (val) {
+                    var n = Number(val);
+                    document.documentElement.style.setProperty('--glass-opacity', String((n / 100) * 0.4 + 0.1));
+                    document.documentElement.style.setProperty('--glass-blur', ((n / 100) * 20 + 8) + 'px');
+                  } else {
+                    document.documentElement.style.setProperty('--glass-opacity', '0.42');
+                    document.documentElement.style.setProperty('--glass-blur', '20px');
+                  }
+                } catch (e) {}
+              })();
+            `
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-black text-slate-900 dark:text-neutral-300">
         {children}
         <script
           dangerouslySetInnerHTML={{
