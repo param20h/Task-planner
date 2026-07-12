@@ -257,20 +257,20 @@ export default function PlannerPage() {
           </div>
 
           {/* Schedule Board */}
-          <div className="grid grid-cols-7 gap-4 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 rounded-2xl backdrop-blur-xl">
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-4 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 sm:p-6 rounded-2xl backdrop-blur-xl">
             {days.map((day, idx) => (
               <div 
                 key={idx} 
                 onClick={() => setSelectedDay(day.date)}
                 className={cn(
-                  "flex flex-col items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-300 border border-transparent",
+                  "flex flex-col items-center justify-center py-2.5 px-1 sm:p-3 rounded-2xl cursor-pointer transition-all duration-300 border",
                   selectedDay === day.date 
-                    ? "bg-[#6068F0]/20 border-[#6068F0]/40 text-[#6068F0] dark:text-white shadow-lg shadow-[#6068F0]/5" 
-                    : "hover:bg-slate-200 dark:hover:bg-white/5 text-slate-500 dark:text-neutral-400"
+                    ? "bg-[#6068F0]/15 border-[#6068F0]/35 text-[#6068F0] dark:text-white shadow-md shadow-[#6068F0]/5" 
+                    : "bg-transparent border-transparent hover:bg-slate-200/50 dark:hover:bg-white/5 text-slate-500 dark:text-neutral-450"
                 )}
               >
-                <span className="text-xs font-semibold uppercase tracking-wider">{day.name}</span>
-                <span className="text-lg font-bold mt-2">{day.date}</span>
+                <span className="text-[9px] sm:text-xs font-bold uppercase tracking-wider text-center w-full block">{day.name}</span>
+                <span className="text-base sm:text-lg font-black mt-1.5 sm:mt-2 text-center w-full block">{day.date}</span>
               </div>
             ))}
 
