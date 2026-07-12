@@ -232,8 +232,8 @@ export function AlarmWidget() {
         </div>
       )}
 
-      {/* ── Global Floating Toggle Button (Bottom Right) ── */}
-      <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-40 flex flex-col items-end">
+      {/* ── Global Floating Toggle Button (Bottom Left on Mobile, Bottom Right on Desktop) ── */}
+      <div className="fixed bottom-24 left-4 md:left-auto md:right-6 md:bottom-6 z-40 flex flex-col items-start md:items-end">
         
         {/* Main Alarm Widget Content Card */}
         {isOpen && (
