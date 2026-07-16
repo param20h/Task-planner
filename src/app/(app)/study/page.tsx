@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
+import { Select } from "@/components/ui/Select";
 import { supabase } from "@/lib/supabaseClient";
 
 // Styling constants
@@ -485,7 +486,7 @@ export default function StudyPage() {
           </Card>
 
           {/* Session Logger Form */}
-          <Card className={`${glassCardClass} p-6`}>
+          <Card className={`${glassCardClass} p-6 !overflow-visible`}>
             <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4">
               <CardTitle className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-[#F9A8D4]" />
@@ -495,18 +496,12 @@ export default function StudyPage() {
             <CardContent className="px-0 pt-2">
               <form onSubmit={handleManualSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-1">Subject</label>
-                    <select
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#A78BFA] transition-all"
-                    >
-                      {SUBJECT_PRESETS.map(sub => (
-                        <option key={sub} value={sub}>{sub}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <Select
+                    value={subject}
+                    onChange={(val) => setSubject(val)}
+                    options={SUBJECT_PRESETS}
+                    label="Subject"
+                  />
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-1">Duration (Mins)</label>
                     <input

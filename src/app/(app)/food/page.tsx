@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
+import { Select } from "@/components/ui/Select";
 import { supabase } from "@/lib/supabaseClient";
 import { FOOD_PRESETS, FoodPreset } from "@/lib/foodData";
 
@@ -541,7 +542,7 @@ export default function FoodPage() {
           </Card>
 
           {/* Log Custom Food Card */}
-          <Card className={`${glassCardClass} p-6`}>
+          <Card className={`${glassCardClass} p-6 !overflow-visible`}>
             <CardHeader className="px-0 pt-0 pb-4 border-b border-slate-200 dark:border-white/10 mb-4 flex items-center justify-between">
               <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                 <CustomFoodIcon className="h-4 w-4 text-[#6068F0]" />
@@ -599,18 +600,13 @@ export default function FoodPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Meal Type</label>
-                    <select 
-                      value={customMeal}
-                      onChange={(e) => setCustomMeal(e.target.value)}
-                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
-                    >
-                      {["Breakfast", "Lunch", "Dinner", "Snacks"].map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <Select
+                    value={customMeal}
+                    onChange={(val) => setCustomMeal(val)}
+                    options={["Breakfast", "Lunch", "Dinner", "Snacks"]}
+                    label="Meal Type"
+                    buttonClassName="py-[7.5px]"
+                  />
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Calories (kcal)</label>
                     <input 

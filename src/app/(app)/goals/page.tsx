@@ -7,6 +7,7 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/Select";
 
 // Styling constants
 const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
@@ -368,7 +369,7 @@ export default function GoalsPage() {
       {/* Create Goal Modal Dialog */}
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <Card className="bg-white dark:bg-[#0d0d0e] border border-slate-200 dark:border-white/10 p-6 w-full max-w-md shadow-2xl rounded-2xl relative">
+          <Card className="bg-white dark:bg-[#0d0d0e] border border-slate-200 dark:border-white/10 p-6 w-full max-w-md shadow-2xl rounded-2xl relative !overflow-visible">
             <button 
               onClick={() => setShowModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white rounded-full p-1"
@@ -391,18 +392,13 @@ export default function GoalsPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Category</label>
-                  <select 
-                    value={goalCategory}
-                    onChange={(e) => setGoalCategory(e.target.value)}
-                    className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
-                  >
-                    {["Career", "Health", "Personal", "Finance", "Skills", "Habits"].map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
+                <Select
+                  value={goalCategory}
+                  onChange={(val) => setGoalCategory(val)}
+                  options={["Career", "Health", "Personal", "Finance", "Skills", "Habits"]}
+                  label="Category"
+                  buttonClassName="py-[7.5px]"
+                />
 
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Value Label</label>
