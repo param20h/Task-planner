@@ -221,3 +221,118 @@
 ::view-transition-new(root) {
   z-index: 9999;
 }
+
+/* ── Custom DaisyUI-Style Chat Bubbles ── */
+.chat {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  column-gap: 0.75rem;
+  row-gap: 0.125rem;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+
+.chat-start {
+  place-items: start;
+  grid-template-columns: auto 1fr;
+}
+
+.chat-end {
+  place-items: end;
+  grid-template-columns: 1fr auto;
+}
+
+.chat-image {
+  grid-row: span 2 / span 2;
+  align-self: end;
+}
+
+.chat-start .chat-image {
+  grid-column-start: 1;
+}
+
+.chat-end .chat-image {
+  grid-column-start: 2;
+}
+
+.chat-header {
+  grid-row-start: 1;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #64748b; /* slate-500 */
+}
+
+.dark .chat-header {
+  color: #9ca3af; /* gray-400 */
+}
+
+.chat-start .chat-header {
+  grid-column-start: 2;
+}
+
+.chat-end .chat-header {
+  grid-column-start: 1;
+}
+
+.chat-footer {
+  grid-row-start: 3;
+  font-size: 0.7rem;
+  color: #94a3b8; /* slate-400 */
+  opacity: 0.6;
+}
+
+.chat-start .chat-footer {
+  grid-column-start: 2;
+}
+
+.chat-end .chat-footer {
+  grid-column-start: 1;
+}
+
+.chat-bubble {
+  position: relative;
+  grid-row-start: 2;
+  width: fit-content;
+  max-width: 85%;
+  border-radius: 1rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.825rem;
+  line-height: 1.25rem;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.chat-start .chat-bubble {
+  grid-column-start: 2;
+  border-bottom-left-radius: 0.125rem;
+}
+
+.chat-end .chat-bubble {
+  grid-column-start: 1;
+  border-bottom-right-radius: 0.125rem;
+}
+
+/* Color variations mapped to DaisyUI names */
+.chat-bubble-neutral {
+  background-color: #f1f5f9; /* slate-100 */
+  color: #1e293b; /* slate-800 */
+  border: 1px solid #e2e8f0;
+}
+.dark .chat-bubble-neutral {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #f3f4f6;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.chat-bubble-primary {
+  background-color: #6068F0;
+  color: #ffffff;
+}
+
+.chat-bubble-secondary {
+  background-color: #A78BFA;
+  color: #ffffff;
+}

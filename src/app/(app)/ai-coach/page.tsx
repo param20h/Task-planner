@@ -160,33 +160,50 @@ export default function AiCoachPage() {
           className={cn(glassCardClass, "flex flex-col h-[65vh] relative z-10 p-6")}
         >
           {/* Chat History */}
-          <div ref={chatContainerRef} className="flex-1 overflow-y-auto space-y-6 pr-2 scrollbar-thin">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto space-y-4 pr-2 scrollbar-thin">
             {messages.map((msg, i) => (
               <motion.div 
                 key={i} 
-                initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
                 className={cn(
-                  "flex gap-4 max-w-[85%] items-start",
-                  msg.role === "user" ? "ml-auto flex-row-reverse" : ""
+                  "chat",
+                  msg.role === "user" ? "chat-end" : "chat-start"
                 )}
               >
-                <div className={cn(
-                  "p-2 rounded-xl flex items-center justify-center shrink-0 border border-slate-200 dark:border-white/10",
-                  msg.role === "user" ? "bg-slate-100 dark:bg-white/5" : "bg-[#6068F0]/10 border-[#6068F0]/20"
-                )}>
-                  {msg.role === "user" ? <User className="h-4 w-4 text-slate-500 dark:text-neutral-300" /> : <Bot className="h-4 w-4 text-[#6068F0]" />}
+                {/* Chat Avatar */}
+                <div className="chat-image avatar">
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center border shadow-sm",
+                    msg.role === "user" 
+                      ? "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-neutral-300" 
+                      : "bg-[#6068F0]/10 border-[#6068F0]/25 text-[#6068F0]"
+                  )}>
+                    {msg.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                  </div>
                 </div>
+
+                {/* Chat Header */}
+                <div className="chat-header flex items-center gap-1.5 pb-0.5">
+                  <span className="font-semibold text-slate-750 dark:text-neutral-200">
+                    {msg.role === "user" ? "You" : "Zenith AI Coach"}
+                  </span>
+                  <span className="text-[9px] opacity-40">just now</span>
+                </div>
+
+                {/* Chat Bubble */}
                 <div className={cn(
-                  "p-4 rounded-2xl text-xs leading-relaxed shadow-sm",
+                  "chat-bubble text-xs leading-relaxed",
                   msg.role === "user" 
-                    ? "bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-neutral-200" 
-                    : "bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/10 text-slate-600 dark:text-neutral-300"
+                    ? "chat-bubble-neutral" 
+                    : "chat-bubble-primary"
                 )}>
-                  {msg.content.split("\n").map((para, idx) => (
-                    <p key={idx} className={idx > 0 ? "mt-2" : ""}>{para}</p>
-                  ))}
+                  <div className="flex flex-col gap-1.5">
+                    {msg.content.split("\n").map((para, idx) => (
+                      <p key={idx}>{para}</p>
+                    ))}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -194,12 +211,20 @@ export default function AiCoachPage() {
               <motion.div 
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex gap-4 items-center text-xs text-slate-400 dark:text-neutral-500"
+                className="chat chat-start"
               >
-                <div className="p-2 rounded-xl bg-[#6068F0]/10 border border-[#6068F0]/20 animate-pulse">
-                  <Brain className="h-4 w-4 text-[#6068F0]" />
+                <div className="chat-image avatar">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center border border-[#6068F0]/25 bg-[#6068F0]/10 text-[#6068F0] animate-pulse">
+                    <Brain className="h-4 w-4 text-[#6068F0]" />
+                  </div>
                 </div>
-                <span className="flex items-center gap-1">AI Coach is thinking<span className="animate-bounce">.</span><span className="animate-bounce delay-150">.</span><span className="animate-bounce delay-300">.</span></span>
+                <div className="chat-header flex items-center gap-1.5 pb-0.5">
+                  <span className="font-semibold text-slate-750 dark:text-neutral-200">Zenith AI Coach</span>
+                  <span className="text-[9px] opacity-45">thinking</span>
+                </div>
+                <div className="chat-bubble chat-bubble-primary opacity-70">
+                  <span className="flex items-center gap-1">AI Coach is thinking<span className="animate-bounce">.</span><span className="animate-bounce delay-150">.</span><span className="animate-bounce delay-300">.</span></span>
+                </div>
               </motion.div>
             )}
           </div>
