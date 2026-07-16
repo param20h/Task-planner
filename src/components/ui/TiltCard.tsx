@@ -1,92 +1,84 @@
 "use client";
 
-import React, { useRef } from "react";
-import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+import React, { useRef, useState } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface TiltCardProps {
   children: React.ReactNode;
   className?: string;
+  maxTilt?: number;
 }
 
-export function TiltCard({ children, className }: TiltCardProps) {
-  const ref = useRef<HTMLDivElement>(null);
+export function TiltCard({ children, className, maxTilt = 15 }: TiltCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [hovering, setHovering] = useState(false);
 
-  // Motion values to track normalized mouse coordinates (-0.5 to 0.5)
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
+  // Motion values to track coordinates
+  const x = useMotionValue(0.5);
+  const y = useMotionValue(0.5);
 
-  // Spring physics config for buttery-smooth movements
-  const springConfig = { damping: 25, stiffness: 220, mass: 0.6 };
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [10, -10]), springConfig);
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-10, 10]), springConfig);
+  const springConfig = { damping: 25, stiffness: 180, mass: 0.5 };
+  const rotateX = useSpring(useTransform(y, [0, 1], [maxTilt, -maxTilt]), springConfig);
+  const rotateY = useSpring(useTransform(x, [0, 1], [-maxTilt, maxTilt]), springConfig);
 
-  // Dynamic glare coordinates (percentage based for gradient positioning)
-  const glareX = useSpring(useTransform(x, [-0.5, 0.5], [0, 100]), springConfig);
-  const glareY = useSpring(useTransform(y, [-0.5, 0.5], [0, 100]), springConfig);
-  const glareOpacity = useSpring(useMotionValue(0), springConfig);
+  // Dynamic light shine overlay following the cursor
+  const shineBackground = useTransform(
+    [x, y],
+    (values) => {
+      const latestX = values[0] as number;
+      const latestY = values[1] as number;
+      return `radial-gradient(circle 220px at ${latestX * 100}% ${latestY * 100}%, rgba(255, 255, 255, 0.12), transparent)`;
+    }
+  );
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    x.set((e.clientX - rect.left) / rect.width);
+    y.set((e.clientY - rect.top) / rect.height);
+  };
 
-    const rect = ref.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-
-    x.set(xPct);
-    y.set(yPct);
-    glareOpacity.set(0.18); // Turn on glossy reflection
+  const handleMouseEnter = () => {
+    setHovering(true);
   };
 
   const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-    glareOpacity.set(0); // Turn off glossy reflection
+    setHovering(false);
+    x.set(0.5);
+    y.set(0.5);
   };
 
-  // Convert glare x and y to standard CSS string inside useTransform
-  const glareBg = useTransform(
-    [glareX, glareY],
-    ([gx, gy]) =>
-      `radial-gradient(circle 120px at ${gx}% ${gy}%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 80%)`
-  );
-
   return (
-    <div style={{ perspective: "1000px" }} className="w-full h-full">
-      <motion.div
-        ref={ref}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          rotateX,
-          rotateY,
-          transformStyle: "preserve-3d",
-        }}
-        className={cn(
-          "relative w-full h-full rounded-2xl transition-shadow duration-300 ease-out",
-          className
-        )}
-      >
-        {/* Glossy overlay glare reflection */}
-        <motion.div
-          style={{
-            backgroundImage: glareBg,
-            opacity: glareOpacity,
-          }}
-          className="absolute inset-0 pointer-events-none rounded-2xl z-20 mix-blend-overlay"
-        />
+    <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className={cn(
+        "relative rounded-2xl transition-shadow duration-300 ease-out",
+        hovering ? "shadow-2xl shadow-black/25" : "shadow-none",
+        className
+      )}
+    >
+      {/* Content wrapper with translateZ for depth */}
+      <div style={{ transform: "translateZ(20px)", transformStyle: "preserve-3d" }}>
+        {children}
+      </div>
 
-        {/* 3D context boundary wrapper */}
-        <div style={{ transform: "translateZ(0px)", transformStyle: "preserve-3d" }} className="w-full h-full">
-          {children}
-        </div>
-      </motion.div>
-    </div>
+      {/* Specular glare overlay */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-300"
+        style={{
+          background: shineBackground,
+          opacity: hovering ? 1 : 0,
+        }}
+      />
+    </motion.div>
   );
 }

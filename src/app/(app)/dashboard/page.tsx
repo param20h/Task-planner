@@ -28,7 +28,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 import { FloatingWidgets } from "@/components/dashboard/FloatingWidgets";
 import { PWAInstallPrompt } from "@/components/ui/PWAInstallPrompt";
-import { TiltCard } from "@/components/ui/TiltCard";
 
 // Responsive Glassmorphism Styles using CSS variables for live appearance adjustments
 const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
@@ -445,102 +444,94 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             
             {/* Today's Score Circle Chart (4 cols) */}
-            <TiltCard className="md:col-span-5">
-              <Card className={cn(glassCardClass, "w-full h-full flex flex-col items-center justify-center p-6 text-center")}>
-                <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase mb-6">Today's Score</CardTitle>
-                <div className="relative w-48 h-48 flex items-center justify-center">
-                  {/* SVG Progress Circle */}
-                  <svg className="w-full h-full transform -rotate-90">
-                    <circle 
-                      cx="96" cy="96" r="80" 
-                      stroke="currentColor"
-                      className="text-slate-200 dark:text-neutral-800" 
-                      strokeWidth="10" 
-                      fill="transparent"
-                    />
-                    <circle 
-                      cx="96" cy="96" r="80" 
-                      className="stroke-[#6068F0] transition-all duration-1000 ease-out" 
-                      strokeWidth="12" 
-                      strokeDasharray={502.4}
-                      strokeDashoffset={502.4 - (502.4 * todayScore) / 100}
-                      strokeLinecap="round"
-                      fill="transparent"
-                    />
-                  </svg>
-                  <div className="absolute flex flex-col items-center justify-center">
-                    <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{todayScore}%</span>
-                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider mt-1">Consistency</span>
-                  </div>
+            <Card className={`${glassCardClass} md:col-span-5 flex flex-col items-center justify-center p-6 text-center`}>
+              <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase mb-6">Today's Score</CardTitle>
+              <div className="relative w-48 h-48 flex items-center justify-center">
+                {/* SVG Progress Circle */}
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle 
+                    cx="96" cy="96" r="80" 
+                    stroke="currentColor"
+                    className="text-slate-200 dark:text-neutral-800" 
+                    strokeWidth="10" 
+                    fill="transparent"
+                  />
+                  <circle 
+                    cx="96" cy="96" r="80" 
+                    className="stroke-[#6068F0] transition-all duration-1000 ease-out" 
+                    strokeWidth="12" 
+                    strokeDasharray={502.4}
+                    strokeDashoffset={502.4 - (502.4 * todayScore) / 100}
+                    strokeLinecap="round"
+                    fill="transparent"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center">
+                  <span className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{todayScore}%</span>
+                  <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider mt-1">Consistency</span>
                 </div>
-              </Card>
-            </TiltCard>
+              </div>
+            </Card>
 
             {/* Quick Metrics Grid (7 cols) */}
             <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-6">
               
               {/* Calories card */}
-              <TiltCard>
-                <Card className={cn(glassCardClass, "w-full h-full")}>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Nutrition</span>
-                    <CustomFoodIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
-                  </CardHeader>
-                  <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
-                    <div>
-                      <div className="text-xl font-bold text-slate-900 dark:text-white">{caloriesConsumed} kcal</div>
-                      <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 2,500 goal</div>
-                    </div>
-                    <div className="flex items-center justify-center p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl mt-6">
-                      <CustomFlameIcon className="h-6 w-6 text-[#6068F0] animate-pulse" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TiltCard>
+              <Card className={glassCardClass}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Nutrition</span>
+                  <CustomFoodIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
+                </CardHeader>
+                <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
+                  <div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white">{caloriesConsumed} kcal</div>
+                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 2,500 goal</div>
+                  </div>
+                  <div className="flex items-center justify-center p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl mt-6">
+                    <CustomFlameIcon className="h-6 w-6 text-[#6068F0] animate-pulse" />
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Workout card */}
-              <TiltCard>
-                <Card className={cn(glassCardClass, "w-full h-full")}>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Training</span>
-                    <CustomWorkoutIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
-                  </CardHeader>
-                  <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
-                    <div>
-                      <div className="text-xl font-bold text-slate-900 dark:text-white">{workoutMinutes} MIN</div>
-                      <div className="text-[10px] text-slate-400 dark:text-neutral-500">Active time</div>
-                    </div>
-                    <div className="flex items-center justify-center p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl mt-6">
-                      <CustomWorkoutIcon className="h-6 w-6 text-[#6068F0] animate-pulse" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TiltCard>
+              <Card className={glassCardClass}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Training</span>
+                  <CustomWorkoutIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
+                </CardHeader>
+                <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
+                  <div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white">{workoutMinutes} MIN</div>
+                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">Active time</div>
+                  </div>
+                  <div className="flex items-center justify-center p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl mt-6">
+                    <CustomWorkoutIcon className="h-6 w-6 text-[#6068F0] animate-pulse" />
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Water card */}
-              <TiltCard>
-                <Card className={cn(glassCardClass, "w-full h-full")}>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Water</span>
-                    <CustomDropletIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
-                  </CardHeader>
-                  <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
-                    <div>
-                      <div className="text-xl font-bold text-slate-900 dark:text-white">{waterConsumed} L</div>
-                      <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 3.0 L goal</div>
+              <Card className={glassCardClass}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Water</span>
+                  <CustomDropletIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
+                </CardHeader>
+                <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
+                  <div>
+                    <div className="text-xl font-bold text-slate-900 dark:text-white">{waterConsumed} L</div>
+                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 3.0 L goal</div>
+                  </div>
+                  <div className="relative h-14 w-full bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 mt-4 overflow-hidden flex items-end">
+                    <div className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-white/80 z-10">
+                      {Math.min(100, Math.round((waterConsumed / 3.0) * 100))}%
                     </div>
-                    <div className="relative h-14 w-full bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 mt-4 overflow-hidden flex items-end">
-                      <div className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-white/80 z-10">
-                        {Math.min(100, Math.round((waterConsumed / 3.0) * 100))}%
-                      </div>
-                      <div 
-                        className="w-full bg-[#6068F0]/40 border-t border-[#6068F0]/60 animate-pulse" 
-                        style={{ height: `${Math.min(100, Math.round((waterConsumed / 3.0) * 100))}%` }}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TiltCard>
+                    <div 
+                      className="w-full bg-[#6068F0]/40 border-t border-[#6068F0]/60 animate-pulse" 
+                      style={{ height: `${Math.min(100, Math.round((waterConsumed / 3.0) * 100))}%` }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
@@ -548,54 +539,50 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             
             {/* Habit Heatmap (7 cols) */}
-            <TiltCard className="md:col-span-7">
-              <Card className={cn(glassCardClass, "w-full h-full p-6")}>
-                <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase mb-6 flex items-center justify-between">
-                  <span>Habit Consistency</span>
-                  <span className="text-[10px] text-slate-400 dark:text-neutral-600 font-normal">Last 6 Months</span>
-                </CardTitle>
-                <div className="flex flex-col gap-1.5 overflow-x-auto pb-2">
-                  {renderHabitGrid()}
-                </div>
-              </Card>
-            </TiltCard>
+            <Card className={`${glassCardClass} md:col-span-7 p-6`}>
+              <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase mb-6 flex items-center justify-between">
+                <span>Habit Consistency</span>
+                <span className="text-[10px] text-slate-400 dark:text-neutral-600 font-normal">Last 6 Months</span>
+              </CardTitle>
+              <div className="flex flex-col gap-1.5 overflow-x-auto pb-2">
+                {renderHabitGrid()}
+              </div>
+            </Card>
 
             {/* Performance Chart (5 cols) */}
-            <TiltCard className="md:col-span-5">
-              <Card className={cn(glassCardClass, "w-full h-full p-6 flex flex-col justify-between")}>
-                <div>
-                  <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase flex items-center gap-2 mb-2">
-                    <CustomAnalyticsIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
-                    Weekly Performance
-                  </CardTitle>
-                  <p className="text-xs text-slate-400 dark:text-neutral-500">Average weekly workload index</p>
-                </div>
-                
-                {/* Smooth Area Chart inside an SVG */}
-                <div className="h-28 w-full mt-6 relative">
-                  <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
-                    <defs>
-                      <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#6068F0" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="#6068F0" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    {/* Dynamic Area */}
-                    <path 
-                      d={areaD} 
-                      fill="url(#chartGrad)" 
-                      />
-                    {/* Dynamic Stroke line */}
-                    <path 
-                      d={pathD} 
-                      fill="transparent" 
-                      stroke="#6068F0" 
-                      strokeWidth="1.5" 
+            <Card className={`${glassCardClass} md:col-span-5 p-6 flex flex-col justify-between`}>
+              <div>
+                <CardTitle className="text-sm font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase flex items-center gap-2 mb-2">
+                  <CustomAnalyticsIcon className="h-4 w-4 text-slate-400 dark:text-neutral-500" />
+                  Weekly Performance
+                </CardTitle>
+                <p className="text-xs text-slate-400 dark:text-neutral-500">Average weekly workload index</p>
+              </div>
+              
+              {/* Smooth Area Chart inside an SVG */}
+              <div className="h-28 w-full mt-6 relative">
+                <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#6068F0" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#6068F0" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  {/* Dynamic Area */}
+                  <path 
+                    d={areaD} 
+                    fill="url(#chartGrad)" 
                     />
-                  </svg>
-                </div>
-              </Card>
-            </TiltCard>
+                  {/* Dynamic Stroke line */}
+                  <path 
+                    d={pathD} 
+                    fill="transparent" 
+                    stroke="#6068F0" 
+                    strokeWidth="1.5" 
+                  />
+                </svg>
+              </div>
+            </Card>
           </div>
         </div>
 
@@ -672,57 +659,55 @@ export default function DashboardPage() {
           </Card>
 
           {/* AI Coach interactive Chat Widget */}
-          <TiltCard>
-            {plan === "pro" ? (
-              <Card className={cn(glassCardClass, "border-[#6068F0]/20 bg-gradient-to-b from-slate-50 to-[#6068F0]/5 dark:from-[#0d0d0e]/60 dark:to-[#6068F0]/5 p-6 flex flex-col justify-between w-full h-full")}>
-                <div>
-                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-                    <CustomCoachIcon className="h-5 w-5 text-[#6068F0]" />
-                    AI Coach Insight
-                  </CardTitle>
-                  <div className="relative bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 p-4 rounded-xl text-xs text-slate-600 dark:text-neutral-300 italic leading-relaxed">
-                    "{aiMessage}"
-                  </div>
+          {plan === "pro" ? (
+            <Card className={`${glassCardClass} border-[#6068F0]/20 bg-gradient-to-b from-slate-50 to-[#6068F0]/5 dark:from-[#0d0d0e]/60 dark:to-[#6068F0]/5 p-6 flex flex-col justify-between`}>
+              <div>
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
+                  <CustomCoachIcon className="h-5 w-5 text-[#6068F0]" />
+                  AI Coach Insight
+                </CardTitle>
+                <div className="relative bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 p-4 rounded-xl text-xs text-slate-600 dark:text-neutral-300 italic leading-relaxed">
+                  "{aiMessage}"
                 </div>
-                
-                <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="Ask your coach..."
-                    value={userChatInput}
-                    onChange={(e) => setUserChatInput(e.target.value)}
-                    className="flex-1 bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
-                  />
-                  <Button 
-                    type="submit" 
-                    size="icon" 
-                    disabled={isSending || !userChatInput.trim()}
-                    className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg shadow-[#6068F0]/20 p-2 h-auto"
-                  >
-                    <Send className="h-3.5 w-3.5" />
-                  </Button>
-                </form>
-              </Card>
-            ) : (
-              <Card className={cn(glassCardClass, "border-dashed border-slate-300 dark:border-white/10 bg-slate-50/50 dark:bg-[#0d0d0e]/30 p-6 flex flex-col items-center text-center justify-center space-y-4 w-full h-full")}>
-                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 dark:text-neutral-500 relative">
-                  <Lock className="h-5 w-5" />
-                  <CustomSparklesIcon className="h-3 w-3 absolute -top-0.5 -right-0.5 text-amber-400 animate-pulse" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-white">AI Coach is Locked</h4>
-                  <p className="text-[10px] text-slate-500 dark:text-neutral-500 leading-relaxed max-w-[200px] mx-auto">
-                    Upgrade to the Pro Plan to receive tailored focus recommendations and cognitive scheduling.
-                  </p>
-                </div>
-                <Link href="/pricing" className="w-full">
-                  <Button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black hover:opacity-95 font-bold py-2 rounded-xl text-[10px] uppercase tracking-wider transition-all duration-300 shadow-md">
-                    Unlock Coach
-                  </Button>
-                </Link>
-              </Card>
-            )}
-          </TiltCard>
+              </div>
+              
+              <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Ask your coach..."
+                  value={userChatInput}
+                  onChange={(e) => setUserChatInput(e.target.value)}
+                  className="flex-1 bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                />
+                <Button 
+                  type="submit" 
+                  size="icon" 
+                  disabled={isSending || !userChatInput.trim()}
+                  className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg shadow-[#6068F0]/20 p-2 h-auto"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </Button>
+              </form>
+            </Card>
+          ) : (
+            <Card className={`${glassCardClass} border-dashed border-slate-300 dark:border-white/10 bg-slate-50/50 dark:bg-[#0d0d0e]/30 p-6 flex flex-col items-center text-center justify-center space-y-4`}>
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 dark:text-neutral-500 relative">
+                <Lock className="h-5 w-5" />
+                <CustomSparklesIcon className="h-3 w-3 absolute -top-0.5 -right-0.5 text-amber-400 animate-pulse" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-white">AI Coach is Locked</h4>
+                <p className="text-[10px] text-slate-500 dark:text-neutral-500 leading-relaxed max-w-[200px] mx-auto">
+                  Upgrade to the Pro Plan to receive tailored focus recommendations and cognitive scheduling.
+                </p>
+              </div>
+              <Link href="/pricing" className="w-full">
+                <Button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black hover:opacity-95 font-bold py-2 rounded-xl text-[10px] uppercase tracking-wider transition-all duration-300 shadow-md">
+                  Unlock Coach
+                </Button>
+              </Link>
+            </Card>
+          )}
 
           {/* Floating/Inline Widgets Panel */}
           <FloatingWidgets profileId={profileId} onRefresh={() => setRefreshCounter(prev => prev + 1)} />

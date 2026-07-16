@@ -36,6 +36,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { AnimatedBeam } from "@/components/ui/AnimatedBeam";
 import { AnimatedThemeToggler } from "@/components/ui/AnimatedThemeToggler";
 import { AuroraText } from "@/components/ui/AuroraText";
+import { TiltCard } from "@/components/ui/TiltCard";
 
 // Types for Mock Dashboard Preview
 type DashboardTab = "ai" | "tasks" | "workout" | "metrics";
@@ -554,55 +555,67 @@ export default function Home() {
               <div className="w-full relative space-y-4 max-w-[480px]">
 
                 {/* 1. AI Assistant Chat Box Widget */}
-                <div ref={div1Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex items-start gap-3 relative transform hover:-translate-y-1 transition-transform duration-300 z-10">
-                  <div className="w-8 h-8 rounded-lg bg-[#A78BFA]/10 flex items-center justify-center text-[#A78BFA]">
-                    <Brain className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="space-y-1 flex-1">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">ZenithFlow AI</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <div ref={div1Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 z-10">
+                  <TiltCard maxTilt={12}>
+                    <div className="bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex items-start gap-3 relative">
+                      <div className="w-8 h-8 rounded-lg bg-[#A78BFA]/10 flex items-center justify-center text-[#A78BFA]">
+                        <Brain className="h-4.5 w-4.5" />
+                      </div>
+                      <div className="space-y-1 flex-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">ZenithFlow AI</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        </div>
+                        <p className="text-[11px] leading-relaxed text-slate-700 dark:text-neutral-300">
+                          "Biometrics look optimal today. Recommended block: 90min Deep Work at 10:00 AM, followed by a volume Chest routine."
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-[11px] leading-relaxed text-slate-700 dark:text-neutral-300">
-                      "Biometrics look optimal today. Recommended block: 90min Deep Work at 10:00 AM, followed by a volume Chest routine."
-                    </p>
-                  </div>
+                  </TiltCard>
                 </div>
 
                 {/* Second row widgets (Side by side) */}
                 <div className="grid grid-cols-2 gap-4">
                   
                   {/* 2. Habit Tracker Card */}
-                  <div ref={div2Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-100 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl space-y-3 transform hover:-translate-y-1 transition-transform duration-300 z-10">
-                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">Habits</span>
-                    <ul className="space-y-2 text-[10px] text-slate-700 dark:text-neutral-300 font-semibold">
-                      <li className="flex items-center justify-between">
-                        <span>Meditation</span>
-                        <Check className="h-3 w-3 text-emerald-500" />
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span>3L Hydration</span>
-                        <div className="w-3 h-3 rounded-full border border-slate-200 dark:border-white/20 border-slate-300"></div>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span>Deep Read</span>
-                        <Check className="h-3 w-3 text-emerald-500" />
-                      </li>
-                    </ul>
+                  <div ref={div2Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-100 z-10">
+                    <TiltCard maxTilt={12}>
+                      <div className="bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl space-y-3">
+                        <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">Habits</span>
+                        <ul className="space-y-2 text-[10px] text-slate-700 dark:text-neutral-300 font-semibold">
+                          <li className="flex items-center justify-between">
+                            <span>Meditation</span>
+                            <Check className="h-3 w-3 text-emerald-500" />
+                          </li>
+                          <li className="flex items-center justify-between">
+                            <span>3L Hydration</span>
+                            <div className="w-3 h-3 rounded-full border border-slate-200 dark:border-white/20 border-slate-300"></div>
+                          </li>
+                          <li className="flex items-center justify-between">
+                            <span>Deep Read</span>
+                            <Check className="h-3 w-3 text-emerald-500" />
+                          </li>
+                        </ul>
+                      </div>
+                    </TiltCard>
                   </div>
 
                   {/* 3. Focus Timer Widget */}
-                  <div ref={div3Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-200 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex flex-col justify-between items-center text-center transform hover:-translate-y-1 transition-transform duration-300 z-10">
-                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Focus Block</span>
-                    <div className="font-mono text-xl font-extrabold text-[#FDBA74] my-2">25:00</div>
-                    <div className="flex gap-2">
-                      <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 bg-slate-200 flex items-center justify-center">
-                        <Play className="h-2.5 w-2.5 fill-white dark:fill-white fill-slate-800" />
+                  <div ref={div3Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-200 z-10">
+                    <TiltCard maxTilt={12}>
+                      <div className="bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex flex-col justify-between items-center text-center">
+                        <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Focus Block</span>
+                        <div className="font-mono text-xl font-extrabold text-[#FDBA74] my-2">25:00</div>
+                        <div className="flex gap-2">
+                          <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 bg-slate-200 flex items-center justify-center">
+                            <Play className="h-2.5 w-2.5 fill-white dark:fill-white fill-slate-800" />
+                          </div>
+                          <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 bg-slate-200 flex items-center justify-center">
+                            <RotateCcw className="h-2.5 w-2.5 text-neutral-400" />
+                          </div>
+                        </div>
                       </div>
-                      <div className="h-5 w-5 rounded-full bg-neutral-800 dark:bg-neutral-800 bg-slate-200 flex items-center justify-center">
-                        <RotateCcw className="h-2.5 w-2.5 text-neutral-400" />
-                      </div>
-                    </div>
+                    </TiltCard>
                   </div>
 
                 </div>
