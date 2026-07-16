@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { AnimatePresence, motion } from "framer-motion";
+import { Dock, DockIcon } from "@/components/ui/Dock";
 import {
   Sun,
   Moon,
@@ -365,52 +366,46 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Mobile iOS Liquid Glass Nav */}
-      <div className="md:hidden fixed bottom-5 left-3 right-3 z-50 pointer-events-none flex justify-center">
-        <div 
-          className="pointer-events-auto flex items-center gap-1.5 p-1.5 rounded-3xl shadow-[0_16px_40px_rgba(0,0,0,0.5)] border border-slate-200/50 dark:border-white/5 bg-white/75 dark:bg-[#0D0D0E]/80 backdrop-blur-xl max-w-full overflow-x-auto scrollbar-none scroll-smooth px-3"
-        >
-          {visibleLinks.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={cn(
-                  "relative flex flex-col items-center justify-center w-11 h-11 rounded-2xl transition-all duration-350 ease-out shrink-0",
-                  isActive 
-                    ? "bg-[#A78BFA]/10 border border-[#A78BFA]/20 dark:bg-white/10 dark:border-white/10" 
-                    : "border border-transparent text-neutral-400 hover:text-neutral-205"
-                )}
+      {/* Mobile Dock Nav — spring magnification on hover */}
+      <div className="md:hidden fixed bottom-5 left-4 right-4 z-50 flex justify-center pointer-events-none">
+        <div className="pointer-events-auto">
+          <Dock iconSize={40} iconMagnification={58} iconDistance={100}>
+            {visibleLinks.map((link) => {
+              const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+              return (
+                <Link key={link.label} href={link.href} aria-label={link.label}>
+                  <DockIcon isActive={isActive}>
+                    {React.cloneElement(link.icon as any, {
+                      className: cn(
+                        "transition-all duration-300",
+                        isActive
+                          ? "text-[#A78BFA] dark:text-white stroke-[2.2px]"
+                          : "text-slate-500 dark:text-neutral-400"
+                      ),
+                      style: { width: "55%", height: "55%" },
+                    })}
+                  </DockIcon>
+                </Link>
+              );
+            })}
+
+            {/* Divider */}
+            <div className="w-px self-stretch bg-slate-200/60 dark:bg-white/8 my-2 shrink-0" />
+
+            {/* Theme toggle */}
+            <DockIcon>
+              <button
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                className="flex items-center justify-center w-full h-full"
               >
-                <div className="shrink-0 flex items-center justify-center">
-                  {React.cloneElement(link.icon as any, {
-                    className: cn(
-                      "h-4.5 w-4.5 transition-all duration-300",
-                      isActive ? "text-[#A78BFA] dark:text-white scale-110 stroke-[2.2px]" : "text-slate-500 dark:text-neutral-400"
-                    )
-                  })}
-                </div>
-                {isActive && (
-                  <motion.div 
-                    layoutId="activeDotMobile"
-                    className="absolute bottom-1 h-1 w-1 rounded-full bg-[#A78BFA] dark:bg-white shadow-[0_0_8px_rgba(167,139,250,0.8)]"
-                  />
-                )}
-              </Link>
-            );
-          })}
-          
-          {/* Mobile Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            className="relative flex items-center justify-center w-11 h-11 rounded-2xl border border-transparent text-neutral-400 hover:text-neutral-200 transition-all duration-300 shrink-0"
-          >
-            {theme === "dark" 
-              ? <Sun className="h-4.5 w-4.5 text-amber-500 fill-amber-500/20" /> 
-              : <Moon className="h-4.5 w-4.5 text-indigo-400 fill-indigo-400/20" />
-            }
-          </button>
+                {theme === "dark"
+                  ? <Sun style={{ width: "50%", height: "50%" }} className="text-amber-500 fill-amber-500/20" />
+                  : <Moon style={{ width: "50%", height: "50%" }} className="text-indigo-400 fill-indigo-400/20" />
+                }
+              </button>
+            </DockIcon>
+          </Dock>
         </div>
       </div>
       
