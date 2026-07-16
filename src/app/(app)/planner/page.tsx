@@ -391,7 +391,7 @@ export default function PlannerPage() {
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <Card className="bg-white dark:bg-[#0d0d0e] border border-slate-200 dark:border-white/10 p-6 w-full max-w-md shadow-2xl rounded-2xl relative">
+          <Card className="bg-white dark:bg-[#0d0d0e] border border-slate-200 dark:border-white/10 p-6 w-full max-w-md shadow-2xl rounded-2xl relative !overflow-visible">
             <button 
               onClick={() => setShowAddModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white rounded-full p-1"

@@ -5,6 +5,7 @@ import { format, addMonths, subMonths, getDaysInMonth, startOfMonth, getDay, isS
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { CustomPlannerIcon } from "@/components/ui/CustomIcons";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context for Composable State Sharing
@@ -164,7 +165,7 @@ export function DatePickerTrigger({ children, className }: { children: React.Rea
 
 export function DatePickerTriggerIndicator({ children, className }: { children?: React.ReactNode; className?: string }) {
   if (children) return <>{children}</>;
-  return <CalendarIcon className={cn("size-4 text-slate-500 dark:text-neutral-450", className)} />;
+  return <CustomPlannerIcon size={18} className={cn("text-slate-500 dark:text-neutral-400 hover:text-[#6068F0] transition-colors duration-200", className)} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
