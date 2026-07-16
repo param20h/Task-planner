@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowLeft, Mail, Lock, Sun, Moon, Triangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabaseClient";
+import { AnimatedThemeToggler } from "@/components/ui/AnimatedThemeToggler";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -87,13 +88,7 @@ export default function LoginPage() {
 
       {/* Theme Switcher Toggle (Top Right) */}
       <div className="absolute top-8 right-8 z-20">
-        <button 
-          onClick={toggleTheme} 
-          className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-neutral-400"
-          aria-label="Toggle Theme"
-        >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </button>
+        <AnimatedThemeToggler theme={theme} onToggle={toggleTheme} className="h-8 w-8 rounded-full" />
       </div>
 
       {/* Back to Home (Top Left) */}

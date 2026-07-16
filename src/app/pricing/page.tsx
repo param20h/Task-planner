@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { api } from "@/lib/api";
+import { AnimatedThemeToggler } from "@/components/ui/AnimatedThemeToggler";
 
 export default function PricingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -462,13 +463,7 @@ export default function PricingPage() {
             <div className="flex items-center gap-4">
               
               {/* Light/Dark Toggle */}
-              <button 
-                onClick={toggleTheme} 
-                className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-slate-500 dark:text-[#A1A1AA]"
-                aria-label="Toggle Theme"
-              >
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </button>
+              <AnimatedThemeToggler theme={theme} onToggle={toggleTheme} className="h-8 w-8 rounded-full" />
 
               {userId ? (
                 <Link href="/dashboard" className="hidden sm:inline-flex">
