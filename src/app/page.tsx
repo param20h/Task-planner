@@ -630,37 +630,7 @@ export default function Home() {
                 </div>
 
               </div>
-
-              {/* Animated Beams between elements */}
-              <AnimatedBeam
-                containerRef={containerRef}
-                fromRef={div1Ref}
-                toRef={div2Ref}
-                curvature={-45}
-                gradientStartColor="#A78BFA"
-                gradientStopColor="#818cf8"
-                duration={4.5}
-              />
-              <AnimatedBeam
-                containerRef={containerRef}
-                fromRef={div1Ref}
-                toRef={div3Ref}
-                curvature={45}
-                gradientStartColor="#A78BFA"
-                gradientStopColor="#FDBA74"
-                duration={5}
-              />
-              <AnimatedBeam
-                containerRef={containerRef}
-                fromRef={div1Ref}
-                toRef={div4Ref}
-                curvature={0}
-                gradientStartColor="#A78BFA"
-                gradientStopColor="#f43f5e"
-                duration={4.2}
-              />
-
-            </div>
+              </div>
 
           </div>
         </section>
