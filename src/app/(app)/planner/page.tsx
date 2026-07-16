@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
+import { DatePicker, Label, DateField, Calendar } from "@/components/ui/DatePicker";
 
 // Styling constants
 const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
@@ -26,6 +27,7 @@ export default function PlannerPage() {
   const [eventDuration, setEventDuration] = useState("1h 00m");
   const [eventDay, setEventDay] = useState(new Date().getDate());
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [eventDatePickerValue, setEventDatePickerValue] = useState<Date | null>(new Date());
 
   const handlePrevMonth = () => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
@@ -36,7 +38,8 @@ export default function PlannerPage() {
 
   useEffect(() => {
     setEventDay(selectedDay);
-  }, [selectedDay]);
+    setEventDatePickerValue(new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDay));
+  }, [selectedDay, currentDate]);
 
   // Load session user and load data
   useEffect(() => {
@@ -474,18 +477,40 @@ export default function PlannerPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Date / Day</label>
-                    <select
-                      value={eventDay}
-                      onChange={(e) => setEventDay(Number(e.target.value))}
-                      className="w-full bg-slate-100 dark:bg-[#111112] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300"
+                    <DatePicker 
+                      value={eventDatePickerValue} 
+                      onChange={(date) => {
+                        if (date) {
+                          setEventDatePickerValue(date);
+                          setEventDay(date.getDate());
+                        }
+                      }}
                     >
-                      {days.map((d, i) => (
-                        <option key={i} value={d.date} className="bg-white dark:bg-[#0d0d0e] text-slate-800 dark:text-white">
-                          {d.name} — Day {d.date}
-                        </option>
-                      ))}
-                    </select>
+                      <Label>Date / Day</Label>
+                      <DateField.Group fullWidth>
+                        <DateField.Input>{(segment) => <DateField.Segment segment={segment} />}</DateField.Input>
+                        <DateField.Suffix>
+                          <DatePicker.Trigger>
+                            <DatePicker.TriggerIndicator />
+                          </DatePicker.Trigger>
+                        </DateField.Suffix>
+                      </DateField.Group>
+                      <DatePicker.Popover className="w-68">
+                        <Calendar aria-label="Event date">
+                          <Calendar.Header>
+                            <Calendar.YearPickerTrigger />
+                            <Calendar.NavButton slot="previous" />
+                            <Calendar.NavButton slot="next" />
+                          </Calendar.Header>
+                          <Calendar.Grid>
+                            <Calendar.GridHeader>
+                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+                            </Calendar.GridHeader>
+                            <Calendar.GridBody>{(date) => <Calendar.Cell date={date} />}</Calendar.GridBody>
+                          </Calendar.Grid>
+                        </Calendar>
+                      </DatePicker.Popover>
+                    </DatePicker>
                   </div>
                 </>
               )}

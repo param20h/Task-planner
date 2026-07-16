@@ -36,7 +36,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { AnimatedBeam } from "@/components/ui/AnimatedBeam";
 import { AnimatedThemeToggler } from "@/components/ui/AnimatedThemeToggler";
 import { AuroraText } from "@/components/ui/AuroraText";
-import { AnimatedGridPattern } from "@/components/ui/AnimatedGridPattern";
 
 // Types for Mock Dashboard Preview
 type DashboardTab = "ai" | "tasks" | "workout" | "metrics";
@@ -498,14 +497,6 @@ export default function Home() {
         
         {/* 1. HERO SECTION */}
         <section className="relative min-h-[calc(100vh-6rem)] flex items-center justify-center pt-8 md:pt-16 pb-20 overflow-hidden">
-          {/* Animated Background Grid Pattern */}
-          <AnimatedGridPattern
-            numSquares={35}
-            maxOpacity={0.2}
-            duration={3}
-            repeatDelay={1}
-            className="[mask-image:radial-gradient(500px_circle_at_center,white,transparent)] -z-10"
-          />
           <div className="max-w-[1280px] mx-auto px-6 md:px-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             {/* Left Hero Text Content (7 Columns) */}
