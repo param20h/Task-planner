@@ -150,8 +150,7 @@ export default function Home() {
     };
   }, []);
 
-  const toggleTheme = () => {
-    const nextTheme = theme === "dark" ? "light" : "dark";
+  const handleThemeChange = (nextTheme: "light" | "dark") => {
     setTheme(nextTheme);
     localStorage.setItem("momentum_theme", nextTheme);
     if (nextTheme === "dark") {
@@ -364,7 +363,7 @@ export default function Home() {
             <div className="flex items-center gap-4">
               
               {/* Light/Dark Toggle */}
-              <AnimatedThemeToggler theme={theme} onToggle={toggleTheme} className="h-8 w-8 rounded-full" />
+              <AnimatedThemeToggler theme={theme} onThemeChange={handleThemeChange} className="h-8 w-8 rounded-full" />
 
               {isLoggedIn ? (
                 <Link href="/dashboard" className="hidden sm:inline-flex">

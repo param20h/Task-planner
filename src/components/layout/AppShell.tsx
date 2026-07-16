@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { AnimatePresence, motion } from "framer-motion";
 import { Dock, DockIcon } from "@/components/ui/Dock";
+import { AnimatedThemeToggler } from "@/components/ui/AnimatedThemeToggler";
 import {
   Sun,
   Moon,
@@ -162,8 +163,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const toggleTheme = () => {
-    const nextTheme = theme === "dark" ? "light" : "dark";
+  const handleThemeChange = (nextTheme: "light" | "dark") => {
     setTheme(nextTheme);
     localStorage.setItem("momentum_theme", nextTheme);
     if (nextTheme === "dark") {
@@ -305,16 +305,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="space-y-3 pt-3 border-t border-white/5 dark:border-t-white/5 light:border-t-slate-100">
               
               {/* Theme toggle switch in sidebar */}
-              <button
-                onClick={toggleTheme}
-                className={cn(
-                  "w-full transition-all duration-300 border border-transparent flex items-center gap-3 text-xs uppercase tracking-wider font-bold text-neutral-400 hover:text-neutral-200",
-                  open ? "px-3 py-2.5 rounded-xl justify-start hover:bg-slate-100 dark:hover:bg-white/5" : "p-2 rounded-full justify-center w-9 h-9 mx-auto hover:bg-white/5"
-                )}
-              >
-                {theme === "dark" ? <Sun className="h-5 w-5 shrink-0" /> : <Moon className="h-5 w-5 shrink-0" />}
-                {open && <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>}
-              </button>
+              {open ? (
+                <button
+                  onClick={() => handleThemeChange(theme === "dark" ? "light" : "dark")}
+                  className={cn(
+                    "w-full transition-all duration-300 border border-transparent flex items-center gap-3 text-xs uppercase tracking-wider font-bold text-neutral-400 hover:text-neutral-200 px-3 py-2.5 rounded-xl justify-start hover:bg-slate-100 dark:hover:bg-white/5"
+                  )}
+                >
+                  {theme === "dark" ? <Sun className="h-5 w-5 shrink-0" /> : <Moon className="h-5 w-5 shrink-0" />}
+                  <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                </button>
+              ) : (
+                <div className="flex justify-center w-full">
+                  <AnimatedThemeToggler 
+                    theme={theme} 
+                    onThemeChange={handleThemeChange} 
+                    className="h-9 w-9 rounded-full bg-transparent hover:bg-white/5 border-none text-neutral-400 hover:text-neutral-200" 
+                  />
+                </div>
+              )}
 
                <SidebarLink
                 link={{
@@ -394,16 +403,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Theme toggle */}
             <DockIcon>
-              <button
-                onClick={toggleTheme}
-                aria-label="Toggle theme"
-                className="flex items-center justify-center w-full h-full"
-              >
-                {theme === "dark"
-                  ? <Sun style={{ width: "50%", height: "50%" }} className="text-amber-500 fill-amber-500/20" />
-                  : <Moon style={{ width: "50%", height: "50%" }} className="text-indigo-400 fill-indigo-400/20" />
-                }
-              </button>
+              <AnimatedThemeToggler
+                theme={theme}
+                onThemeChange={handleThemeChange}
+                className="w-full h-full border-none bg-transparent hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent text-neutral-400 hover:text-neutral-250"
+              />
             </DockIcon>
           </Dock>
         </div>

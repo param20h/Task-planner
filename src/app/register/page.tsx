@@ -33,8 +33,7 @@ export default function RegisterPage() {
     }
   }, []);
 
-  const toggleTheme = () => {
-    const nextTheme = theme === "dark" ? "light" : "dark";
+  const handleThemeChange = (nextTheme: "light" | "dark") => {
     setTheme(nextTheme);
     localStorage.setItem("momentum_theme", nextTheme);
     if (nextTheme === "dark") {
@@ -98,7 +97,7 @@ export default function RegisterPage() {
 
       {/* Theme Switcher Toggle (Top Right) */}
       <div className="absolute top-8 right-8 z-20">
-        <AnimatedThemeToggler theme={theme} onToggle={toggleTheme} className="h-8 w-8 rounded-full" />
+        <AnimatedThemeToggler theme={theme} onThemeChange={handleThemeChange} className="h-8 w-8 rounded-full" />
       </div>
 
       {/* Back to Home (Top Left) */}

@@ -5,19 +5,71 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface AnimatedThemeTogglerProps {
-  theme: "dark" | "light";
-  onToggle: () => void;
   className?: string;
+  duration?: number;
+  variant?: "circle" | "swipe";
+  fromCenter?: boolean;
+  theme: "light" | "dark";
+  onThemeChange: (theme: "light" | "dark") => void;
 }
 
 export const AnimatedThemeToggler = ({
-  theme,
-  onToggle,
   className,
+  duration = 400,
+  variant = "circle",
+  fromCenter = false,
+  theme,
+  onThemeChange,
 }: AnimatedThemeTogglerProps) => {
   const isDark = theme === "dark";
 
-  // Animation variants
+  const handleToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const nextTheme = isDark ? "light" : "dark";
+
+    // Fallback if view transition is not supported
+    if (!document.startViewTransition) {
+      onThemeChange(nextTheme);
+      return;
+    }
+
+    // Get click coords or center of viewport
+    let x = event.clientX;
+    let y = event.clientY;
+
+    if (fromCenter) {
+      x = window.innerWidth / 2;
+      y = window.innerHeight / 2;
+    }
+
+    // Calculate maximum radius to fully cover screen
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = document.startViewTransition(() => {
+      onThemeChange(nextTheme);
+    });
+
+    transition.ready.then(() => {
+      // Circular expand reveal animation on the new root paint
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration,
+          easing: "ease-in-out",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      );
+    });
+  };
+
+  // SVG morph variants
   const svgVariants = {
     dark: { rotate: 40 },
     light: { rotate: 90 },
@@ -40,7 +92,7 @@ export const AnimatedThemeToggler = ({
 
   return (
     <button
-      onClick={onToggle}
+      onClick={handleToggle}
       className={cn(
         "relative h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-300",
         "bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10",
