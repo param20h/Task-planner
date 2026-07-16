@@ -652,21 +652,12 @@ export default function Home() {
               />
               <AnimatedBeam
                 containerRef={containerRef}
-                fromRef={div2Ref}
+                fromRef={div1Ref}
                 toRef={div4Ref}
-                curvature={-30}
-                gradientStartColor="#818cf8"
+                curvature={0}
+                gradientStartColor="#A78BFA"
                 gradientStopColor="#f43f5e"
-                duration={4}
-              />
-              <AnimatedBeam
-                containerRef={containerRef}
-                fromRef={div3Ref}
-                toRef={div4Ref}
-                curvature={30}
-                gradientStartColor="#FDBA74"
-                gradientStopColor="#f43f5e"
-                duration={4.5}
+                duration={4.2}
               />
 
             </div>
