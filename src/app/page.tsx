@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { AnimatedBeam } from "@/components/ui/AnimatedBeam";
 import { AnimatedThemeToggler } from "@/components/ui/AnimatedThemeToggler";
+import { AuroraText } from "@/components/ui/AuroraText";
 
 // Types for Mock Dashboard Preview
 type DashboardTab = "ai" | "tasks" | "workout" | "metrics";
@@ -510,7 +511,7 @@ export default function Home() {
               {/* Headings: Editorial Instrument Serif */}
               <h1 className="reveal-fade opacity-0 translate-y-[30px] transition-all duration-1000 ease-out font-serif font-bold text-[68px] md:text-[92px] leading-[0.9] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-[#09090B] via-[#09090B] to-slate-700 dark:from-white dark:via-neutral-100 dark:to-neutral-300">
                 Master Your <br />
-                <span className="font-serif italic font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#C4B5FD] via-[#A78BFA] to-[#FDBA74] pr-2 filter drop-shadow-[0_2px_20px_rgba(167,139,250,0.45)]">ZenithFlow.</span>
+                <AuroraText className="font-serif italic font-semibold pr-2 filter drop-shadow-[0_2px_20px_rgba(167,139,250,0.45)]">ZenithFlow.</AuroraText>
               </h1>
 
               {/* Sub-text Description */}
