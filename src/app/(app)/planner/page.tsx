@@ -8,6 +8,8 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { DatePicker, Label, DateField, Calendar } from "@/components/ui/DatePicker";
+import TaskIcon from "@mui/icons-material/Task";
+import ScheduleIcon from "@mui/icons-material/Schedule";
 
 // Styling constants
 const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
@@ -411,7 +413,7 @@ export default function PlannerPage() {
                 )}
               >
                 <span className="flex items-center justify-center gap-1.5">
-                  <CheckSquare className="h-3.5 w-3.5" />
+                  <TaskIcon className="!w-3.5 !h-3.5 text-inherit" />
                   Task
                 </span>
               </button>
@@ -424,7 +426,7 @@ export default function PlannerPage() {
                 )}
               >
                 <span className="flex items-center justify-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" />
+                  <ScheduleIcon className="!w-3.5 !h-3.5 text-inherit" />
                   Timeline Event
                 </span>
               </button>
