@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, ChevronLeft, ChevronRight, Check, X, Trash2 } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Check, X, Trash2, CheckSquare, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
@@ -410,7 +410,10 @@ export default function PlannerPage() {
                   addMode === "task" ? "bg-white dark:bg-neutral-800 text-slate-900 dark:text-white shadow-sm" : "text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200"
                 )}
               >
-                📝 Task
+                <span className="flex items-center justify-center gap-1.5">
+                  <CheckSquare className="h-3.5 w-3.5" />
+                  Task
+                </span>
               </button>
               <button 
                 type="button"
@@ -420,7 +423,10 @@ export default function PlannerPage() {
                   addMode === "event" ? "bg-white dark:bg-neutral-800 text-slate-900 dark:text-white shadow-sm" : "text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200"
                 )}
               >
-                ⏰ Timeline Event
+                <span className="flex items-center justify-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  Timeline Event
+                </span>
               </button>
             </div>
 
