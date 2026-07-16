@@ -33,6 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
+import { AnimatedBeam } from "@/components/ui/AnimatedBeam";
 
 // Types for Mock Dashboard Preview
 type DashboardTab = "ai" | "tasks" | "workout" | "metrics";
@@ -48,6 +49,13 @@ export default function Home() {
 
   const [enterpriseRequested, setEnterpriseRequested] = useState(false);
   const [enterpriseLoading, setEnterpriseLoading] = useState(false);
+
+  // Refs for Animated Beams in Hero
+  const containerRef = useRef<HTMLDivElement>(null);
+  const div1Ref = useRef<HTMLDivElement>(null);
+  const div2Ref = useRef<HTMLDivElement>(null);
+  const div3Ref = useRef<HTMLDivElement>(null);
+  const div4Ref = useRef<HTMLDivElement>(null);
 
   const handleEnterpriseClick = async (e: React.MouseEvent) => {
     if (!isLoggedIn) return; // Follow default Link route to /register
@@ -534,7 +542,7 @@ export default function Home() {
             </div>
 
             {/* Right Hero Illustration: Floating Futuristic Dashboard Widgets (6 Columns) */}
-            <div className="lg:col-span-6 relative flex items-center justify-center min-h-[420px] lg:min-h-[500px]">
+            <div ref={containerRef} className="lg:col-span-6 relative flex items-center justify-center min-h-[420px] lg:min-h-[500px]">
               
               {/* Soft decorative elements background */}
               <div className="absolute w-[450px] h-[450px] rounded-full border border-slate-200/50 dark:border-white/[0.03] pointer-events-none -z-10 animate-[spin_60s_linear_infinite]" />
@@ -551,7 +559,7 @@ export default function Home() {
               <div className="w-full relative space-y-4 max-w-[480px]">
 
                 {/* 1. AI Assistant Chat Box Widget */}
-                <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex items-start gap-3 relative transform hover:-translate-y-1 transition-transform duration-300">
+                <div ref={div1Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex items-start gap-3 relative transform hover:-translate-y-1 transition-transform duration-300 z-10">
                   <div className="w-8 h-8 rounded-lg bg-[#A78BFA]/10 flex items-center justify-center text-[#A78BFA]">
                     <Brain className="h-4.5 w-4.5" />
                   </div>
@@ -564,34 +572,32 @@ export default function Home() {
                       "Biometrics look optimal today. Recommended block: 90min Deep Work at 10:00 AM, followed by a volume Chest routine."
                     </p>
                   </div>
-                  {/* Glowing connector lines indicator */}
-                  <div className="absolute -bottom-8 left-10 w-0.5 h-8 bg-gradient-to-b from-[#A78BFA]/40 to-transparent pointer-events-none" />
                 </div>
 
                 {/* Second row widgets (Side by side) */}
                 <div className="grid grid-cols-2 gap-4">
                   
                   {/* 2. Habit Tracker Card */}
-                  <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-100 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl space-y-3 transform hover:-translate-y-1 transition-transform duration-300">
+                  <div ref={div2Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-100 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl space-y-3 transform hover:-translate-y-1 transition-transform duration-300 z-10">
                     <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block">Habits</span>
                     <ul className="space-y-2 text-[10px] text-slate-700 dark:text-neutral-300 font-semibold">
                       <li className="flex items-center justify-between">
-                        <span>🧘 Meditation</span>
+                        <span>Meditation</span>
                         <Check className="h-3 w-3 text-emerald-500" />
                       </li>
                       <li className="flex items-center justify-between">
-                        <span>💧 3L Hydration</span>
+                        <span>3L Hydration</span>
                         <div className="w-3 h-3 rounded-full border border-slate-200 dark:border-white/20 border-slate-300"></div>
                       </li>
                       <li className="flex items-center justify-between">
-                        <span>📚 Deep Read</span>
+                        <span>Deep Read</span>
                         <Check className="h-3 w-3 text-emerald-500" />
                       </li>
                     </ul>
                   </div>
 
                   {/* 3. Focus Timer Widget */}
-                  <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-200 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex flex-col justify-between items-center text-center transform hover:-translate-y-1 transition-transform duration-300">
+                  <div ref={div3Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-200 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex flex-col justify-between items-center text-center transform hover:-translate-y-1 transition-transform duration-300 z-10">
                     <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">Focus Block</span>
                     <div className="font-mono text-xl font-extrabold text-[#FDBA74] my-2">25:00</div>
                     <div className="flex gap-2">
@@ -607,7 +613,7 @@ export default function Home() {
                 </div>
 
                 {/* 4. Workout Cardio / Progress Ring Widget */}
-                <div className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-300 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex justify-between items-center transform hover:-translate-y-1 transition-transform duration-300">
+                <div ref={div4Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-300 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex justify-between items-center transform hover:-translate-y-1 transition-transform duration-300 z-10">
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
                       <Dumbbell className="h-4.5 w-4.5" />
@@ -629,6 +635,44 @@ export default function Home() {
                 </div>
 
               </div>
+
+              {/* Animated Beams between elements */}
+              <AnimatedBeam
+                containerRef={containerRef}
+                fromRef={div1Ref}
+                toRef={div2Ref}
+                curvature={-45}
+                gradientStartColor="#A78BFA"
+                gradientStopColor="#818cf8"
+                duration={4.5}
+              />
+              <AnimatedBeam
+                containerRef={containerRef}
+                fromRef={div1Ref}
+                toRef={div3Ref}
+                curvature={45}
+                gradientStartColor="#A78BFA"
+                gradientStopColor="#FDBA74"
+                duration={5}
+              />
+              <AnimatedBeam
+                containerRef={containerRef}
+                fromRef={div2Ref}
+                toRef={div4Ref}
+                curvature={-30}
+                gradientStartColor="#818cf8"
+                gradientStopColor="#f43f5e"
+                duration={4}
+              />
+              <AnimatedBeam
+                containerRef={containerRef}
+                fromRef={div3Ref}
+                toRef={div4Ref}
+                curvature={30}
+                gradientStartColor="#FDBA74"
+                gradientStopColor="#f43f5e"
+                duration={4.5}
+              />
 
             </div>
 
