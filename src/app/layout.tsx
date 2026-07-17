@@ -41,6 +41,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${outfit.variable} ${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <script
