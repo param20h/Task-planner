@@ -44,3 +44,6 @@ next-env.d.ts
 
 # supabase config and migrations
 supabase/
+
+# custom agent skills
+.agents/
