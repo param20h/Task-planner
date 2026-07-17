@@ -1,8 +1,0 @@
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "zenithflow",
-  "compatibility_date": "2026-07-17",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ]
-}
