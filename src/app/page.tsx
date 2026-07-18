@@ -41,14 +41,62 @@ import { TiltCard } from "@/components/ui/TiltCard";
 // Types for Mock Dashboard Preview
 type DashboardTab = "ai" | "tasks" | "workout" | "metrics";
 
+const CURRENCIES: Record<string, { symbol: string; monthly: number; yearly: number; country: string }> = {
+  USD: { symbol: "$",   monthly: 12,    yearly: 120,   country: "US" },
+  INR: { symbol: "₹",   monthly: 249,   yearly: 2490,  country: "IN" },
+  EUR: { symbol: "€",   monthly: 11,    yearly: 110,   country: "EU" },
+  GBP: { symbol: "£",   monthly: 10,    yearly: 100,   country: "GB" },
+  CAD: { symbol: "C$",  monthly: 16,    yearly: 160,   country: "CA" },
+  AUD: { symbol: "A$",  monthly: 18,    yearly: 180,   country: "AU" },
+  BRL: { symbol: "R$",  monthly: 59,    yearly: 590,   country: "BR" },
+  JPY: { symbol: "¥",   monthly: 1800,  yearly: 18000, country: "JP" },
+  SGD: { symbol: "S$",  monthly: 16,    yearly: 160,   country: "SG" },
+  AED: { symbol: "د.إ", monthly: 44,    yearly: 440,   country: "AE" },
+  MXN: { symbol: "MX$", monthly: 200,   yearly: 2000,  country: "MX" },
+  CHF: { symbol: "Fr",  monthly: 11,    yearly: 110,   country: "CH" },
+  SEK: { symbol: "kr",  monthly: 130,   yearly: 1300,  country: "SE" },
+};
+
+const COUNTRY_CURRENCY: Record<string, string> = {
+  US: "USD", IN: "INR", GB: "GBP", AU: "AUD", CA: "CAD",
+  BR: "BRL", JP: "JPY", SG: "SGD", AE: "AED", MX: "MXN",
+  CH: "CHF", SE: "SEK", NO: "SEK", DK: "SEK",
+  DE: "EUR", FR: "EUR", IT: "EUR", ES: "EUR", NL: "EUR",
+  BE: "EUR", AT: "EUR", PT: "EUR", FI: "EUR", IE: "EUR",
+  GR: "EUR", PL: "EUR", CZ: "EUR", SK: "EUR", SI: "EUR",
+  LU: "EUR", LT: "EUR", LV: "EUR", EE: "EUR", MT: "EUR", CY: "EUR",
+  HR: "EUR", RO: "EUR", BG: "EUR", HU: "EUR",
+  NZ: "AUD",
+};
+
+const ELITE_CATALOG: Record<string, { monthly: number; yearly: number }> = {
+  USD: { monthly: 29,    yearly: 290   },
+  INR: { monthly: 2499,  yearly: 24999 },
+  EUR: { monthly: 27,    yearly: 270   },
+  GBP: { monthly: 24,    yearly: 240   },
+  CAD: { monthly: 38,    yearly: 380   },
+  AUD: { monthly: 42,    yearly: 420   },
+  BRL: { monthly: 149,   yearly: 1490  },
+  JPY: { monthly: 4500,  yearly: 45000 },
+  SGD: { monthly: 40,    yearly: 400   },
+  AED: { monthly: 109,   yearly: 1090  },
+  MXN: { monthly: 499,   yearly: 4990  },
+  CHF: { monthly: 26,    yearly: 260   },
+  SEK: { monthly: 320,   yearly: 3200  },
+};
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+  const [currencyCode, setCurrencyCode] = useState("USD");
+  const [currencySymbol, setCurrencySymbol] = useState("$");
   const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({});
   
   // Theme state: defaults to dark (#09090B) as requested
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userPlan, setUserPlan] = useState<string>("free");
+  const [featuresOpen, setFeaturesOpen] = useState(false);
 
   const [enterpriseRequested, setEnterpriseRequested] = useState(false);
   const [enterpriseLoading, setEnterpriseLoading] = useState(false);
@@ -132,12 +180,80 @@ export default function Home() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session && session.user) {
           setIsLoggedIn(true);
+          const savedPlan = localStorage.getItem("momentum_plan") || "free";
+          setUserPlan(savedPlan);
         }
       } catch (err) {
         console.error("Failed to fetch session on landing page:", err);
       }
     }
     checkUser();
+    
+    async function detectCurrency() {
+      const applyCurrency = (code: string) => {
+        const entry = CURRENCIES[code];
+        if (entry) {
+          setCurrencyCode(code);
+          setCurrencySymbol(entry.symbol);
+          return true;
+        }
+        return false;
+      };
+
+      try {
+        const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(4000) });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.currency && applyCurrency(data.currency)) return;
+          if (data.country_code && COUNTRY_CURRENCY[data.country_code]) {
+            if (applyCurrency(COUNTRY_CURRENCY[data.country_code])) return;
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const res = await fetch("http://ip-api.com/json/?fields=countryCode,currency", { signal: AbortSignal.timeout(4000) });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.currency && applyCurrency(data.currency)) return;
+          if (data.countryCode && COUNTRY_CURRENCY[data.countryCode]) {
+            if (applyCurrency(COUNTRY_CURRENCY[data.countryCode])) return;
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const tzMap: Record<string, string> = {
+          "Asia/Kolkata":         "INR",
+          "Asia/Calcutta":        "INR",
+          "Asia/Tokyo":           "JPY",
+          "Asia/Singapore":       "SGD",
+          "Asia/Dubai":           "AED",
+          "Asia/Riyadh":          "AED",
+          "America/Sao_Paulo":    "BRL",
+          "America/Mexico_City":  "MXN",
+          "America/Toronto":      "CAD",
+          "America/Vancouver":    "CAD",
+          "America/Edmonton":     "CAD",
+          "America/Winnipeg":     "CAD",
+          "Australia/Sydney":     "AUD",
+          "Australia/Melbourne":  "AUD",
+          "Australia/Brisbane":   "AUD",
+          "Europe/London":        "GBP",
+          "Europe/Dublin":        "EUR",
+          "Europe/Paris":         "EUR",
+          "Europe/Berlin":        "EUR",
+          "Europe/Rome":          "EUR",
+          "Europe/Madrid":        "EUR",
+          "Europe/Amsterdam":     "EUR",
+          "Europe/Brussels":      "EUR",
+        };
+        if (tzMap[tz] && applyCurrency(tzMap[tz])) return;
+        if (tz.startsWith("Europe/") && applyCurrency("EUR")) return;
+      } catch (e) {}
+    }
+    detectCurrency();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && session.user) {
@@ -192,9 +308,12 @@ export default function Home() {
   }, [timerActive]);
 
   const basePrice = "Free";
-  const proPrice = isYearly ? "$120" : "$12";
+  const activePro = CURRENCIES[currencyCode] || CURRENCIES["USD"];
+  const proPrice = isYearly ? `${currencySymbol}${activePro.yearly}` : `${currencySymbol}${activePro.monthly}`;
   const proPeriod = isYearly ? "/yr" : "/mo";
-  const elitePrice = isYearly ? "$290" : "$29";
+  
+  const activeElite = ELITE_CATALOG[currencyCode] || ELITE_CATALOG["USD"];
+  const elitePrice = isYearly ? `${currencySymbol}${activeElite.yearly}` : `${currencySymbol}${activeElite.monthly}`;
   const elitePeriod = isYearly ? "/yr" : "/mo";
 
   // Canvas drawing ref
@@ -354,9 +473,73 @@ export default function Home() {
 
             {/* Mid Links */}
             <ul className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#A1A1AA]">
-              <li><a href="#features" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Features</a></li>
+              <li 
+                className="relative py-4 cursor-pointer"
+                onMouseEnter={() => setFeaturesOpen(true)}
+                onMouseLeave={() => setFeaturesOpen(false)}
+              >
+                <div className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors flex items-center gap-1">
+                  Features
+                  <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", featuresOpen && "rotate-180")} />
+                </div>
+                
+                <AnimatePresence>
+                  {featuresOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[480px] bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-50 grid grid-cols-2 gap-2 cursor-default"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* Top ambient line */}
+                      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#A78BFA]/50 to-transparent" />
+                      
+                      <Link href={isLoggedIn ? "/dashboard" : "/register"} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-white/[0.04] transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0">
+                          <Calendar className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5 group-hover:text-[#A78BFA] transition-colors">Sprint Planner</div>
+                          <p className="text-[10px] leading-relaxed text-slate-500 dark:text-neutral-400 font-normal normal-case tracking-normal">Manage tasks and track high-level OKR goals.</p>
+                        </div>
+                      </Link>
+
+                      <Link href={isLoggedIn ? "/dashboard" : "/register"} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-white/[0.04] transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
+                          <Dumbbell className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5 group-hover:text-[#A78BFA] transition-colors">Workout Logger</div>
+                          <p className="text-[10px] leading-relaxed text-slate-500 dark:text-neutral-400 font-normal normal-case tracking-normal">Log splits, calculate volume, and view metrics.</p>
+                        </div>
+                      </Link>
+
+                      <Link href={isLoggedIn ? "/dashboard" : "/register"} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-white/[0.04] transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-[#C084FC] shrink-0">
+                          <Brain className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5 group-hover:text-[#A78BFA] transition-colors">AI Coaching</div>
+                          <p className="text-[10px] leading-relaxed text-slate-500 dark:text-neutral-400 font-normal normal-case tracking-normal">Get instant tailored insights and feedback.</p>
+                        </div>
+                      </Link>
+
+                      <Link href={isLoggedIn ? "/dashboard" : "/register"} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-white/[0.04] transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-[#34D399] shrink-0">
+                          <Activity className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5 group-hover:text-[#A78BFA] transition-colors">Biometrics Logger</div>
+                          <p className="text-[10px] leading-relaxed text-slate-500 dark:text-neutral-400 font-normal normal-case tracking-normal">Quick water & calorie tracking dashboard.</p>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </li>
               <li><Link href="/pricing" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Pricing</Link></li>
-              <li><a href="#coach" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">AI Coach</a></li>
               <li><a href="#analytics" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Analytics</a></li>
               <li><a href="#about" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">About</a></li>
             </ul>
@@ -427,7 +610,6 @@ export default function Home() {
               {[
                 { label: "Features",  href: "#features",   isLink: false },
                 { label: "Pricing",   href: "/pricing",    isLink: true  },
-                { label: "AI Coach",  href: "#coach",      isLink: false },
                 { label: "Analytics", href: "#analytics",  isLink: false },
                 { label: "About",     href: "#about",      isLink: false },
               ].map((item, i) => (
@@ -621,25 +803,29 @@ export default function Home() {
                 </div>
 
                 {/* 4. Workout Cardio / Progress Ring Widget */}
-                <div ref={div4Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-300 bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex justify-between items-center transform hover:-translate-y-1 transition-transform duration-300 z-10">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
-                      <Dumbbell className="h-4.5 w-4.5" />
+                <div ref={div4Ref} className="reveal-fade opacity-0 translate-y-[20px] transition-all duration-1000 delay-300 z-10">
+                  <TiltCard maxTilt={12}>
+                    <div className="bg-white/80 dark:bg-[#111114]/65 backdrop-blur-xl border border-slate-200/60 dark:border-white/[0.08] p-4 rounded-2xl shadow-xl flex justify-between items-center w-full z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                          <Dumbbell className="h-4.5 w-4.5" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-800 dark:text-white">Push Day routine</h4>
+                          <span className="text-[9px] text-neutral-500 uppercase tracking-wider block mt-0.5">Vol: 4,800 kg logged</span>
+                        </div>
+                      </div>
+                      
+                      {/* Small progress ring indicator */}
+                      <div className="relative w-8 h-8 flex items-center justify-center shrink-0">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle cx="16" cy="16" r="12" className="stroke-slate-200/60 dark:stroke-white/[0.06]" strokeWidth="2.5" fill="transparent" />
+                          <circle cx="16" cy="16" r="12" stroke="#A78BFA" strokeWidth="2.5" fill="transparent" strokeDasharray="75" strokeDashoffset="25" />
+                        </svg>
+                        <span className="absolute text-[8px] font-bold font-mono text-slate-800 dark:text-white">75%</span>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-800 dark:text-white">Push Day routine</h4>
-                      <span className="text-[9px] text-neutral-500 uppercase tracking-wider block mt-0.5">Vol: 4,800 kg logged</span>
-                    </div>
-                  </div>
-                  
-                  {/* Small progress ring indicator */}
-                  <div className="relative w-8 h-8 flex items-center justify-center">
-                    <svg className="w-full h-full transform -rotate-90">
-                      <circle cx="16" cy="16" r="12" stroke="rgba(255,255,255,0.06)" strokeWidth="2.5" fill="transparent" />
-                      <circle cx="16" cy="16" r="12" stroke="#A78BFA" strokeWidth="2.5" fill="transparent" strokeDasharray="75" strokeDashoffset="25" />
-                    </svg>
-                    <span className="absolute text-[8px] font-bold font-mono">75%</span>
-                  </div>
+                  </TiltCard>
                 </div>
 
               </div>
@@ -1131,7 +1317,7 @@ export default function Home() {
 
               <Link href={isLoggedIn ? "/dashboard" : "/register"} className="mt-8">
                 <button className="w-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white py-3 rounded-xl text-xs font-bold uppercase hover:bg-white/10 transition-colors border border-slate-200 dark:border-white/5">
-                  Go to Dashboard
+                  {isLoggedIn ? "Go to Dashboard" : "Get Started"}
                 </button>
               </Link>
             </div>
@@ -1146,7 +1332,15 @@ export default function Home() {
 
               <div>
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Pro</h3>
-                <span className="text-2xl font-black text-slate-800 dark:text-white">{proPrice} <span className="text-xs text-neutral-400 font-normal">{proPeriod}</span></span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-slate-800 dark:text-white">{proPrice}</span>
+                  {currencyCode === "INR" && (
+                    <span className="text-sm line-through text-slate-400 dark:text-neutral-500 font-semibold">
+                      {isYearly ? "₹4,990" : "₹499"}
+                    </span>
+                  )}
+                  <span className="text-xs text-neutral-400 font-normal">{proPeriod}</span>
+                </div>
                 
                 <ul className="space-y-3.5 text-xs text-slate-700 dark:text-neutral-300 mt-8 font-medium">
                   <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#A78BFA]" /> Everything in Starter</li>
@@ -1156,11 +1350,27 @@ export default function Home() {
                 </ul>
               </div>
 
-              <Link href={isLoggedIn ? "/dashboard" : "/register"} className="mt-8">
-                <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-95 transition-opacity shadow-md shadow-[#A78BFA]/20">
-                  Go to Dashboard
-                </button>
-              </Link>
+              {isLoggedIn ? (
+                userPlan === "pro" ? (
+                  <Link href="/dashboard" className="mt-8">
+                    <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-95 transition-opacity shadow-md shadow-[#A78BFA]/20">
+                      Current Plan
+                    </button>
+                  </Link>
+                ) : (
+                  <Link href="/pricing" className="mt-8">
+                    <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-95 transition-opacity shadow-md shadow-[#A78BFA]/20">
+                      Upgrade to Pro
+                    </button>
+                  </Link>
+                )
+              ) : (
+                <Link href="/register" className="mt-8">
+                  <button className="w-full bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black py-3 rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-95 transition-opacity shadow-md shadow-[#A78BFA]/20">
+                    Get Started
+                  </button>
+                </Link>
+              )}
             </div>
 
             {/* Enterprise Plan */}
@@ -1169,7 +1379,10 @@ export default function Home() {
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#FDBA74]/40 to-transparent" />
               <div>
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Enterprise</h3>
-                <span className="text-2xl font-black text-slate-800 dark:text-white">{elitePrice} <span className="text-xs text-neutral-400 font-normal">{elitePeriod}</span></span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-slate-800 dark:text-white">{elitePrice}</span>
+                  <span className="text-xs text-neutral-400 font-normal">{elitePeriod}</span>
+                </div>
                 
                 <ul className="space-y-3.5 text-xs text-neutral-400 mt-8">
                   <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-[#FDBA74]" /> Custom Workspace Teams Integration</li>

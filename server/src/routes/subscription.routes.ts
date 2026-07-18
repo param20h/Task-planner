@@ -10,7 +10,7 @@ const router = Router();
 
 // Pricing catalog with local currency values (amount is in standard units, e.g. Rupees/Dollars/Euros)
 const PRICE_CATALOG: Record<string, { monthly: number; yearly: number }> = {
-  INR: { monthly: 999, yearly: 9999 },
+  INR: { monthly: 249, yearly: 2490 },
   EUR: { monthly: 11, yearly: 110 },
   GBP: { monthly: 10, yearly: 100 },
   CAD: { monthly: 16, yearly: 160 },
@@ -21,11 +21,15 @@ const PRICE_CATALOG: Record<string, { monthly: number; yearly: number }> = {
 // POST /create-order — Initiate order with Razorpay
 router.post("/create-order", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { currency = "USD", billingCycle = "monthly" } = req.body;
+    const { currency = "USD", billingCycle = "monthly", test_1_rupee = false } = req.body;
 
-    const normalizedCurrency = currency.toUpperCase();
+    const normalizedCurrency = test_1_rupee ? "INR" : currency.toUpperCase();
     const prices = PRICE_CATALOG[normalizedCurrency] || PRICE_CATALOG["USD"];
-    const baseAmount = billingCycle === "yearly" ? prices.yearly : prices.monthly;
+    let baseAmount = billingCycle === "yearly" ? prices.yearly : prices.monthly;
+    
+    if (test_1_rupee) {
+      baseAmount = 1; // 1 Rupee test charge
+    }
     
     // Razorpay amount needs to be in smallest unit (cents/paise)
     const amountInSmallestUnit = Math.round(baseAmount * 100);

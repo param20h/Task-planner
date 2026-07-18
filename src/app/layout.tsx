@@ -20,6 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://zenithflow.dev"),
   title: "ZenithFlow — Intelligent Workspace",
   description: "Your AI-powered personal productivity OS.",
   manifest: "/manifest.json",
@@ -29,6 +30,31 @@ export const metadata: Metadata = {
     ],
     apple: "/favicon.png",
     shortcut: "/favicon.png",
+  },
+  openGraph: {
+    title: "ZenithFlow — Intelligent Workspace",
+    description: "Your AI-powered personal productivity OS combining task planning, workout volumes, biometrics, and custom AI cognitive coaching.",
+    url: "https://zenithflow.dev",
+    siteName: "ZenithFlow",
+    images: [
+      {
+        url: "/logo.jpg",
+        width: 512,
+        height: 512,
+        alt: "ZenithFlow Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ZenithFlow — Intelligent Workspace",
+    description: "Your AI-powered personal productivity OS.",
+    images: ["/logo.jpg"],
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "",
   },
 };
 
@@ -97,7 +123,7 @@ export default function RootLayout({
             `
           }}
         />
-        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       </body>
     </html>
   );

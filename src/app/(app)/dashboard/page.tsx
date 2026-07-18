@@ -30,7 +30,7 @@ import { FloatingWidgets } from "@/components/dashboard/FloatingWidgets";
 import { PWAInstallPrompt } from "@/components/ui/PWAInstallPrompt";
 
 // Responsive Glassmorphism Styles using CSS variables for live appearance adjustments
-const glassCardClass = "bg-white/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
+const glassCardClass = "bg-slate-100/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e]/[var(--glass-opacity,0.6)] backdrop-blur-[var(--glass-blur,20px)] border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] text-slate-800 dark:text-neutral-300 relative overflow-hidden transition-all duration-500 ease-out hover:border-[#A78BFA]/30 dark:hover:border-white/15";
 const glassIconWrapperClass = "p-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg flex items-center justify-center";
 
 export default function DashboardPage() {
@@ -383,7 +383,7 @@ export default function DashboardPage() {
 
         const count = contributionMap[dateStr] || 0;
         
-        let colorClass = "bg-slate-200 dark:bg-white/5"; // 0 logs
+        let colorClass = "bg-black dark:bg-white/5"; // 0 logs
         if (count === 1) colorClass = "bg-[#6068F0]/30";
         if (count === 2) colorClass = "bg-[#6068F0]/60";
         if (count >= 3) colorClass = "bg-[#6068F0]";
@@ -397,7 +397,7 @@ export default function DashboardPage() {
 
         // If the date is in the future, render it slightly faded/empty
         if (isFuture) {
-          colorClass = "bg-slate-100 dark:bg-white/5 opacity-20";
+          colorClass = "bg-black dark:bg-white/5 opacity-20";
         }
 
         rowCells.push(
@@ -407,7 +407,7 @@ export default function DashboardPage() {
             className={cn(
               "w-3 h-3 rounded-full transition-all duration-300 hover:scale-125 hover:ring-1 hover:ring-white/50 cursor-pointer",
               colorClass,
-              isCellToday && "ring-2 ring-[#6068F0] ring-offset-1 dark:ring-offset-black scale-110 shadow-[0_0_8px_rgba(96,104,240,0.5)]"
+              isCellToday && "ring-2 ring-[#6068F0] ring-offset-1 ring-offset-white dark:ring-offset-black scale-110 shadow-[0_0_8px_rgba(96,104,240,0.5)]"
             )}
           />
         );

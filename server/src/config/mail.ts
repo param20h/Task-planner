@@ -6,7 +6,7 @@ const transporter = nodemailer.createTransport({
   port: parseInt(process.env.SMTP_PORT || "465"),
   secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
   auth: {
-    user: process.env.SMTP_USER || "no-reply@param20h.tech",
+    user: process.env.SMTP_USER || "no-reply@zenithflow.dev",
     pass: process.env.SMTP_PASS || "",
   },
   tls: {
@@ -19,21 +19,25 @@ const transporter = nodemailer.createTransport({
 });
 
 // Verify connection configuration on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ SMTP Mailer Connection Verification Failed:", error.message);
-  } else {
-    console.log("✅ SMTP Mailer is ready to deliver messages");
-  }
-});
+if (process.env.RESEND_API_KEY) {
+  console.log("⚡ Resend API is configured as the primary email provider. SMTP verification skipped.");
+} else {
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error("❌ SMTP Mailer Connection Verification Failed:", error.message);
+    } else {
+      console.log("✅ SMTP Mailer is ready to deliver messages");
+    }
+  });
+}
 
 /**
  * Sends a welcome/confirmation email when a user unlocks the ZenithFlow Pro plan.
  */
 export async function sendProUpgradeEmail(toEmail: string, userName: string): Promise<boolean> {
   const fromName = process.env.SMTP_FROM_NAME || "ZenithFlow";
-  const fromEmail = process.env.RESEND_API_KEY ? "hello@param20h.tech" : (process.env.SMTP_FROM_EMAIL || "no-reply@param20h.tech");
-  const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").replace(/\/$/, "");
+  const fromEmail = process.env.RESEND_API_KEY ? "hello@zenithflow.dev" : (process.env.SMTP_FROM_EMAIL || "no-reply@zenithflow.dev");
+  const clientUrl = "https://zenithflow.dev/dashboard";
 
   // HTML content matching the premium aesthetic of ZenithFlow (Dark theme, sleek design, gradients)
   const htmlContent = `
@@ -180,7 +184,7 @@ export async function sendProUpgradeEmail(toEmail: string, userName: string): Pr
             </div>
           </div>
           
-          <a href="${clientUrl}/dashboard" class="cta-button">Go to Dashboard</a>
+          <a href="${clientUrl}" class="cta-button">Go to Dashboard</a>
         </div>
         <div class="footer">
           <p>© ${new Date().getFullYear()} ZenithFlow. All rights reserved.</p>
@@ -225,7 +229,7 @@ export async function sendProUpgradeEmail(toEmail: string, userName: string): Pr
       from: `"${fromName}" <${fromEmail}>`,
       to: toEmail,
       subject: "⚡ ZenithFlow Pro Activated! Welcome to the premium zone.",
-      text: `Hello ${userName},\n\nWelcome to ZenithFlow Pro! Your account has been upgraded and you have unlocked all premium features, including the AI Coach, Unlimited Gym Log, and advanced Focus Analytics.\n\nVisit your dashboard at ${clientUrl}/dashboard to start exploring.\n\nBest,\nZenithFlow Team`,
+      text: `Hello ${userName},\n\nWelcome to ZenithFlow Pro! Your account has been upgraded and you have unlocked all premium features, including the AI Coach, Unlimited Gym Log, and advanced Focus Analytics.\n\nVisit your dashboard at ${clientUrl} to start exploring.\n\nBest,\nZenithFlow Team`,
       html: htmlContent,
     });
 
@@ -242,8 +246,8 @@ export async function sendProUpgradeEmail(toEmail: string, userName: string): Pr
  */
 export async function sendEnterpriseRequestEmail(userName: string, userEmail: string, adminEmail: string): Promise<boolean> {
   const fromName = process.env.SMTP_FROM_NAME || "ZenithFlow";
-  const fromEmail = process.env.RESEND_API_KEY ? "hello@param20h.tech" : (process.env.SMTP_FROM_EMAIL || "no-reply@param20h.tech");
-  const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").replace(/\/$/, "");
+  const fromEmail = process.env.RESEND_API_KEY ? "hello@zenithflow.dev" : (process.env.SMTP_FROM_EMAIL || "no-reply@zenithflow.dev");
+  const clientUrl = "https://zenithflow.dev/dashboard";
 
   const htmlContent = `
     <div style="background-color: #09090b; color: #fafafa; padding: 40px; font-family: sans-serif; max-width: 600px; margin: auto; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);">

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Triangle, 
   ArrowRight, 
@@ -14,7 +15,11 @@ import {
   Bolt,
   ChevronDown,
   Sun,
-  Moon
+  Moon,
+  Calendar,
+  Activity,
+  Brain,
+  Dumbbell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,11 +27,25 @@ import { supabase } from "@/lib/supabaseClient";
 import { api } from "@/lib/api";
 import { AnimatedThemeToggler } from "@/components/ui/AnimatedThemeToggler";
 
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
+    if ((window as any).Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function PricingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
   const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({});
   const [userId, setUserId] = useState<string | null>(null);
+  const [userPlan, setUserPlan] = useState<string>("free");
+  const [featuresOpen, setFeaturesOpen] = useState(false);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   const [enterpriseRequested, setEnterpriseRequested] = useState(false);
@@ -58,7 +77,7 @@ export default function PricingPage() {
 
   const CURRENCIES: Record<string, { symbol: string; monthly: number; yearly: number; country: string }> = {
     USD: { symbol: "$",   monthly: 12,    yearly: 120,   country: "US" },
-    INR: { symbol: "₹",   monthly: 999,   yearly: 9999,  country: "IN" },
+    INR: { symbol: "₹",   monthly: 249,   yearly: 2490,  country: "IN" },
     EUR: { symbol: "€",   monthly: 11,    yearly: 110,   country: "EU" },
     GBP: { symbol: "£",   monthly: 10,    yearly: 100,   country: "GB" },
     CAD: { symbol: "C$",  monthly: 16,    yearly: 160,   country: "CA" },
@@ -106,6 +125,8 @@ export default function PricingPage() {
           if (session.access_token) {
             localStorage.setItem("momentum_token", session.access_token);
           }
+          const savedPlan = localStorage.getItem("momentum_plan") || "free";
+          setUserPlan(savedPlan);
         }
       } catch (err) {
         console.error("Failed to load session on pricing page:", err);
@@ -194,8 +215,11 @@ export default function PricingPage() {
         if (session.access_token) {
           localStorage.setItem("momentum_token", session.access_token);
         }
+        const savedPlan = localStorage.getItem("momentum_plan") || "free";
+        setUserPlan(savedPlan);
       } else {
         setUserId(null);
+        setUserPlan("free");
         localStorage.removeItem("momentum_token");
       }
     });
@@ -205,21 +229,50 @@ export default function PricingPage() {
     };
   }, []);
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (upgradeOpts?: { isTest1Rupee?: boolean }) => {
     if (!userId) return;
+    const isTest1Rupee = upgradeOpts?.isTest1Rupee || false;
     try {
       const cycle = isYearly ? "yearly" : "monthly";
 
       // 1. Create order on backend Express API server
-      const order = await api.createRazorpayOrder(currencyCode, cycle);
+      const order = await api.createRazorpayOrder(isTest1Rupee ? "INR" : currencyCode, cycle, isTest1Rupee);
+
+      // Ensure Razorpay SDK is loaded
+      if (typeof (window as any).Razorpay === "undefined") {
+        const loaded = await loadRazorpayScript();
+        if (!loaded) {
+          console.warn("Razorpay SDK not loaded. Simulating checkout verification in development mode.");
+          if (process.env.NODE_ENV === "development") {
+            const verifyRes = await api.verifyRazorpayPayment({
+              razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 10)}`,
+              razorpay_order_id: order.id,
+              razorpay_signature: "mock_signature_dev_override"
+            });
+
+            if (verifyRes.success) {
+              localStorage.setItem("momentum_plan", "pro");
+              setUserPlan("pro");
+              setUpgradeSuccess(true);
+              setTimeout(() => {
+                setUpgradeSuccess(false);
+                window.location.href = "/dashboard";
+              }, 1500);
+            }
+          } else {
+            alert("Payment gateway could not be loaded. Please check your internet connection.");
+          }
+          return;
+        }
+      }
 
       // 2. Configure and launch Razorpay Checkout Modal
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TBloJct92Bl3h9",
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
-        name: "ZenithFlow Pro",
-        description: `Subscription Upgrade (${cycle})`,
+        name: isTest1Rupee ? "ZenithFlow Test (₹1)" : "ZenithFlow Pro",
+        description: isTest1Rupee ? "Real Payment Gateway Test Charge" : `Subscription Upgrade (${cycle})`,
         order_id: order.id,
         handler: async function (response: any) {
           try {
@@ -232,6 +285,7 @@ export default function PricingPage() {
 
             if (verifyRes.success) {
               localStorage.setItem("momentum_plan", "pro");
+              setUserPlan("pro");
               setUpgradeSuccess(true);
               setTimeout(() => {
                 setUpgradeSuccess(false);
@@ -251,29 +305,6 @@ export default function PricingPage() {
           color: "#6068F0"
         }
       };
-
-      if (typeof (window as any).Razorpay === "undefined") {
-        console.warn("Razorpay SDK not loaded. Simulating checkout verification in development mode.");
-        if (process.env.NODE_ENV === "development") {
-          const verifyRes = await api.verifyRazorpayPayment({
-            razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 10)}`,
-            razorpay_order_id: order.id,
-            razorpay_signature: "mock_signature_dev_override"
-          });
-
-          if (verifyRes.success) {
-            localStorage.setItem("momentum_plan", "pro");
-            setUpgradeSuccess(true);
-            setTimeout(() => {
-              setUpgradeSuccess(false);
-              window.location.href = "/dashboard";
-            }, 1500);
-          }
-        } else {
-          alert("Payment gateway could not be loaded. Please check your internet connection.");
-        }
-        return;
-      }
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
@@ -451,9 +482,73 @@ export default function PricingPage() {
 
             {/* Mid Links */}
             <ul className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#A1A1AA]">
-              <li><Link href="/#features" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Features</Link></li>
+              <li 
+                className="relative py-4 cursor-pointer"
+                onMouseEnter={() => setFeaturesOpen(true)}
+                onMouseLeave={() => setFeaturesOpen(false)}
+              >
+                <div className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors flex items-center gap-1">
+                  Features
+                  <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", featuresOpen && "rotate-180")} />
+                </div>
+                
+                <AnimatePresence>
+                  {featuresOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[480px] bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-50 grid grid-cols-2 gap-2 cursor-default"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* Top ambient line */}
+                      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#A78BFA]/50 to-transparent" />
+                      
+                      <Link href={userId ? "/dashboard" : "/register"} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-white/[0.04] transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0">
+                          <Calendar className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5 group-hover:text-[#A78BFA] transition-colors">Sprint Planner</div>
+                          <p className="text-[10px] leading-relaxed text-slate-500 dark:text-neutral-400 font-normal normal-case tracking-normal">Manage tasks and track high-level OKR goals.</p>
+                        </div>
+                      </Link>
+
+                      <Link href={userId ? "/dashboard" : "/register"} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-white/[0.04] transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500 shrink-0">
+                          <Dumbbell className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5 group-hover:text-[#A78BFA] transition-colors">Workout Logger</div>
+                          <p className="text-[10px] leading-relaxed text-slate-500 dark:text-neutral-400 font-normal normal-case tracking-normal">Log splits, calculate volume, and view metrics.</p>
+                        </div>
+                      </Link>
+
+                      <Link href={userId ? "/dashboard" : "/register"} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-white/[0.04] transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-[#C084FC] shrink-0">
+                          <Brain className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5 group-hover:text-[#A78BFA] transition-colors">AI Coaching</div>
+                          <p className="text-[10px] leading-relaxed text-slate-500 dark:text-neutral-400 font-normal normal-case tracking-normal">Get instant tailored insights and feedback.</p>
+                        </div>
+                      </Link>
+
+                      <Link href={userId ? "/dashboard" : "/register"} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-white/[0.04] transition-colors group">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-[#34D399] shrink-0">
+                          <Activity className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5 group-hover:text-[#A78BFA] transition-colors">Biometrics Logger</div>
+                          <p className="text-[10px] leading-relaxed text-slate-500 dark:text-neutral-400 font-normal normal-case tracking-normal">Quick water & calorie tracking dashboard.</p>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </li>
               <li><Link href="/pricing" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Pricing</Link></li>
-              <li><Link href="/#coach" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">AI Coach</Link></li>
               <li><Link href="/#analytics" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">Analytics</Link></li>
               <li><Link href="/#about" className="hover:text-[#09090B] dark:hover:text-[#FAFAFA] transition-colors">About</Link></li>
             </ul>
@@ -502,7 +597,6 @@ export default function PricingPage() {
           <button className="absolute top-8 right-8 text-white text-3xl" onClick={() => setMenuOpen(false)}>✕</button>
           <Link href="/#features" onClick={() => setMenuOpen(false)} className="hover:text-white">Features</Link>
           <Link href="/pricing" onClick={() => setMenuOpen(false)} className="hover:text-white">Pricing</Link>
-          <Link href="/#coach" onClick={() => setMenuOpen(false)} className="hover:text-white">AI Coach</Link>
           <Link href="/#analytics" onClick={() => setMenuOpen(false)} className="hover:text-white">Analytics</Link>
           <Link href="/#about" onClick={() => setMenuOpen(false)} className="hover:text-white">About</Link>
           {userId ? (
@@ -600,7 +694,7 @@ export default function PricingPage() {
               </ul>
               <Link href={userId ? "/dashboard" : "/register"}>
                 <button className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300">
-                  Go to Dashboard
+                  {userId ? "Go to Dashboard" : "Get Started"}
                 </button>
               </Link>
             </div>
@@ -619,8 +713,13 @@ export default function PricingPage() {
                   <Bolt className="h-5 w-5 text-[#A78BFA] fill-[#A78BFA]/20 animate-pulse" />
                 </h3>
                 <p className="text-xs text-neutral-400 mb-6 h-10">Advanced analytics and unlimited logging.</p>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-black text-slate-800 dark:text-white transition-all duration-300">{proPrice}</span>
+                  {currencyCode === "INR" && (
+                    <span className="text-sm line-through text-slate-400 dark:text-neutral-500 font-semibold">
+                      {isYearly ? "₹4,990" : "₹499"}
+                    </span>
+                  )}
                   <span className="text-xs text-neutral-400">{proPeriod}</span>
                 </div>
               </div>
@@ -631,26 +730,54 @@ export default function PricingPage() {
                 <li className="flex items-center gap-3"><Check className="h-4 w-4 text-[#A78BFA]" /> Advanced Focus Analytics trend graphs</li>
               </ul>
               {userId ? (
-                <button
-                  onClick={handleUpgrade}
-                  disabled={upgradeSuccess}
-                  className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)] flex items-center justify-center gap-2"
-                >
-                  {upgradeSuccess ? (
-                    <>
-                      <Check className="h-4 w-4 text-white animate-bounce" />
-                      Success! Unlocking Pro...
-                    </>
-                  ) : (
-                    "Go to Dashboard"
-                  )}
-                </button>
+                userPlan === "pro" ? (
+                  <Link href="/dashboard" className="w-full">
+                    <button className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)]">
+                      Current Plan
+                    </button>
+                  </Link>
+                ) : (
+                  <div className="flex flex-col gap-2.5 w-full">
+                    <button
+                      onClick={() => handleUpgrade()}
+                      disabled={upgradeSuccess}
+                      className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)] flex items-center justify-center gap-2"
+                    >
+                      {upgradeSuccess ? (
+                        <>
+                          <Check className="h-4 w-4 text-white animate-bounce" />
+                          Success! Unlocking Pro...
+                        </>
+                      ) : (
+                        "Upgrade to Pro"
+                      )}
+                    </button>
+                    {(currencyCode === "INR" || process.env.NODE_ENV === "development") && (
+                      <button
+                        onClick={() => handleUpgrade({ isTest1Rupee: true })}
+                        disabled={upgradeSuccess}
+                        className="w-full bg-transparent hover:bg-slate-100/5 dark:hover:bg-white/[0.04] border border-[#A78BFA]/30 hover:border-[#A78BFA]/60 text-[#A78BFA] py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5"
+                      >
+                        Real API Test (₹1 Charge)
+                      </button>
+                    )}
+                  </div>
+                )
               ) : (
-                <Link href="/register">
-                  <button className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)]">
-                    Go to Dashboard
-                  </button>
-                </Link>
+                <div className="flex flex-col gap-2.5 w-full">
+                  <Link href="/register" className="w-full">
+                    <button className="w-full bg-gradient-to-r from-[#A78BFA] to-[#7c3aed] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_5px_15px_rgba(167,139,250,0.3)]">
+                      Get Started
+                    </button>
+                  </Link>
+                  {(currencyCode === "INR" || process.env.NODE_ENV === "development") && (
+                    <Link href="/register" className="w-full">
+                      <button className="w-full bg-transparent hover:bg-slate-100/5 dark:hover:bg-white/[0.04] border border-[#A78BFA]/30 hover:border-[#A78BFA]/60 text-[#A78BFA] py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5">
+                        Real API Test (₹1 Charge)
+                      </button>
+                    </Link>
+                  )}
+                </div>
               )}
             </div>
 

@@ -245,10 +245,10 @@ class ApiClient {
   }
 
   // ─── Razorpay Subscriptions ──────────────────────────
-  async createRazorpayOrder(currency: string, billingCycle: string) {
+  async createRazorpayOrder(currency: string, billingCycle: string, test_1_rupee?: boolean) {
     return this.request<{ id: string; amount: number; currency: string }>("/subscription/create-order", {
       method: "POST",
-      body: { currency, billingCycle }
+      body: { currency, billingCycle, test_1_rupee }
     });
   }
 
