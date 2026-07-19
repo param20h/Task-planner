@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
-const glassCardClass = "bg-white/80 dark:bg-[#111114]/85 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl rounded-2xl p-5 space-y-4 text-slate-700 dark:text-neutral-300 relative overflow-hidden transition-all duration-300";
+const glassCardClass = "bg-slate-100/80 dark:bg-[#111114]/85 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl rounded-2xl p-5 space-y-4 text-slate-700 dark:text-neutral-300 relative overflow-hidden transition-all duration-300";
 
 interface FloatingWidgetsProps {
   profileId: string;

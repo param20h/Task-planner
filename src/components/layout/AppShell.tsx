@@ -280,7 +280,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="hidden md:flex flex-none z-20">
         <Sidebar open={open} setOpen={setOpen}>
           <SidebarBody className={cn(
-            "justify-between gap-10 bg-[#0D0D0E]/80 dark:bg-[#0D0D0E]/80 light:bg-white border-r border-slate-200 dark:border-white/5 shadow-2xl px-3"
+            "justify-between gap-10 bg-slate-50 dark:bg-[#0D0D0E]/80 border-r border-slate-200 dark:border-white/5 shadow-2xl px-3"
           )}>
             <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
               <Logo open={open} />
