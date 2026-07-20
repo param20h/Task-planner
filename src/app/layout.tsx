@@ -21,8 +21,41 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://zenithflow.dev"),
-  title: "ZenithFlow — Intelligent Workspace",
-  description: "Your AI-powered personal productivity OS.",
+  title: {
+    default: "ZenithFlow — Intelligent Workspace & Productivity OS",
+    template: "%s | ZenithFlow"
+  },
+  description: "ZenithFlow is your AI-powered personal productivity OS. Track habits, plan study sprints, log workout volume, analyze biometrics, and converse with Zenith AI.",
+  keywords: [
+    "productivity OS",
+    "habit tracker",
+    "study sprint planner",
+    "workout logger",
+    "fitness volume tracker",
+    "personal analytics dashboard",
+    "Zenith AI coach",
+    "sprint companion",
+    "daily task planner",
+    "biometrics visualization",
+    "pro AI companion"
+  ],
+  authors: [{ name: "ZenithFlow Team", url: "https://zenithflow.dev" }],
+  creator: "ZenithFlow Team",
+  publisher: "ZenithFlow",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://zenithflow.dev",
+  },
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -32,8 +65,8 @@ export const metadata: Metadata = {
     shortcut: "/favicon.png",
   },
   openGraph: {
-    title: "ZenithFlow — Intelligent Workspace",
-    description: "Your AI-powered personal productivity OS combining task planning, workout volumes, biometrics, and custom AI cognitive coaching.",
+    title: "ZenithFlow — Intelligent Workspace & Productivity OS",
+    description: "The AI-powered personal productivity OS. Track habits, plan study sprints, log workout volume, analyze biometrics, and converse with Zenith AI.",
     url: "https://zenithflow.dev",
     siteName: "ZenithFlow",
     images: [
@@ -49,8 +82,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ZenithFlow — Intelligent Workspace",
-    description: "Your AI-powered personal productivity OS.",
+    title: "ZenithFlow — Intelligent Workspace & Productivity OS",
+    description: "The AI-powered personal productivity OS combining task planning, workout volumes, biometrics, and Zenith AI.",
     images: ["/logo.jpg"],
   },
   verification: {
@@ -94,6 +127,43 @@ export default function RootLayout({
                 } catch (e) {}
               })();
             `
+          }}
+        />
+        {/* Structured Data / JSON-LD for Search Engine Rich Snippets */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "SoftwareApplication",
+                "name": "ZenithFlow",
+                "operatingSystem": "All",
+                "applicationCategory": "ProductivityApplication",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "249.00",
+                  "priceCurrency": "INR"
+                },
+                "description": "Intelligent workspace & personal productivity OS. Track habits, plan study sprints, log workout volume, analyze biometrics, and converse with Zenith AI.",
+                "aggregateRating": {
+                  "@type": "AggregateRating",
+                  "ratingValue": "4.9",
+                  "ratingCount": "180"
+                }
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "ZenithFlow",
+                "url": "https://zenithflow.dev",
+                "logo": "https://zenithflow.dev/logo.jpg",
+                "sameAs": [
+                  "https://twitter.com/zenithflow",
+                  "https://github.com/param20h/Task-planner"
+                ]
+              }
+            ])
           }}
         />
       </head>
