@@ -55,7 +55,7 @@ export function PWAInstallPrompt() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed top-20 md:top-auto md:bottom-6 right-4 left-4 md:left-auto z-[60] md:w-96 p-4 rounded-2xl bg-slate-100/95 dark:bg-[#111114]/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl flex items-center justify-between gap-4 transition-all duration-500 hover:scale-[1.02] animate-in slide-in-from-top-4 duration-300">
+    <div className="fixed top-20 md:top-auto md:bottom-6 left-4 right-4 md:left-6 md:right-auto z-[60] md:w-96 p-4 rounded-2xl bg-slate-100/95 dark:bg-[#111114]/90 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl flex items-center justify-between gap-4 transition-all duration-500 hover:scale-[1.02] animate-in slide-in-from-top-4 duration-300">
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-[#6068F0]/10 flex items-center justify-center text-[#6068F0] shrink-0">
           <Download className="h-4.5 w-4.5" />
