@@ -375,10 +375,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Mobile Dock Nav — spring magnification on hover */}
+      {/* Mobile Dock Nav — premium static glassmorphism capsule */}
       <div className="md:hidden fixed bottom-5 left-4 right-4 z-50 flex justify-center pointer-events-none">
-        <div className="pointer-events-auto">
-          <Dock iconSize={26} iconMagnification={32} iconDistance={60}>
+        <div className="w-full max-w-[355px] pointer-events-auto">
+          <Dock>
             {visibleLinks.map((link) => {
               const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
               return (
