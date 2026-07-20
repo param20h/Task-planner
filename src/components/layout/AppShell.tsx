@@ -378,7 +378,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Mobile Dock Nav — spring magnification on hover */}
       <div className="md:hidden fixed bottom-5 left-4 right-4 z-50 flex justify-center pointer-events-none">
         <div className="pointer-events-auto">
-          <Dock iconSize={40} iconMagnification={58} iconDistance={100}>
+          <Dock iconSize={26} iconMagnification={32} iconDistance={60}>
             {visibleLinks.map((link) => {
               const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
               return (
@@ -391,7 +391,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           ? "text-[#A78BFA] dark:text-white stroke-[2.2px]"
                           : "text-slate-500 dark:text-neutral-400"
                       ),
-                      style: { width: "55%", height: "55%" },
+                      style: { width: "60%", height: "60%" },
                     })}
                   </DockIcon>
                 </Link>

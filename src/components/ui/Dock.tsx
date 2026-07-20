@@ -52,10 +52,10 @@ export function Dock({
         onMouseMove={(e) => mouseX.set(e.pageX)}
         onMouseLeave={() => mouseX.set(Infinity)}
         className={cn(
-          "flex items-end gap-3 rounded-3xl px-4 py-2",
-          "bg-white/75 dark:bg-[#0D0D0E]/80 backdrop-blur-xl",
-          "border border-slate-200/50 dark:border-white/5",
-          "shadow-[0_16px_40px_rgba(0,0,0,0.4)]",
+          "flex items-center gap-2.5 rounded-full px-3.5 py-1.5",
+          "bg-slate-100/60 dark:bg-black/40 backdrop-blur-2xl",
+          "border border-slate-200/50 dark:border-white/10",
+          "shadow-[0_12px_32px_rgba(0,0,0,0.3)]",
           className
         )}
       >
@@ -103,21 +103,15 @@ export function DockIcon({ children, className, isActive }: DockIconProps) {
       ref={ref}
       style={{ width, height: width }}
       className={cn(
-        "relative flex items-center justify-center rounded-2xl shrink-0 cursor-pointer",
+        "relative flex items-center justify-center rounded-full shrink-0 cursor-pointer",
         "transition-colors duration-200",
         isActive
-          ? "bg-[#A78BFA]/10 border border-[#A78BFA]/25 dark:bg-white/10 dark:border-white/10"
-          : "border border-transparent",
+          ? "bg-[#A78BFA]/20 border border-[#A78BFA]/30 dark:bg-white/15 dark:border-white/15"
+          : "border border-transparent hover:bg-slate-200/50 dark:hover:bg-white/5",
         className
       )}
     >
       {children}
-      {isActive && (
-        <motion.span
-          layoutId="activeDockDot"
-          className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-[#A78BFA] dark:bg-white shadow-[0_0_6px_rgba(167,139,250,0.9)]"
-        />
-      )}
     </motion.div>
   );
 }
