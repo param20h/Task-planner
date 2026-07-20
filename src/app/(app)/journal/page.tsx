@@ -34,7 +34,19 @@ export default function JournalPage() {
 
       try {
         const storedKey = localStorage.getItem("momentum_groq_key");
-        if (storedKey) setGroqKey(storedKey);
+        if (storedKey) {
+          setGroqKey(storedKey);
+        } else {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("groq_api_key")
+            .eq("id", activeId)
+            .single();
+          if (profile && profile.groq_api_key) {
+            setGroqKey(profile.groq_api_key);
+            localStorage.setItem("momentum_groq_key", profile.groq_api_key);
+          }
+        }
 
         const { data, error } = await supabase
           .from("journal_logs")

@@ -80,7 +80,19 @@ export default function FoodPage() {
           setProfileId(user.id);
         }
         const storedKey = localStorage.getItem("momentum_groq_key");
-        if (storedKey) setGroqKey(storedKey);
+        if (storedKey) {
+          setGroqKey(storedKey);
+        } else if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("groq_api_key")
+            .eq("id", user.id)
+            .single();
+          if (profile && profile.groq_api_key) {
+            setGroqKey(profile.groq_api_key);
+            localStorage.setItem("momentum_groq_key", profile.groq_api_key);
+          }
+        }
       } catch (err) {
         console.error("Failed to load session:", err);
       }

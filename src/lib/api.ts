@@ -279,6 +279,23 @@ class ApiClient {
     return this.request<any[]>("/admin/payments");
   }
 
+  async getAdminApiKeys() {
+    return this.request<any[]>("/admin/api-keys");
+  }
+
+  async addAdminApiKey(keyValue: string) {
+    return this.request<any>("/admin/api-keys", {
+      method: "POST",
+      body: { key_value: keyValue }
+    });
+  }
+
+  async deleteAdminApiKey(id: any) {
+    return this.request<{ success: boolean }>(`/admin/api-keys/${id}`, {
+      method: "DELETE"
+    });
+  }
+
   async contactEnterprise() {
     return this.request<{ success: boolean; message: string }>("/subscription/contact-enterprise", {
       method: "POST"

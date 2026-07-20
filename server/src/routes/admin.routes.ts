@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AuthRequest, authMiddleware } from "../middleware/auth";
 import { createClient } from "@supabase/supabase-js";
+import { assignProApiKey, clearProApiKey, supabaseAdmin } from "../config/supabase";
 import { sendProUpgradeEmail } from "../config/mail";
 
 const router = Router();
@@ -88,6 +89,13 @@ router.post("/change-plan", authMiddleware, adminOnly, async (req: AuthRequest, 
       return res.status(500).json({ error: error.message });
     }
 
+    // Assign or clear API key based on the new plan
+    if (plan === "pro") {
+      await assignProApiKey(targetUserId);
+    } else {
+      await clearProApiKey(targetUserId);
+    }
+
     // Send Pro upgrade welcome email to the user if plan is pro
     if (plan === "pro" && profile && profile.email) {
       sendProUpgradeEmail(profile.email, profile.name || "User").catch(err => {
@@ -131,6 +139,73 @@ router.get("/payments", authMiddleware, adminOnly, async (req: AuthRequest, res:
     return res.status(200).json(data);
   } catch (err) {
     console.error("Admin list payments error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /api-keys — List all API keys in the pool
+router.get("/api-keys", authMiddleware, adminOnly, async (req: AuthRequest, res: Response) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("pro_api_keys")
+      .select("id, key_value, created_at")
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("Admin list API keys failed:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error("Admin list API keys error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /api-keys — Add a new API key to the pool
+router.post("/api-keys", authMiddleware, adminOnly, async (req: AuthRequest, res: Response) => {
+  try {
+    const { key_value } = req.body;
+    if (!key_value || typeof key_value !== "string" || !key_value.trim()) {
+      return res.status(400).json({ error: "Invalid API key value" });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("pro_api_keys")
+      .insert({ key_value: key_value.trim() })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Admin add API key failed:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error("Admin add API key error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// DELETE /api-keys/:id — Delete a key from the pool
+router.delete("/api-keys/:id", authMiddleware, adminOnly, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabaseAdmin
+      .from("pro_api_keys")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error(`Admin delete API key ${id} failed:`, error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Admin delete API key error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 });

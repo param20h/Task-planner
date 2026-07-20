@@ -70,6 +70,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState("/AGENTS.png");
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isScrolled = scrollY > 20;
 
   useEffect(() => {
     // Sync theme on load
@@ -223,8 +232,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       icon: <CustomJournalIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     },
     {
-      label: "AI Coach",
-      title: "AI Coach",
+      label: "Zenith AI",
+      title: "Zenith AI",
       href: "/ai-coach",
       icon: <CustomCoachIcon className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
       badge: "PRO"
@@ -357,17 +366,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Top Header with Brand and Profile Avatar */}
-      <div className="md:hidden sticky top-0 w-full z-40 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-md border-b border-slate-200/50 dark:border-white/5 px-6 py-4 flex items-center justify-between shrink-0">
+      {/* Mobile Top Header (Adaptive animated glass bar on scroll) */}
+      <div className={cn(
+        "md:hidden sticky top-0 w-full z-40 px-6 py-4 flex items-center justify-between shrink-0 transition-all duration-300",
+        isScrolled
+          ? "bg-slate-100/90 dark:bg-[#09090b]/90 backdrop-blur-md border-b border-slate-200/50 dark:border-white/5 shadow-sm"
+          : "bg-transparent border-b border-transparent"
+      )}>
         <Link href="/dashboard" className="flex items-center gap-2">
           <div className="relative h-6 w-6 rounded-md overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm">
             <Image src="/logo.jpg" alt="ZenithFlow Logo" fill sizes="24px" className="object-cover" />
           </div>
-          <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white font-sans">zenithflow</span>
+          <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white font-sans">Dashboard</span>
         </Link>
         
-        <Link href="/profile" className="relative h-8 w-8 rounded-full overflow-hidden border border-slate-200 dark:border-white/20 bg-slate-100 dark:bg-white/10 flex items-center justify-center shadow-sm">
-          <Image src={avatarUrl} alt="User Profile" fill className="object-cover" />
-        </Link>
+        <div className="flex items-center gap-3.5">
+          {/* Theme toggler integrated with profile option */}
+          <AnimatedThemeToggler
+            theme={theme}
+            onThemeChange={handleThemeChange}
+            className="w-7 h-7 rounded-lg border border-slate-250/60 dark:border-white/10 bg-slate-200/50 dark:bg-white/5 text-slate-500 dark:text-neutral-400 flex items-center justify-center"
+          />
+          <Link href="/profile" className="relative h-8 w-8 rounded-full overflow-hidden border border-slate-200 dark:border-white/20 bg-slate-100 dark:bg-white/10 flex items-center justify-center shadow-sm shrink-0">
+            <Image src={avatarUrl} alt="User Profile" fill className="object-cover" />
+          </Link>
+        </div>
       </div>
 
       {/* Main Content Pane */}
@@ -375,9 +398,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Mobile Dock Nav — premium static glassmorphism capsule */}
+      {/* Mobile Dock Nav — premium animated glassmorphism capsule */}
       <div className="md:hidden fixed bottom-5 left-4 right-4 z-50 flex justify-center pointer-events-none">
-        <div className="w-full max-w-[355px] pointer-events-auto">
+        <div className="w-full max-w-[240px] pointer-events-auto">
           <Dock>
             {visibleLinks.map((link) => {
               const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
@@ -397,18 +420,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
-
-            {/* Divider */}
-            <div className="w-px self-stretch bg-slate-200/60 dark:bg-white/8 my-2 shrink-0" />
-
-            {/* Theme toggle */}
-            <DockIcon>
-              <AnimatedThemeToggler
-                theme={theme}
-                onThemeChange={handleThemeChange}
-                className="w-full h-full border-none bg-transparent hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent text-neutral-400 hover:text-neutral-250"
-              />
-            </DockIcon>
           </Dock>
         </div>
       </div>

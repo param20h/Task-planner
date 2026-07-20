@@ -1,6 +1,6 @@
 import { Router, Response } from "express";
 import { AuthRequest, authMiddleware } from "../middleware/auth";
-import { supabaseAdmin } from "../config/supabase";
+import { supabaseAdmin, assignProApiKey } from "../config/supabase";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { sendProUpgradeEmail, sendEnterpriseRequestEmail } from "../config/mail";
@@ -190,6 +190,12 @@ router.post("/verify-payment", authMiddleware, async (req: AuthRequest, res: Res
 
     // Update payment record status in database to captured
     if (!error) {
+      try {
+        await assignProApiKey(req.user!.id);
+      } catch (keyErr) {
+        console.warn("Failed to assign Pro API key on payment capture:", keyErr);
+      }
+
       try {
         await supabaseUserClient
           .from("payments")

@@ -17,7 +17,9 @@ import {
   Check,
   ChevronRight,
   Zap,
-  Sparkles
+  Sparkles,
+  Plus,
+  Trash2
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -51,7 +53,9 @@ export default function AdminPage() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"users" | "payments">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "payments" | "apikeys">("users");
+  const [apiKeys, setApiKeys] = useState<{ id: any; key_value: string; created_at: string }[]>([]);
+  const [newKey, setNewKey] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -86,18 +90,44 @@ export default function AdminPage() {
     setRefreshing(true);
     setErrorMsg(null);
     try {
-      const [usersData, paymentsData] = await Promise.all([
+      const [usersData, paymentsData, apiKeysData] = await Promise.all([
         api.getAdminUsers(),
-        api.getAdminPayments()
+        api.getAdminPayments(),
+        api.getAdminApiKeys()
       ]);
       setUsers(usersData);
       setPayments(paymentsData);
+      setApiKeys(apiKeysData || []);
     } catch (err: any) {
       console.error("Failed to load admin data:", err);
       setErrorMsg(err.message || "Failed to load dashboard data. Please make sure the backend is running.");
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const handleAddKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKey.trim()) return;
+    try {
+      const added = await api.addAdminApiKey(newKey.trim());
+      setApiKeys(prev => [...prev, added]);
+      setNewKey("");
+    } catch (err: any) {
+      alert(err.message || "Failed to add API key.");
+    }
+  };
+
+  const handleDeleteKey = async (id: any) => {
+    if (!confirm("Are you sure you want to delete this API Key?")) return;
+    try {
+      const res = await api.deleteAdminApiKey(id);
+      if (res.success) {
+        setApiKeys(prev => prev.filter(k => k.id !== id));
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to delete API key.");
     }
   };
 
@@ -298,6 +328,17 @@ export default function AdminPage() {
             >
               Transaction Logs
             </button>
+            <button 
+              onClick={() => setActiveTab("apikeys")}
+              className={cn(
+                "flex-1 sm:flex-initial px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300",
+                activeTab === "apikeys" 
+                  ? "bg-white dark:bg-[#1C1C21] text-slate-800 dark:text-white shadow-sm"
+                  : "text-neutral-400 hover:text-neutral-200"
+              )}
+            >
+              Pro API Keys Pool
+            </button>
           </div>
 
           {activeTab === "users" && (
@@ -316,8 +357,7 @@ export default function AdminPage() {
 
         {/* Data Tables */}
         <div className="bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] rounded-3xl overflow-hidden shadow-sm">
-          
-          {activeTab === "users" ? (
+                {activeTab === "users" && (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -382,7 +422,9 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-          ) : (
+          )}
+
+          {activeTab === "payments" && (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -435,6 +477,67 @@ export default function AdminPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {activeTab === "apikeys" && (
+            <div className="p-6 space-y-6">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 dark:border-white/5 pb-5">
+                <div>
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Add API Key to Pool</h4>
+                  <p className="text-[10px] text-neutral-400 mt-1">Keys added here will be allocated to newly upgraded Pro plan users in a round-robin loop.</p>
+                </div>
+                
+                <form onSubmit={handleAddKey} className="flex gap-2.5 w-full md:w-auto flex-1 md:max-w-md">
+                  <input 
+                    type="password"
+                    placeholder="Enter API Key (e.g. gsk_... or sk-proj-...)"
+                    value={newKey}
+                    onChange={(e) => setNewKey(e.target.value)}
+                    className="flex-1 bg-slate-50 dark:bg-[#111114]/50 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#6068F0] transition-colors font-mono"
+                    required
+                  />
+                  <button 
+                    type="submit"
+                    className="bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg px-5 py-2.5 font-bold text-xs flex items-center gap-1.5 shrink-0 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Key
+                  </button>
+                </form>
+              </div>
+
+              <div className="space-y-3">
+                <h5 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest pl-1">Active Keys Pool ({apiKeys.length})</h5>
+                {apiKeys.length === 0 ? (
+                  <div className="text-center py-10 text-xs text-neutral-500 bg-slate-50 dark:bg-black/10 rounded-2xl border border-dashed border-slate-200 dark:border-white/5">
+                    No API keys in the pool. Pro users will not be assigned keys until you add some.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3">
+                    {apiKeys.map((key, i) => (
+                      <div key={key.id} className="flex justify-between items-center bg-slate-50/50 dark:bg-white/[0.02] border border-slate-200/50 dark:border-white/5 p-4 rounded-2xl hover:border-[#6068F0]/30 transition-all duration-300">
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-mono bg-[#6068F0]/10 text-[#6068F0] px-2 py-0.5 rounded-md">Key #{i + 1}</span>
+                          <span className="text-xs font-mono text-slate-800 dark:text-neutral-300 tracking-tight">
+                            {key.key_value.substring(0, 8)}••••••••••••••••••••{key.key_value.substring(key.key_value.length - 4)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-[9px] text-neutral-400 uppercase tracking-wide hidden sm:inline">Added {new Date(key.created_at).toLocaleDateString()}</span>
+                          <button 
+                            onClick={() => handleDeleteKey(key.id)}
+                            className="p-1.5 hover:bg-red-500/10 rounded-xl text-slate-400 hover:text-red-400 transition-colors"
+                            title="Delete Key"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

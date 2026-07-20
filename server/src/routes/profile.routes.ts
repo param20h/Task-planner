@@ -27,7 +27,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
         // Update database to revert user plan back to free
         await supabaseAdmin
           .from("profiles")
-          .update({ plan: "free", plan_expires_at: null })
+          .update({ plan: "free", plan_expires_at: null, groq_api_key: null })
           .eq("id", req.user!.id);
         
         data.plan = "free";

@@ -20,7 +20,7 @@ type Message = {
 
 export default function AiCoachPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hello! I am your ZenithFlow AI Coach. I can help you plan your workouts, balance your nutrition macros, design study sprints, or check on your goal timeline. What would you like to achieve today?" }
+    { role: "assistant", content: "Hello! I am Zenith AI, your personal coach. I can help you plan your workouts, balance your nutrition macros, design study sprints, or check on your goal timeline. What would you like to achieve today?" }
   ]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -28,6 +28,7 @@ export default function AiCoachPage() {
   const [plan, setPlan] = useState<"free" | "pro">("free");
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -44,13 +45,19 @@ export default function AiCoachPage() {
         if (user) {
           const { data, error } = await supabase
             .from("profiles")
-            .select("plan")
+            .select("plan, groq_api_key")
             .eq("id", user.id)
             .single();
 
-          if (data && !error && data.plan) {
-            setPlan(data.plan as "free" | "pro");
-            localStorage.setItem("momentum_plan", data.plan);
+          if (data && !error) {
+            if (data.plan) {
+              setPlan(data.plan as "free" | "pro");
+              localStorage.setItem("momentum_plan", data.plan);
+            }
+            if (data.groq_api_key) {
+              setGroqKey(data.groq_api_key);
+              localStorage.setItem("momentum_groq_key", data.groq_api_key);
+            }
           }
         }
       } catch (err) {
@@ -80,14 +87,22 @@ export default function AiCoachPage() {
     setMessages(updatedMessages);
     setIsSending(true);
 
+    // Focus input immediately so they can type
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+
     const effectiveKey = process.env.NEXT_PUBLIC_GROQ_API_KEY || groqKey;
     if (!effectiveKey) {
       setTimeout(() => {
         setMessages(prev => [
           ...prev,
-          { role: "assistant", content: "I'm having trouble connecting to the AI Coach engine right now. Please try again in a few moments or contact support if this continues." }
+          { role: "assistant", content: "I'm having trouble connecting to the Zenith AI engine right now. Please try again in a few moments or contact support if this continues." }
         ]);
         setIsSending(false);
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 50);
       }, 1000);
       return;
     }
@@ -104,7 +119,7 @@ export default function AiCoachPage() {
           messages: [
             {
               role: "system",
-              content: "You are ZenithFlow AI, a warm, conversational, and highly personal human-like health, focus, and productivity coach. Write your replies exactly like a real person sending a message to a friend. Speak naturally, conversationally, and with empathy. Crucially: DO NOT use any Markdown formatting characters such as double asterisks (**) or bullet points (* or -) in your responses. Keep paragraphs brief and natural."
+              content: "You are Zenith AI, a warm, conversational, and highly personal human-like health, focus, and productivity companion. Write your replies exactly like a real person sending a message to a friend. Speak naturally, conversationally, and with empathy. Crucially: DO NOT use any Markdown formatting characters such as double asterisks (**) or bullet points (* or -) in your responses. Keep paragraphs brief and natural."
             },
             ...updatedMessages
           ]
@@ -130,6 +145,9 @@ export default function AiCoachPage() {
       ]);
     } finally {
       setIsSending(false);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
     }
   };
 
@@ -146,7 +164,7 @@ export default function AiCoachPage() {
       >
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
           <Brain className="h-7 w-7 text-[#6068F0]" />
-          Full-Stack AI Coach
+          Zenith AI Companion
         </h1>
         <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1">Converse with Llama-3.3-70B model to dynamically schedule sessions, workouts, and OKRs.</p>
       </motion.div>
@@ -186,8 +204,8 @@ export default function AiCoachPage() {
 
                 {/* Chat Header */}
                 <div className="chat-header flex items-center gap-1.5 pb-0.5">
-                  <span className="font-semibold text-slate-750 dark:text-neutral-200">
-                    {msg.role === "user" ? "You" : "Zenith AI Coach"}
+                  <span className="font-semibold text-slate-755 dark:text-neutral-200">
+                    {msg.role === "user" ? "You" : "Zenith AI"}
                   </span>
                   <span className="text-[9px] opacity-40">just now</span>
                 </div>
@@ -219,11 +237,11 @@ export default function AiCoachPage() {
                   </div>
                 </div>
                 <div className="chat-header flex items-center gap-1.5 pb-0.5">
-                  <span className="font-semibold text-slate-750 dark:text-neutral-200">Zenith AI Coach</span>
+                  <span className="font-semibold text-slate-755 dark:text-neutral-200">Zenith AI</span>
                   <span className="text-[9px] opacity-45">thinking</span>
                 </div>
                 <div className="chat-bubble chat-bubble-primary opacity-70">
-                  <span className="flex items-center gap-1">AI Coach is thinking<span className="animate-bounce">.</span><span className="animate-bounce delay-150">.</span><span className="animate-bounce delay-300">.</span></span>
+                  <span className="flex items-center gap-1">Zenith AI is thinking<span className="animate-bounce">.</span><span className="animate-bounce delay-150">.</span><span className="animate-bounce delay-300">.</span></span>
                 </div>
               </motion.div>
             )}
@@ -232,8 +250,9 @@ export default function AiCoachPage() {
           {/* Input area */}
           <form onSubmit={handleSend} className="mt-6 flex gap-3 relative z-20 border-t border-slate-200 dark:border-white/10 pt-4">
             <input 
+              ref={inputRef}
               type="text" 
-              placeholder="Type your coaching question..."
+              placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={isSending}
@@ -263,8 +282,8 @@ export default function AiCoachPage() {
           </div>
 
           <div className="space-y-2 max-w-md">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight font-sans">AI Cognitive Coach is a Pro Feature</h2>
-            <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight font-sans">Zenith AI is a Pro Feature</h2>
+            <p className="text-xs text-slate-505 dark:text-neutral-400 leading-relaxed">
               Upgrade to the Pro Plan to unlock personalized health summaries, study sprints planners, and macro nutrition feedback.
             </p>
           </div>
