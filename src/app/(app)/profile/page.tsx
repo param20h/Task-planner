@@ -83,7 +83,6 @@ export default function ProfilePage() {
   
   // Sliders
   const [appearance, setAppearance] = useState(80);
-  const [aiDepth, setAiDepth] = useState(90);
 
   const [isSaved, setIsSaved] = useState(false);
 
@@ -255,23 +254,25 @@ export default function ProfilePage() {
           </Card>
 
           {/* Action buttons (Save & Sign Out) */}
-          <Card className={`${glassCardClass} p-4 space-y-3`}>
-            <Button 
-              onClick={handleSave} 
-              className="w-full bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg shadow-[#6068F0]/20 flex items-center justify-center gap-2 py-3.5 font-bold transition-all duration-300 text-xs"
-            >
-              <Save className="h-4.5 w-4.5" />
-              {isSaved ? "Settings Saved!" : "Save Profile"}
-            </Button>
+          <Card className={`${glassCardClass} p-4 flex flex-col gap-3`}>
+            <div className="flex gap-2.5 w-full">
+              <Button 
+                onClick={handleSave} 
+                className="flex-1 bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-md shadow-[#6068F0]/10 flex items-center justify-center gap-1.5 py-2 font-bold transition-all duration-300 text-[11px] px-2"
+              >
+                <Save className="h-3.5 w-3.5" />
+                {isSaved ? "Saved!" : "Save Profile"}
+              </Button>
 
-            <Button 
-              onClick={handleSignOut} 
-              variant="outline"
-              className="w-full border-slate-200 dark:border-white/5 text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl flex items-center justify-center gap-2 py-3.5 font-bold transition-all duration-300 text-xs"
-            >
-              <LogOut className="h-4.5 w-4.5" />
-              Sign Out
-            </Button>
+              <Button 
+                onClick={handleSignOut} 
+                variant="outline"
+                className="flex-1 border-slate-200 dark:border-white/5 text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl flex items-center justify-center gap-1.5 py-2 font-bold transition-all duration-300 text-[11px] px-2"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Sign Out
+              </Button>
+            </div>
 
             <Button 
               onClick={() => {
@@ -279,9 +280,9 @@ export default function ProfilePage() {
                 setShowDeleteModal(true);
               }} 
               variant="outline"
-              className="w-full border-red-500/20 text-red-500 dark:text-red-400/80 hover:bg-red-500/10 rounded-xl flex items-center justify-center gap-2 py-3.5 font-bold transition-all duration-300 text-xs mt-2"
+              className="w-full max-w-[160px] mx-auto border-red-500/20 text-red-500 dark:text-red-400/80 hover:bg-red-500/10 rounded-xl flex items-center justify-center gap-1.5 py-2 font-bold transition-all duration-300 text-[11px] mt-1"
             >
-              <Trash2 className="h-4.5 w-4.5" />
+              <Trash2 className="h-3.5 w-3.5" />
               Delete Account
             </Button>
           </Card>
@@ -393,22 +394,6 @@ export default function ProfilePage() {
                       document.documentElement.style.setProperty('--glass-opacity', String((val / 100) * 0.4 + 0.1));
                       document.documentElement.style.setProperty('--glass-blur', `${(val / 100) * 20 + 8}px`);
                     }}
-                    className="w-full accent-[#6068F0] cursor-pointer bg-slate-100 dark:bg-neutral-800 rounded-lg appearance-none h-1"
-                  />
-                </div>
-
-                {/* AI Coach Depth slider */}
-                <div className="space-y-2.5">
-                  <div className="flex justify-between text-[10px] text-slate-400 dark:text-neutral-500 font-bold uppercase tracking-widest">
-                    <span>AI Coach Depth</span>
-                    <span className="text-[#6068F0] font-extrabold">{aiDepth < 40 ? "Casual Advice" : aiDepth > 85 ? "Deep Analytics" : "Balanced Sprint"}</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="10" 
-                    max="100" 
-                    value={aiDepth} 
-                    onChange={(e) => setAiDepth(Number(e.target.value))}
                     className="w-full accent-[#6068F0] cursor-pointer bg-slate-100 dark:bg-neutral-800 rounded-lg appearance-none h-1"
                   />
                 </div>
