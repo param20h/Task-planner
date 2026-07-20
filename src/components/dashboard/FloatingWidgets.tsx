@@ -10,6 +10,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { cn } from "@/lib/utils";
 
 const glassCardClass = "bg-slate-100/80 dark:bg-[#111114]/85 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl rounded-2xl p-5 space-y-4 text-slate-700 dark:text-neutral-300 relative overflow-hidden transition-all duration-300";
 
@@ -182,25 +183,21 @@ export function FloatingWidgets({ profileId, onRefresh }: FloatingWidgetsProps) 
 
   return (
     <>
-      {/* Mobile Floating Toggle Pill */}
-      <div className="fixed bottom-24 right-6 z-30 md:hidden">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#6068F0] to-[#A78BFA] text-white flex items-center justify-center shadow-xl hover:scale-105 transition-all duration-300 pointer-events-auto"
-        >
-          {isOpen ? <X className="h-5 w-5" /> : <Sparkles className="h-5 w-5 animate-pulse" />}
-        </button>
-      </div>
+      {/* Mobile Floating Toggle Pill (Small and adjacent to bottom dock on mobile) */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-[26px] left-[calc(50%+130px)] z-50 md:hidden w-9.5 h-9.5 rounded-full bg-gradient-to-tr from-[#6068F0] to-[#A78BFA] text-white flex items-center justify-center shadow-xl hover:scale-105 transition-all duration-300 pointer-events-auto shrink-0"
+      >
+        {isOpen ? <X className="h-4 w-4" /> : <Sparkles className="h-4 w-4 animate-pulse" />}
+      </button>
 
       {/* Widgets Container (Collapsible Slide-up on Mobile, Sidebar float on Desktop) */}
-      <div className={`
-        fixed z-20 transition-all duration-500 ease-out
-        ${isOpen 
-          ? "bottom-24 left-6 right-6 opacity-100 translate-y-0" 
-          : "bottom-[-600px] left-6 right-6 opacity-0 translate-y-12 md:opacity-100 md:translate-y-0"
-        }
-        md:sticky md:top-24 md:bottom-auto md:left-auto md:right-auto md:w-80 md:block space-y-6 shrink-0 pointer-events-auto
-      `}>
+      <div className={cn(
+        "fixed z-40 transition-all duration-500 ease-out pointer-events-auto md:sticky md:top-24 md:bottom-auto md:left-auto md:right-auto md:w-80 md:block space-y-6 shrink-0",
+        isOpen
+          ? "bottom-24 left-1/2 -translate-x-1/2 opacity-100 translate-y-0 w-80"
+          : "bottom-[-700px] left-1/2 -translate-x-1/2 opacity-0 translate-y-12 w-80 md:opacity-100 md:translate-y-0 md:left-auto md:translate-x-0"
+      )}>
 
         {/* WIDGET: Biometrics Intake */}
         <div className={glassCardClass}>

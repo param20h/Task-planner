@@ -202,8 +202,8 @@ export function AlarmWidget() {
     <>
       {/* ── Alarm Sounding Full Screen Modal Overlay ── */}
       {triggeredAlarm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 animate-fade-in text-white">
-          <div className="bg-[#111114] border border-[#A78BFA]/30 p-8 rounded-[28px] max-w-sm w-full text-center shadow-[0_0_50px_rgba(167,139,250,0.15)] flex flex-col items-center">
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-[9999] flex flex-col items-center justify-center p-6 animate-fade-in text-slate-800 dark:text-white">
+          <div className="bg-slate-50 dark:bg-[#111114] border border-slate-200 dark:border-[#A78BFA]/30 p-8 rounded-[28px] max-w-sm w-full text-center shadow-[0_0_50px_rgba(167,139,250,0.15)] flex flex-col items-center">
             <div className="relative mb-6">
               <div className="absolute inset-0 bg-[#A78BFA]/20 rounded-full blur-xl animate-ping" />
               <div className="h-16 w-16 bg-[#A78BFA]/10 border border-[#A78BFA]/30 rounded-full flex items-center justify-center text-[#A78BFA] relative animate-bounce">
@@ -213,7 +213,7 @@ export function AlarmWidget() {
             
             <h2 className="text-2xl font-black tracking-tight mb-2">Alarm</h2>
             <p className="text-5xl font-black text-[#A78BFA] tracking-tighter mb-4">{triggeredAlarm.time}</p>
-            <p className="text-sm text-neutral-400 font-bold uppercase tracking-wider mb-8">{triggeredAlarm.label}</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-wider mb-8">{triggeredAlarm.label}</p>
 
             <div className="flex flex-col gap-3 w-full">
               <button
@@ -224,7 +224,7 @@ export function AlarmWidget() {
               </button>
               <button
                 onClick={handleSnooze}
-                className="w-full bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold rounded-xl py-3.5 text-xs uppercase tracking-widest transition-all"
+                className="w-full bg-slate-200/50 hover:bg-slate-200 border border-slate-350 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 text-slate-750 dark:text-white font-bold rounded-xl py-3.5 text-xs uppercase tracking-widest transition-all"
               >
                 Snooze (5 Mins)
               </button>
@@ -233,129 +233,126 @@ export function AlarmWidget() {
         </div>
       )}
 
-      {/* ── Global Floating Toggle Button (Bottom Left on Mobile, Bottom Right on Desktop) ── */}
-      <div className="fixed bottom-24 left-4 md:left-auto md:right-6 md:bottom-6 z-40 flex flex-col items-start md:items-end">
-        
-        {/* Main Alarm Widget Content Card */}
-        {isOpen && (
-          <div className="bg-[#111114]/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 w-80 rounded-[24px] shadow-2xl p-5 mb-4 animate-slide-up text-slate-800 dark:text-neutral-300">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <CustomClockIcon className="h-4 w-4 text-[#A78BFA]" />
-                <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-white uppercase">Zenith Alarms</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setMuted(!muted)}
-                  className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-md text-slate-500 dark:text-neutral-400"
-                  title={muted ? "Unmute Alarm" : "Mute Alarm"}
-                >
-                  {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-md text-slate-500 dark:text-neutral-400"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+      {/* Main Alarm Widget Content Card */}
+      {isOpen && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:right-6 md:bottom-24 z-40 bg-slate-100/95 dark:bg-[#111114]/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 w-80 rounded-[24px] shadow-2xl p-5 mb-4 animate-slide-up text-slate-800 dark:text-neutral-300 pointer-events-auto">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3 mb-4">
+            <div className="flex items-center gap-2">
+              <CustomClockIcon className="h-4 w-4 text-[#A78BFA]" />
+              <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-white uppercase">Zenith Alarms</span>
             </div>
-
-            {/* Current Clock Time */}
-            <div className="text-center py-2 mb-4 bg-black/20 dark:bg-black/35 rounded-xl border border-slate-200/50 dark:border-white/5">
-              <span className="text-3xl font-black text-slate-800 dark:text-white font-mono tracking-wider">{time || "00:00:00"}</span>
-            </div>
-
-            {/* Add New Alarm Form */}
-            <form onSubmit={handleAddAlarm} className="space-y-3 mb-4">
-              <div className="grid grid-cols-3 gap-2">
-                <input
-                  type="time"
-                  value={inputTime}
-                  onChange={(e) => setInputTime(e.target.value)}
-                  className="col-span-1 bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#A78BFA]"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Label..."
-                  value={inputLabel}
-                  onChange={(e) => setInputLabel(e.target.value)}
-                  className="col-span-2 bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#A78BFA]"
-                />
-              </div>
+            <div className="flex items-center gap-1">
               <button
-                type="submit"
-                className="w-full bg-[#A78BFA]/10 border border-[#A78BFA]/20 text-[#A78BFA] hover:bg-[#A78BFA]/20 font-bold rounded-lg py-1.5 text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"
+                onClick={() => setMuted(!muted)}
+                className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/5 rounded-md text-slate-500 dark:text-neutral-400"
+                title={muted ? "Unmute Alarm" : "Mute Alarm"}
               >
-                <Plus className="h-3.5 w-3.5" />
-                Add Alarm
+                {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
               </button>
-            </form>
-
-            {/* Alarms List */}
-            <div className="max-h-40 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
-              {alarms.length === 0 ? (
-                <div className="text-center py-6 text-xs text-neutral-500">No alarms set</div>
-              ) : (
-                alarms.map(alarm => (
-                  <div
-                    key={alarm.id}
-                    className={cn(
-                      "flex items-center justify-between p-2.5 rounded-xl border transition-all",
-                      alarm.active
-                        ? "bg-[#A78BFA]/5 border-[#A78BFA]/15"
-                        : "bg-slate-50 dark:bg-black/10 border-slate-200/50 dark:border-white/5 opacity-60"
-                    )}
-                  >
-                    <div className="flex flex-col">
-                      <span className="text-sm font-extrabold font-mono text-slate-800 dark:text-white">{alarm.time}</span>
-                      <span className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">{alarm.label}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleToggleAlarm(alarm.id)}
-                        className={cn(
-                          "w-8 h-4.5 rounded-full p-0.5 transition-colors relative flex items-center",
-                          alarm.active ? "bg-[#A78BFA]" : "bg-slate-300 dark:bg-white/10"
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            "w-3.5 h-3.5 bg-white dark:bg-[#111114] rounded-full shadow-sm transition-transform",
-                            alarm.active ? "translate-x-3.5" : "translate-x-0"
-                          )}
-                        />
-                      </button>
-                      
-                      <button
-                        onClick={() => handleDeleteAlarm(alarm.id)}
-                        className="p-1 hover:bg-red-500/10 rounded text-slate-400 dark:text-neutral-500 hover:text-red-400"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 hover:bg-slate-200 dark:hover:bg-white/5 rounded-md text-slate-500 dark:text-neutral-400"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           </div>
-        )}
 
-        {/* Floating Trigger Button */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={cn(
-            "h-12 w-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 border",
-            isOpen 
-              ? "bg-[#A78BFA] text-black border-[#A78BFA]/30 rotate-90"
-              : "bg-white dark:bg-[#111114]/90 text-[#A78BFA] border-slate-200 dark:border-white/10 hover:scale-105"
-          )}
-        >
-          {isOpen ? <X className="h-5 w-5" /> : <CustomClockIcon className="h-5 w-5" />}
-        </button>
-      </div>
+          {/* Current Clock Time */}
+          <div className="text-center py-2 mb-4 bg-slate-200/60 dark:bg-black/35 rounded-xl border border-slate-300/40 dark:border-white/5">
+            <span className="text-3xl font-black text-slate-855 dark:text-white font-mono tracking-wider">{time || "00:00:00"}</span>
+          </div>
+
+          {/* Add New Alarm Form */}
+          <form onSubmit={handleAddAlarm} className="space-y-3 mb-4">
+            <div className="grid grid-cols-3 gap-2">
+              <input
+                type="time"
+                value={inputTime}
+                onChange={(e) => setInputTime(e.target.value)}
+                className="col-span-1 bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#A78BFA]"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Label..."
+                value={inputLabel}
+                onChange={(e) => setInputLabel(e.target.value)}
+                className="col-span-2 bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#A78BFA]"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-[#A78BFA]/10 border border-[#A78BFA]/20 text-[#A78BFA] hover:bg-[#A78BFA]/20 font-bold rounded-lg py-1.5 text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Alarm
+            </button>
+          </form>
+
+          {/* Alarms List */}
+          <div className="max-h-40 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+            {alarms.length === 0 ? (
+              <div className="text-center py-6 text-xs text-neutral-500">No alarms set</div>
+            ) : (
+              alarms.map(alarm => (
+                <div
+                  key={alarm.id}
+                  className={cn(
+                    "flex items-center justify-between p-2.5 rounded-xl border transition-all",
+                    alarm.active
+                      ? "bg-[#A78BFA]/5 border-[#A78BFA]/15"
+                      : "bg-slate-50 dark:bg-black/10 border-slate-200/50 dark:border-white/5 opacity-60"
+                  )}
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm font-extrabold font-mono text-slate-800 dark:text-white">{alarm.time}</span>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">{alarm.label}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleAlarm(alarm.id)}
+                      className={cn(
+                        "w-8 h-4.5 rounded-full p-0.5 transition-colors relative flex items-center",
+                        alarm.active ? "bg-[#A78BFA]" : "bg-slate-300 dark:bg-white/10"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-3.5 h-3.5 bg-white dark:bg-[#111114] rounded-full shadow-sm transition-transform",
+                          alarm.active ? "translate-x-3.5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                    
+                    <button
+                      onClick={() => handleDeleteAlarm(alarm.id)}
+                      className="p-1 hover:bg-red-500/10 rounded text-slate-400 dark:text-neutral-500 hover:text-red-400"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Floating Trigger Button (Small and adjacent to bottom dock on mobile, regular floating button on desktop) */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "rounded-full shadow-lg flex items-center justify-center transition-all duration-300 border pointer-events-auto shrink-0 z-50",
+          "fixed bottom-[26px] left-[calc(50%-170px)] h-9.5 w-9.5 md:fixed md:bottom-6 md:right-6 md:left-auto md:h-12 md:w-12",
+          isOpen 
+            ? "bg-[#A78BFA] text-black border-[#A78BFA]/30 rotate-90"
+            : "bg-white dark:bg-[#111114]/90 text-[#A78BFA] border-slate-200 dark:border-white/10 hover:scale-105"
+        )}
+      >
+        {isOpen ? <X className="h-4 w-4" /> : <CustomClockIcon className="h-4 w-4" />}
+      </button>
     </>
   );
 }

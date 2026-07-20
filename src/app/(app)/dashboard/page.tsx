@@ -91,13 +91,19 @@ export default function DashboardPage() {
         // Fetch plan from Supabase
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("plan")
+          .select("plan, groq_api_key")
           .eq("id", activeProfileId)
           .single();
 
-        if (profileData && profileData.plan) {
-          setPlan(profileData.plan as "free" | "pro");
-          localStorage.setItem("momentum_plan", profileData.plan);
+        if (profileData) {
+          if (profileData.plan) {
+            setPlan(profileData.plan as "free" | "pro");
+            localStorage.setItem("momentum_plan", profileData.plan);
+          }
+          if (profileData.groq_api_key) {
+            setGroqKey(profileData.groq_api_key);
+            localStorage.setItem("momentum_groq_key", profileData.groq_api_key);
+          }
         }
       } catch (err) {
         console.warn("Failed to fetch plan from database, using cached plan:", err);
@@ -383,7 +389,7 @@ export default function DashboardPage() {
 
         const count = contributionMap[dateStr] || 0;
         
-        let colorClass = "bg-black dark:bg-white/5"; // 0 logs
+        let colorClass = "bg-slate-300 dark:bg-neutral-800"; // 0 logs
         if (count === 1) colorClass = "bg-[#6068F0]/30";
         if (count === 2) colorClass = "bg-[#6068F0]/60";
         if (count >= 3) colorClass = "bg-[#6068F0]";
@@ -397,7 +403,7 @@ export default function DashboardPage() {
 
         // If the date is in the future, render it slightly faded/empty
         if (isFuture) {
-          colorClass = "bg-black dark:bg-white/5 opacity-20";
+          colorClass = "bg-slate-300 dark:bg-neutral-800 opacity-20";
         }
 
         rowCells.push(
