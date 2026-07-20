@@ -14,7 +14,11 @@ import {
   ChevronDown, 
   Play, 
   Pause, 
-  RefreshCw
+  RefreshCw,
+  Dumbbell,
+  Trophy,
+  Clock,
+  CheckSquare
 } from "lucide-react";
 import {
   CustomWorkoutIcon,
@@ -27,7 +31,6 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { api } from "@/lib/api";
-import { MuscleHeatmap } from "@/components/widgets/MuscleHeatmap";
 import { EXERCISE_PRESETS, getMuscleForExercise } from "@/lib/exerciseData";
 
 // Styling constants
@@ -45,6 +48,7 @@ type WorkoutExercise = {
   name: string;
   category: string;
   sets: SetItem[];
+  notes?: string;
 };
 
 // 7-day program template based on user request
@@ -165,6 +169,15 @@ export default function WorkoutPage() {
   const [pastWorkouts, setPastWorkouts] = useState<any[]>([]);
   const [muscleSets, setMuscleSets] = useState<Record<string, number>>({});
 
+  // Dynamic database analytics aggregates
+  const [analyticsDuration, setAnalyticsDuration] = useState(0);
+  const [analyticsVolume, setAnalyticsVolume] = useState(0);
+  const [analyticsSets, setAnalyticsSets] = useState(0);
+  const [bestSquat, setBestSquat] = useState(0);
+  const [bestDeadlift, setBestDeadlift] = useState(0);
+  const [bestBench, setBestBench] = useState(0);
+  const [totalRepsAll, setTotalRepsAll] = useState(0);
+
   useEffect(() => {
     if (activeTab === "log" && timerRunning) {
       timerRef.current = setInterval(() => {
@@ -219,6 +232,12 @@ export default function WorkoutPage() {
       if (data && !error && data.length > 0) {
         let totalDuration = 0;
         let totalCal = 0;
+        let totalVolumeAll = 0;
+        let totalSetsAll = 0;
+        let squatMax = 0;
+        let deadliftMax = 0;
+        let benchMax = 0;
+        let repsAll = 0;
         
         const workoutsList = data.map(w => {
           const dateObj = new Date(w.start_time);
@@ -235,19 +254,31 @@ export default function WorkoutPage() {
           totalDuration += durationMin;
           totalCal += durationMin * 8; // approx 8 kcal per min
 
-          // Calculate volume
+          // Calculate volume, sets, and PRs
           let workoutVolume = 0;
           if (w.gym_exercises) {
             w.gym_exercises.forEach((ex: any) => {
+              const nameLower = ex.exercise_name.toLowerCase();
+              const isSquat = nameLower.includes("squat");
+              const isDeadlift = nameLower.includes("deadlift");
+              const isBench = nameLower.includes("bench press") || nameLower.includes("benchpress");
+
               if (Array.isArray(ex.sets)) {
+                totalSetsAll += ex.sets.length;
                 ex.sets.forEach((set: any) => {
                   const wt = parseFloat(set.weight) || 0;
                   const rp = parseInt(set.reps) || 0;
                   workoutVolume += wt * rp;
+                  repsAll += rp;
+
+                  if (isSquat && wt > squatMax) squatMax = wt;
+                  if (isDeadlift && wt > deadliftMax) deadliftMax = wt;
+                  if (isBench && wt > benchMax) benchMax = wt;
                 });
               }
             });
           }
+          totalVolumeAll += workoutVolume;
 
           return {
             id: w.id,
@@ -260,6 +291,13 @@ export default function WorkoutPage() {
         });
 
         setPastWorkouts(workoutsList);
+        setAnalyticsDuration(totalDuration);
+        setAnalyticsVolume(totalVolumeAll);
+        setAnalyticsSets(totalSetsAll);
+        setBestSquat(squatMax);
+        setBestDeadlift(deadliftMax);
+        setBestBench(benchMax);
+        setTotalRepsAll(repsAll);
         
         // Calculate muscle sets over past 7 days
         const setsCount: Record<string, number> = {};
@@ -289,6 +327,14 @@ export default function WorkoutPage() {
         setTrainingLoad(Math.min(100, workoutsList.length * 15));
       } else {
         setPastWorkouts([]);
+        setAnalyticsDuration(0);
+        setAnalyticsVolume(0);
+        setAnalyticsSets(0);
+        setBestSquat(0);
+        setBestDeadlift(0);
+        setBestBench(0);
+        setTotalRepsAll(0);
+        
         setWeeklyDuration("0h");
         setCaloriesBurned("0");
         setRecoveryScore(100);
@@ -543,6 +589,24 @@ export default function WorkoutPage() {
     setActiveTab("log");
   };
 
+  const startEmptyWorkout = () => {
+    setWorkoutName("Custom Workout");
+    setExercises([]);
+    setSeconds(0);
+    setTimerRunning(true);
+    setActiveTab("log");
+  };
+
+  const handleDiscardWorkout = () => {
+    if (confirm("Are you sure you want to discard this workout? All progress will be lost.")) {
+      setExercises([]);
+      setWorkoutName("Push Day");
+      setSeconds(0);
+      setTimerRunning(false);
+      setActiveTab("overview");
+    }
+  };
+
   const handleFinishWorkout = async () => {
     const totalVolume = calculateTotalVolume();
     const durationMins = Math.round(seconds / 60) || 1;
@@ -776,9 +840,6 @@ export default function WorkoutPage() {
                     <p>• <strong className="text-slate-900 dark:text-white">Form Target:</strong> Aim for 1-2 Reps in Reserve (RIR) on compounds.</p>
                   </div>
                 </Card>
-
-                {/* Visual Body Muscle Heatmap */}
-                <MuscleHeatmap muscleSets={muscleSets} />
               </div>
             </div>
           </div>
@@ -792,57 +853,84 @@ export default function WorkoutPage() {
             <div className="flex flex-col md:flex-row gap-6 justify-between">
               
               {/* Logger header */}
-              <Card className={`${glassCardClass} p-6 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6`}>
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <input 
-                    type="text" 
-                    value={workoutName} 
-                    onChange={(e) => setWorkoutName(e.target.value)} 
-                    className="w-full max-w-xs sm:max-w-md bg-transparent text-2xl font-extrabold text-slate-900 dark:text-white focus:outline-none border-b border-dashed border-slate-200 dark:border-white/20 focus:border-[#6068F0] pb-0.5 truncate" 
-                  />
-                  
-                  {/* Manual start/stop controls */}
-                  <div className="flex items-center gap-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-4 py-1.5 rounded-full">
+              <Card className={`${glassCardClass} p-6 flex-1 flex flex-col justify-between gap-4`}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <input 
+                      type="text" 
+                      value={workoutName} 
+                      onChange={(e) => setWorkoutName(e.target.value)} 
+                      className="w-full max-w-xs sm:max-w-md bg-transparent text-2xl font-extrabold text-slate-900 dark:text-white focus:outline-none border-b border-dashed border-slate-200 dark:border-white/20 focus:border-[#6068F0] pb-0.5 truncate" 
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3 self-end sm:self-auto">
+                    {/* Manual start/stop controls */}
+                    <div className="flex items-center gap-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-3.5 py-1.5 rounded-full">
+                      <Button 
+                        onClick={() => setTimerRunning(!timerRunning)}
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-5 w-5 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-white"
+                      >
+                        {timerRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3 fill-slate-700 dark:fill-white text-slate-700 dark:text-white" />}
+                      </Button>
+                      <span className="text-xs font-mono font-bold text-slate-600 dark:text-neutral-300">{formatTimer(seconds)}</span>
+                    </div>
+
                     <Button 
-                      onClick={() => setTimerRunning(!timerRunning)}
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-white"
+                      onClick={handleFinishWorkout}
+                      className="bg-[#6068F0] hover:bg-[#6068F0]/90 text-white rounded-xl px-5 py-1.5 text-xs font-bold transition-all duration-300 shadow-[0_0_15px_rgba(96,104,240,0.25)]"
                     >
-                      {timerRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3 fill-slate-700 dark:fill-white text-slate-700 dark:text-white" />}
+                      Finish
                     </Button>
-                    <span className="text-xs font-mono font-bold text-slate-600 dark:text-neutral-300">{formatTimer(seconds)}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6">
-                  <div className="text-right sm:text-left">
-                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase block">Total Volume</span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">{calculateTotalVolume().toLocaleString()} kg</span>
+                {/* HEVY-style statistics row */}
+                <div className="flex gap-6 mt-2 pt-4 border-t border-slate-200/50 dark:border-white/5 text-xs">
+                  <div>
+                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider font-bold block mb-0.5">Duration</span>
+                    <span className="font-extrabold text-slate-800 dark:text-white font-mono">{formatTimer(seconds)}</span>
                   </div>
-                  <Button 
-                    onClick={handleFinishWorkout}
-                    className="bg-red-600 hover:bg-red-500 text-white rounded-xl shadow-[0_0_20px_rgba(220,38,38,0.4)] px-6 py-2.5 font-bold transition-all duration-300"
-                  >
-                    Finish
-                  </Button>
+                  <div className="w-[1px] h-8 bg-slate-200 dark:bg-white/10 align-self-center" />
+                  <div>
+                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider font-bold block mb-0.5">Volume</span>
+                    <span className="font-extrabold text-slate-800 dark:text-white">{calculateTotalVolume().toLocaleString()} kg</span>
+                  </div>
+                  <div className="w-[1px] h-8 bg-slate-200 dark:bg-white/10 align-self-center" />
+                  <div>
+                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider font-bold block mb-0.5">Sets Logged</span>
+                    <span className="font-extrabold text-slate-800 dark:text-white">{exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.completed).length, 0)}</span>
+                  </div>
                 </div>
               </Card>
 
               {/* Loader routine selector panel */}
-              <Card className={`${glassCardClass} p-4 flex flex-col justify-center min-w-[250px]`}>
-                <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase font-bold tracking-wider mb-2">Load Routine Template</span>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {ROUTINES.map((routine, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => loadRoutine(idx)}
-                      className="text-left text-xs font-semibold text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 px-2.5 py-1.5 rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-white/5 transition-all duration-300 flex items-center justify-between"
-                    >
-                      <span>{routine.name.split(" – ")[0]}</span>
-                      <span className="text-[9px] text-[#6068F0] font-bold">{routine.exercises.length} Ex</span>
-                    </button>
-                  ))}
+              <Card className={`${glassCardClass} p-4 flex flex-col justify-between min-w-[250px]`}>
+                <div>
+                  <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase font-bold tracking-wider mb-2 block">Quick Start</span>
+                  <Button 
+                    onClick={startEmptyWorkout}
+                    className="w-full bg-[#6068F0]/10 border border-[#6068F0]/20 hover:bg-[#6068F0] hover:text-white text-[#6068F0] rounded-xl py-2 font-bold text-xs uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 mb-4"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Empty Workout
+                  </Button>
+
+                  <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase font-bold tracking-wider mb-2 block">Load Routine Template</span>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {ROUTINES.map((routine, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => loadRoutine(idx)}
+                        className="text-left text-xs font-semibold text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 px-2.5 py-1.5 rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-white/5 transition-all duration-300 flex items-center justify-between"
+                      >
+                        <span>{routine.name.split(" – ")[0]}</span>
+                        <span className="text-[9px] text-[#6068F0] font-bold">{routine.exercises.length} Ex</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </Card>
             </div>
@@ -853,30 +941,45 @@ export default function WorkoutPage() {
                 exercises.map((ex, exIdx) => (
                   <Card key={ex.id} className={glassCardClass}>
                     <CardContent className="p-6 space-y-4">
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-white/10">
-                        <div>
-                          <h4 className="text-base font-bold text-slate-900 dark:text-white">{ex.name}</h4>
-                          <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-medium">Category: {ex.category}</span>
+                      <div className="pb-3 border-b border-slate-200 dark:border-white/10">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="text-base font-bold text-slate-900 dark:text-white hover:text-[#6068F0] transition-colors duration-300">{ex.name}</h4>
+                            <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-medium">Category: {ex.category}</span>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => {
+                              const updated = [...exercises];
+                              updated.splice(exIdx, 1);
+                              setExercises(updated);
+                            }}
+                            className="text-slate-400 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full h-8 w-8 shrink-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => {
+
+                        {/* HEVY-style exercise notes line */}
+                        <input 
+                          type="text" 
+                          placeholder="Add notes here..." 
+                          value={ex.notes || ""} 
+                          onChange={(e) => {
                             const updated = [...exercises];
-                            updated.splice(exIdx, 1);
+                            updated[exIdx].notes = e.target.value;
                             setExercises(updated);
                           }}
-                          className="text-slate-400 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full h-8 w-8"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                          className="w-full bg-transparent text-xs text-slate-500 dark:text-neutral-400 placeholder-slate-400 dark:placeholder-neutral-600 focus:outline-none border-b border-dashed border-transparent hover:border-slate-200/50 dark:hover:border-white/10 focus:border-[#6068F0] pb-1 mt-2.5 transition-all"
+                        />
                       </div>
 
                       {/* Set rows */}
                       <div className="space-y-2.5">
                         <div className="grid grid-cols-12 gap-3 text-[10px] font-black text-slate-400 dark:text-neutral-500 uppercase tracking-widest px-2">
                           <span className="col-span-2 text-center">Set</span>
-                          <span className="col-span-3 text-center">Target / Prev</span>
+                          <span className="col-span-3 text-center">Previous</span>
                           <span className="col-span-3 text-center">Weight (kg)</span>
                           <span className="col-span-3 text-center">Reps</span>
                           <span className="col-span-1 text-center">✔</span>
@@ -889,7 +992,7 @@ export default function WorkoutPage() {
                               "grid grid-cols-12 gap-3 items-center p-2 rounded-2xl border transition-all duration-350 ease-out",
                               set.completed 
                                 ? "bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-500/5 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.03)]" 
-                                : "bg-slate-50 dark:bg-[#0c0d0f]/60 border-slate-200 dark:border-white/5 hover:border-[#6068F0]/30 hover:bg-slate-100 dark:hover:bg-[#111216]/85"
+                                : "bg-white/40 dark:bg-black/35 backdrop-blur-xl border border-slate-200 dark:border-white/10 hover:border-[#6068F0]/30 hover:bg-slate-100/50 dark:hover:bg-black/50"
                             )}
                           >
                             {/* Set Number Circular Badge */}
@@ -976,160 +1079,178 @@ export default function WorkoutPage() {
                   </Card>
                 ))
               ) : (
-                <Card className={`${glassCardClass} p-8 text-center`}>
-                  <p className="text-xs text-slate-400 dark:text-neutral-500 italic">No exercises loaded. Select a template routine above or add from dictionary.</p>
+                <Card className={`${glassCardClass} p-10 text-center flex flex-col items-center justify-center gap-4 border-dashed border-[#6068F0]/30`}>
+                  <div className="p-3 bg-[#6068F0]/10 border border-[#6068F0]/20 rounded-2xl text-[#6068F0] mb-2">
+                    <Activity className="h-6 w-6" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-white">Start Your Workout Session</h4>
+                  <p className="text-xs text-slate-400 dark:text-neutral-500 max-w-sm mx-auto leading-relaxed">
+                    Begin an empty workout to log your exercises dynamically, or choose one of the routine templates on the right panel.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full sm:w-auto">
+                    <Button 
+                      onClick={startEmptyWorkout} 
+                      className="bg-[#6068F0] hover:bg-[#6068F0]/90 text-white rounded-xl px-6 py-2.5 text-xs font-bold transition-all duration-300 shadow-[0_0_15px_rgba(96,104,240,0.2)]"
+                    >
+                      Start Empty Workout
+                    </Button>
+                    <Button 
+                      onClick={() => setActiveTab("exercises")} 
+                      className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-white rounded-xl px-6 py-2.5 text-xs font-bold transition-all duration-300"
+                    >
+                      Browse Exercise Dictionary
+                    </Button>
+                  </div>
                 </Card>
               )}
             </div>
 
-            <div className="flex justify-end max-w-4xl">
-              <Button 
-                onClick={() => setActiveTab("exercises")}
-                className="bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-neutral-200 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 rounded-xl px-5 py-3 shadow-lg flex items-center gap-2 transition-all duration-300"
-              >
-                <Plus className="h-4 w-4" />
-                Add Exercise
-              </Button>
-            </div>
+            {exercises.length > 0 && (
+              <div className="flex flex-col sm:flex-row gap-4 justify-between items-center max-w-4xl mt-8 pt-6 border-t border-slate-250/60 dark:border-white/5">
+                <Button 
+                  onClick={handleDiscardWorkout}
+                  className="w-full sm:w-auto bg-rose-600/10 border border-rose-500/20 hover:bg-rose-600 hover:text-white text-rose-500 rounded-xl px-6 py-2.5 font-bold transition-all duration-300"
+                >
+                  Discard Workout
+                </Button>
+
+                <div className="flex gap-3 w-full sm:w-auto justify-end">
+                  <Button 
+                    onClick={() => setActiveTab("exercises")}
+                    className="flex-1 sm:flex-initial bg-[#6068F0]/10 border border-[#6068F0]/20 hover:bg-[#6068F0] hover:text-white text-[#6068F0] rounded-xl px-6 py-2.5 font-bold transition-all duration-300 flex items-center justify-center gap-1.5"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Exercise
+                  </Button>
+
+                  <Button 
+                    onClick={handleFinishWorkout}
+                    className="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg px-6 py-2.5 font-bold transition-all duration-300"
+                  >
+                    Finish Workout
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* 3. WORKOUT ANALYTICS VIEW */}
         {activeTab === "analytics" && (
           <div className="space-y-8">
-            <Card className={`${glassCardClass} p-6 flex flex-col md:flex-row items-center justify-between gap-6`}>
-              <div className="flex gap-8 w-full md:w-auto justify-around">
-                <div className="text-center">
-                  <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider block mb-1">Duration</span>
-                  <span className="text-2xl font-extrabold text-slate-950 dark:text-white">62m</span>
-                </div>
-                <div className="w-[1px] h-10 bg-slate-200 dark:bg-white/10" />
-                <div className="text-center">
-                  <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider block mb-1">Total Volume</span>
-                  <span className="text-2xl font-extrabold text-[#6068F0]">5,200 kg</span>
-                </div>
-                <div className="w-[1px] h-10 bg-slate-200 dark:bg-white/10" />
-                <div className="text-center">
-                  <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider block mb-1">Sets</span>
-                  <span className="text-2xl font-extrabold text-slate-950 dark:text-white">18</span>
-                </div>
-              </div>
+            <Card className={`${glassCardClass} p-6 border-none bg-gradient-to-br from-slate-50/80 to-white/40 dark:from-[#0f0f12]/90 dark:to-[#070709]/50 shadow-2xl relative overflow-hidden`}>
+              {/* Decorative radial gradients for premium feel */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#6068F0]/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex gap-6 items-center">
-                <span className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 uppercase tracking-wider block">PRs HIT:</span>
-                <div className="flex gap-4">
+              <div className="flex flex-col lg:flex-row gap-6 justify-between items-stretch relative z-10">
+                {/* 3 main stats */}
+                <div className="grid grid-cols-3 gap-4 flex-1">
                   {[
-                    { label: "Squat", val: "140 kg" },
-                    { label: "Deadlift", val: "180 kg" },
-                    { label: "Bench Press", val: "110 kg" }
-                  ].map((pr, i) => (
-                    <div key={i} className="flex items-center gap-1.5 bg-slate-50 dark:bg-black/40 border border-slate-100 dark:border-white/5 px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-700 dark:text-white shadow-inner">
-                      <Award className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500/20" />
-                      <span>{pr.label}: {pr.val}</span>
+                    { label: "Duration", val: `${analyticsDuration} mins`, icon: <Clock className="h-4 w-4 text-[#6068F0]" />, bg: "bg-[#6068F0]/5 border-[#6068F0]/10" },
+                    { label: "Total Volume", val: `${analyticsVolume.toLocaleString()} kg`, icon: <Dumbbell className="h-4 w-4 text-blue-500" />, bg: "bg-blue-500/5 border-blue-500/10" },
+                    { label: "Total Sets", val: String(analyticsSets), icon: <CheckSquare className="h-4 w-4 text-emerald-500" />, bg: "bg-emerald-500/5 border-emerald-500/10" }
+                  ].map((stat, i) => (
+                    <div key={i} className={cn(
+                      "flex flex-col items-center justify-center p-4 rounded-2xl border backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:bg-white/10 dark:hover:bg-white/[0.02]",
+                      stat.bg
+                    )}>
+                      <div className="p-2 bg-white dark:bg-black/25 rounded-xl border border-slate-200/50 dark:border-white/5 mb-2 shadow-sm">
+                        {stat.icon}
+                      </div>
+                      <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest font-bold mb-1">{stat.label}</span>
+                      <span className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight whitespace-nowrap">{stat.val}</span>
                     </div>
                   ))}
+                </div>
+
+                {/* PRs Hit Section */}
+                <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-100/55 dark:bg-white/[0.02] border border-slate-200/55 dark:border-white/5 rounded-2xl p-4 lg:w-[48%]">
+                  <div className="flex items-center gap-2.5 self-start md:self-auto">
+                    <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                      <Trophy className="h-5 w-5 text-amber-500 fill-amber-500/10" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest font-black block">Personal Records</span>
+                      <span className="text-xs font-extrabold text-slate-800 dark:text-white">PRs Completed Today</span>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full md:w-[1px] h-[1px] md:h-12 bg-slate-200 dark:bg-white/10 hidden md:block shrink-0" />
+
+                  <div className="grid grid-cols-3 gap-2.5 w-full flex-1">
+                    {[
+                      { label: "Squat", val: bestSquat > 0 ? `${bestSquat} kg` : "—" },
+                      { label: "Deadlift", val: bestDeadlift > 0 ? `${bestDeadlift} kg` : "—" },
+                      { label: "Bench", val: bestBench > 0 ? `${bestBench} kg` : "—" }
+                    ].map((pr, i) => (
+                      <div key={i} className="flex flex-col items-center justify-center p-2.5 bg-white/60 dark:bg-black/45 border border-slate-200/60 dark:border-white/5 hover:border-amber-500/30 rounded-xl transition-all duration-300 hover:scale-105 shadow-sm">
+                        <span className="text-[9px] text-slate-400 dark:text-neutral-500 font-bold truncate max-w-full">{pr.label}</span>
+                        <span className="text-xs font-black text-[#6068F0] dark:text-blue-400 mt-0.5 tracking-tight">{pr.val}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Muscle heatmap outline */}
-              <Card className={`${glassCardClass} lg:col-span-8 p-6 flex flex-col items-center justify-center`}>
-                <CardTitle className="text-sm font-semibold text-slate-400 dark:text-neutral-500 tracking-wider uppercase mb-8">Muscle Heatmap</CardTitle>
-                <div className="flex gap-16 relative py-4">
-                  
-                  {/* Front View */}
-                  <div className="relative w-44 h-80 flex flex-col items-center justify-center">
-                    <span className="absolute top-0 text-[10px] text-slate-400 dark:text-neutral-500 font-bold uppercase">Front View</span>
-                    <svg className="w-full h-[90%] opacity-80" viewBox="0 0 100 200">
-                      <path d="M 50 10 Q 55 10 55 20 Q 55 25 50 30 Q 45 25 45 20 Q 45 10 50 10" fill="currentColor" className="text-slate-200 dark:text-neutral-800" />
-                      <path d="M 40 30 L 60 30 L 75 40 L 70 80 L 65 80 L 60 40 L 40 40 L 35 80 L 30 80 L 25 40 Z" fill="currentColor" className="text-slate-200 dark:text-neutral-800" />
-                      <path d="M 40 80 L 48 140 L 45 190 L 50 190 L 52 140 L 60 80 Z" fill="currentColor" className="text-slate-200 dark:text-neutral-800" />
-                      
-                      <ellipse cx="50" cy="50" rx="10" ry="7" fill="url(#blueGlow)" className="opacity-90" />
-                      <ellipse cx="38" cy="45" rx="4" ry="4" fill="url(#blueGlow)" className="opacity-70" />
-                      <ellipse cx="62" cy="45" rx="4" ry="4" fill="url(#blueGlow)" className="opacity-70" />
-                      <ellipse cx="44" cy="110" rx="5" ry="12" fill="url(#blueGlow)" className="opacity-80" />
-                      <ellipse cx="56" cy="110" rx="5" ry="12" fill="url(#blueGlow)" className="opacity-80" />
-
-                      <defs>
-                        <radialGradient id="blueGlow" cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="#6068F0" stopOpacity="1" />
-                          <stop offset="100%" stopColor="#6068F0" stopOpacity="0.1" />
-                        </radialGradient>
-                      </defs>
-                    </svg>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <Card className={`${glassCardClass} p-5 space-y-4`}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">Best Weight Progress</span>
+                    <span className="text-lg font-extrabold text-slate-900 dark:text-white mt-1 block">
+                      {Math.max(bestSquat, bestDeadlift, bestBench) > 0 ? `${Math.max(bestSquat, bestDeadlift, bestBench)} kg` : "—"}
+                    </span>
                   </div>
-
-                  {/* Back View */}
-                  <div className="relative w-44 h-80 flex flex-col items-center justify-center">
-                    <span className="absolute top-0 text-[10px] text-slate-400 dark:text-neutral-500 font-bold uppercase">Back View</span>
-                    <svg className="w-full h-[90%] opacity-80" viewBox="0 0 100 200">
-                      <path d="M 50 10 Q 55 10 55 20 Q 55 25 50 30 Q 45 25 45 20 Q 45 10 50 10" fill="currentColor" className="text-slate-200 dark:text-neutral-800" />
-                      <path d="M 40 30 L 60 30 L 75 40 L 70 80 L 65 80 L 60 40 L 40 40 L 35 80 L 30 80 L 25 40 Z" fill="currentColor" className="text-slate-200 dark:text-neutral-800" />
-                      <path d="M 40 80 L 48 140 L 45 190 L 50 190 L 52 140 L 60 80 Z" fill="currentColor" className="text-slate-200 dark:text-neutral-800" />
-
-                      <path d="M 42 42 L 58 42 L 55 65 L 45 65 Z" fill="url(#blueGlow)" className="opacity-80" />
-                      <ellipse cx="44" cy="135" rx="4" ry="10" fill="url(#blueGlow)" className="opacity-70" />
-                      <ellipse cx="56" cy="135" rx="4" ry="10" fill="url(#blueGlow)" className="opacity-70" />
-                    </svg>
-                  </div>
+                </div>
+                <div className="h-16 w-full relative">
+                  <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="glowGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#6068F0" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="#6068F0" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M 0 35 Q 25 30 50 20 T 100 5 L 100 40 L 0 40 Z" fill="url(#glowGrad)" />
+                    <path d="M 0 35 Q 25 30 50 20 T 100 5" fill="transparent" stroke="#6068F0" strokeWidth="1.5" />
+                  </svg>
                 </div>
               </Card>
 
-              {/* Progress graphs */}
-              <div className="lg:col-span-4 space-y-6">
-                <Card className={`${glassCardClass} p-5 space-y-4`}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">Best Weight Progress</span>
-                      <span className="text-lg font-extrabold text-slate-900 dark:text-white mt-1 block">140 kg</span>
-                    </div>
+              <Card className={`${glassCardClass} p-5 space-y-4`}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">Total Volume Trend</span>
+                    <span className="text-lg font-extrabold text-slate-900 dark:text-white mt-1 block">
+                      {analyticsVolume.toLocaleString()} kg
+                    </span>
                   </div>
-                  <div className="h-16 w-full relative">
-                    <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="glowGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#6068F0" stopOpacity="0.4" />
-                          <stop offset="100%" stopColor="#6068F0" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M 0 35 Q 25 30 50 20 T 100 5 L 100 40 L 0 40 Z" fill="url(#glowGrad)" />
-                      <path d="M 0 35 Q 25 30 50 20 T 100 5" fill="transparent" stroke="#6068F0" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                </Card>
+                </div>
+                <div className="h-16 w-full relative">
+                  <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
+                    <path d="M 0 38 Q 20 32 40 28 T 80 18 T 100 8 L 100 40 L 0 40 Z" fill="url(#glowGrad)" />
+                    <path d="M 0 38 Q 20 32 40 28 T 80 18 T 100 8" fill="transparent" stroke="#6068F0" strokeWidth="1.5" />
+                  </svg>
+                </div>
+              </Card>
 
-                <Card className={`${glassCardClass} p-5 space-y-4`}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">Total Volume Trend</span>
-                      <span className="text-lg font-extrabold text-slate-900 dark:text-white mt-1 block">5,200 kg</span>
-                    </div>
+              <Card className={`${glassCardClass} p-5 space-y-4`}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">Total Reps Over Time</span>
+                    <span className="text-lg font-extrabold text-slate-900 dark:text-white mt-1 block">
+                      {totalRepsAll.toLocaleString()} reps
+                    </span>
                   </div>
-                  <div className="h-16 w-full relative">
-                    <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
-                      <path d="M 0 38 Q 20 32 40 28 T 80 18 T 100 8 L 100 40 L 0 40 Z" fill="url(#glowGrad)" />
-                      <path d="M 0 38 Q 20 32 40 28 T 80 18 T 100 8" fill="transparent" stroke="#6068F0" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                </Card>
-
-                <Card className={`${glassCardClass} p-5 space-y-4`}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">Total Reps Over Time</span>
-                      <span className="text-lg font-extrabold text-slate-900 dark:text-white mt-1 block">1,440 reps</span>
-                    </div>
-                  </div>
-                  <div className="h-16 w-full relative">
-                    <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
-                      <path d="M 0 30 Q 30 35 60 20 T 100 12 L 100 40 L 0 40 Z" fill="url(#glowGrad)" />
-                      <path d="M 0 30 Q 30 35 60 20 T 100 12" fill="transparent" stroke="#6068F0" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                </Card>
-              </div>
+                </div>
+                <div className="h-16 w-full relative">
+                  <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
+                    <path d="M 0 30 Q 30 35 60 20 T 100 12 L 100 40 L 0 40 Z" fill="url(#glowGrad)" />
+                    <path d="M 0 30 Q 30 35 60 20 T 100 12" fill="transparent" stroke="#6068F0" strokeWidth="1.5" />
+                  </svg>
+                </div>
+              </Card>
             </div>
           </div>
         )}
