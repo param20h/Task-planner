@@ -5,12 +5,18 @@ if [ -f .env.local ]; then
   export $(grep -v '^#' .env.local | xargs)
 fi
 
-DB_URL=${DATABASE_URL:-"postgresql://postgres:qp9LYqHLOYFeSRfP@db.kbvyzbcpvwxhtwlxwtjw.supabase.co:5432/postgres"}
+DB_URL=${DATABASE_URL}
 
-echo "Applying migration: 0001_init.sql..."
-psql "$DB_URL" -f supabase/migrations/0001_init.sql
+if [ -z "$DB_URL" ]; then
+  echo "Error: DATABASE_URL environment variable is not defined."
+  echo "Please set it in your environment or add it to a .env.local file in this directory."
+  exit 1
+fi
 
-echo "Applying migration: 0002_food_goals_journal.sql..."
-psql "$DB_URL" -f supabase/migrations/0002_food_goals_journal.sql
+# Loop through all SQL files in order and apply them
+for file in $(ls supabase/migrations/*.sql | sort); do
+  echo "Applying migration: $file..."
+  psql "$DB_URL" -f "$file"
+done
 
-echo "Migrations applied successfully!"
+echo "All migrations applied successfully!"
