@@ -54,6 +54,8 @@ export default function DashboardPage() {
   const [contributionMap, setContributionMap] = useState<Record<string, number>>({});
   const [weeklyScores, setWeeklyScores] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [plan, setPlan] = useState<"free" | "pro">("free");
+  const [calorieTarget, setCalorieTarget] = useState(2500);
+  const [waterTarget, setWaterTarget] = useState(3.0);
 
   // Refresh trigger to reload aggregates
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -87,13 +89,15 @@ export default function DashboardPage() {
         if (savedPlan) setPlan(savedPlan);
       }
 
+      let profileData: any = null;
       try {
         // Fetch plan from Supabase
-        const { data: profileData } = await supabase
+        const { data } = await supabase
           .from("profiles")
-          .select("plan, groq_api_key")
+          .select("plan, groq_api_key, calorie_target, water_target")
           .eq("id", activeProfileId)
           .single();
+        profileData = data;
 
         if (profileData) {
           if (profileData.plan) {
@@ -103,6 +107,12 @@ export default function DashboardPage() {
           if (profileData.groq_api_key) {
             setGroqKey(profileData.groq_api_key);
             localStorage.setItem("momentum_groq_key", profileData.groq_api_key);
+          }
+          if (profileData.calorie_target) {
+            setCalorieTarget(profileData.calorie_target);
+          }
+          if (profileData.water_target) {
+            setWaterTarget(Number(profileData.water_target));
           }
         }
       } catch (err) {
@@ -231,9 +241,12 @@ export default function DashboardPage() {
 
         // Compute Today's Score
         // Base score = (task completion % * 0.4) + (water ratio * 0.2) + (calories ratio * 0.2) + (workout duration ratio * 0.2)
+        const activeCalTarget = profileData?.calorie_target || 2500;
+        const activeWaterTarget = Number(profileData?.water_target) || 3.0;
+
         const taskRatio = totalTasksCount > 0 ? (completedTasks / totalTasksCount) : 0;
-        const waterRatio = Math.min(1, totalWater / 3.0);
-        const caloriesRatio = Math.min(1, totalCal / 2500);
+        const waterRatio = Math.min(1, totalWater / activeWaterTarget);
+        const caloriesRatio = Math.min(1, totalCal / activeCalTarget);
         const workoutRatio = Math.min(1, totalWorkoutsTime / 120);
 
         const computedScore = Math.round((taskRatio * 40) + (waterRatio * 20) + (caloriesRatio * 20) + (workoutRatio * 20));
@@ -491,7 +504,7 @@ export default function DashboardPage() {
                 <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
                   <div>
                     <div className="text-xl font-bold text-slate-900 dark:text-white">{caloriesConsumed} kcal</div>
-                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 2,500 goal</div>
+                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ {calorieTarget.toLocaleString()} goal</div>
                   </div>
                   <div className="flex items-center justify-center p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl mt-6">
                     <CustomFlameIcon className="h-6 w-6 text-[#6068F0] animate-pulse" />
@@ -525,15 +538,15 @@ export default function DashboardPage() {
                 <CardContent className="pt-2 flex flex-col justify-between h-[calc(100%-3rem)]">
                   <div>
                     <div className="text-xl font-bold text-slate-900 dark:text-white">{waterConsumed} L</div>
-                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ 3.0 L goal</div>
+                    <div className="text-[10px] text-slate-400 dark:text-neutral-500">/ {waterTarget.toFixed(1)} L goal</div>
                   </div>
                   <div className="relative h-14 w-full bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 mt-4 overflow-hidden flex items-end">
                     <div className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-white/80 z-10">
-                      {Math.min(100, Math.round((waterConsumed / 3.0) * 100))}%
+                      {Math.min(100, Math.round((waterConsumed / waterTarget) * 100))}%
                     </div>
                     <div 
                       className="w-full bg-[#6068F0]/40 border-t border-[#6068F0]/60 animate-pulse" 
-                      style={{ height: `${Math.min(100, Math.round((waterConsumed / 3.0) * 100))}%` }}
+                      style={{ height: `${Math.min(100, Math.round((waterConsumed / waterTarget) * 100))}%` }}
                     />
                   </div>
                 </CardContent>

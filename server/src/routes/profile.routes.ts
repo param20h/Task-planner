@@ -10,7 +10,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .select("name, groq_api_key, plan, plan_expires_at")
+      .select("name, groq_api_key, plan, plan_expires_at, calorie_target, protein_target, carbs_target, fats_target, water_target")
       .eq("id", req.user!.id)
       .single();
 
@@ -46,14 +46,20 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response) => {
 // PUT / — update current user's profile
 router.put("/", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, groq_api_key } = req.body;
+    const { name, groq_api_key, calorie_target, protein_target, carbs_target, fats_target, water_target } = req.body;
+
+    const updatePayload: any = { id: req.user!.id };
+    if (name !== undefined) updatePayload.name = name;
+    if (groq_api_key !== undefined) updatePayload.groq_api_key = groq_api_key;
+    if (calorie_target !== undefined) updatePayload.calorie_target = calorie_target;
+    if (protein_target !== undefined) updatePayload.protein_target = protein_target;
+    if (carbs_target !== undefined) updatePayload.carbs_target = carbs_target;
+    if (fats_target !== undefined) updatePayload.fats_target = fats_target;
+    if (water_target !== undefined) updatePayload.water_target = water_target;
 
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .upsert(
-        { id: req.user!.id, name, groq_api_key },
-        { onConflict: "id" }
-      )
+      .upsert(updatePayload, { onConflict: "id" })
       .select()
       .single();
 

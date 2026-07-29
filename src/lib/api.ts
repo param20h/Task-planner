@@ -91,10 +91,28 @@ class ApiClient {
 
   // ─── Profile ─────────────────────────────────────────
   async getProfile() {
-    return this.request<{ name: string; groq_api_key: string; plan: string; plan_expires_at?: string | null }>("/profile");
+    return this.request<{ 
+      name: string; 
+      groq_api_key: string; 
+      plan: string; 
+      plan_expires_at?: string | null;
+      calorie_target?: number;
+      protein_target?: number;
+      carbs_target?: number;
+      fats_target?: number;
+      water_target?: number;
+    }>("/profile");
   }
 
-  async updateProfile(data: { name: string; groq_api_key: string }) {
+  async updateProfile(data: { 
+    name?: string; 
+    groq_api_key?: string;
+    calorie_target?: number;
+    protein_target?: number;
+    carbs_target?: number;
+    fats_target?: number;
+    water_target?: number;
+  }) {
     return this.request("/profile", { method: "PUT", body: data });
   }
 

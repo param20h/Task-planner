@@ -149,6 +149,18 @@ export default function WorkoutPage() {
   const [workoutName, setWorkoutName] = useState("Push Day");
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showHevyPasteModal, setShowHevyPasteModal] = useState(false);
+  const [hevyText, setHevyText] = useState("");
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [expandedWorkoutId, setExpandedWorkoutId] = useState<string | null>(null);
+  const [plan, setPlan] = useState<"free" | "pro">("free");
+
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
 
   // Catalog exercises list
   const [searchQuery, setSearchQuery] = useState("");
@@ -213,6 +225,18 @@ export default function WorkoutPage() {
 
   const loadWorkoutsFromDB = async (uid: string = profileId) => {
     try {
+      // Fetch plan from profile
+      let userPlan = "free";
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("id", uid)
+        .single();
+      if (profile && profile.plan) {
+        userPlan = profile.plan;
+        setPlan(profile.plan as "free" | "pro");
+      }
+
       const { data, error } = await supabase
         .from("gym_workouts")
         .select(`
@@ -239,7 +263,7 @@ export default function WorkoutPage() {
         let benchMax = 0;
         let repsAll = 0;
         
-        const workoutsList = data.map(w => {
+        let workoutsList = data.map(w => {
           const dateObj = new Date(w.start_time);
           
           // Calculate duration
@@ -286,9 +310,25 @@ export default function WorkoutPage() {
             date: dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
             duration: `${durationMin} mins`,
             volume: workoutVolume,
-            type: w.gym_exercises?.[0]?.exercise_name ? w.gym_exercises[0].exercise_name : "Strength Training"
+            type: w.gym_exercises?.[0]?.exercise_name ? w.gym_exercises[0].exercise_name : "Strength Training",
+            exercises: w.gym_exercises || [],
+            start_time: w.start_time
           };
         });
+
+        // Enforce plan-based constraints:
+        // Free users: Can see only 3 most recent logs
+        // Pro users: Can see logs up to 1 month back (30 days)
+        if (userPlan === "free") {
+          workoutsList = workoutsList.slice(0, 3);
+        } else {
+          const oneMonthAgo = new Date();
+          oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+          workoutsList = workoutsList.filter(w => {
+            const wDate = new Date(w.start_time);
+            return wDate >= oneMonthAgo;
+          });
+        }
 
         setPastWorkouts(workoutsList);
         setAnalyticsDuration(totalDuration);
@@ -509,7 +549,149 @@ export default function WorkoutPage() {
         setIsSyncing(false);
       }
     };
-    reader.readAsText(file);
+  };
+
+  const parseHevyWorkoutText = (text: string) => {
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) return null;
+
+    // First line is workout name
+    const name = lines[0];
+
+    // Second line is date (e.g. "Thursday, Jul 23, 2026 at 7:44am")
+    let date = new Date();
+    if (lines.length > 1 && (lines[1].includes(",") || lines[1].toLowerCase().includes("at"))) {
+      const cleaned = lines[1].replace(/\bat\b/gi, "");
+      const parsedDate = new Date(cleaned);
+      if (!isNaN(parsedDate.getTime())) {
+        date = parsedDate;
+      }
+    }
+
+    const exercises: { exercise_name: string; sets: { reps: number; weight: number }[] }[] = [];
+    let currentExercise: { exercise_name: string; sets: { reps: number; weight: number }[] } | null = null;
+
+    for (let i = 2; i < lines.length; i++) {
+      const line = lines[i];
+
+      if (line.startsWith("@") || line.startsWith("http") || line.includes("hevy.com")) {
+        continue;
+      }
+
+      // Match "Set 1: 30 kg x 15" or "Set 2: 58.5 kg x 10" or "Set 1: 2min 29s"
+      const setMatch = line.match(/^Set\s+\d+:\s*(.+)$/i);
+      if (setMatch) {
+        if (currentExercise) {
+          const setDetails = setMatch[1];
+          // Try to match "30 kg x 15"
+          const weightRepsMatch = setDetails.match(/([\d.]+)\s*(?:kg|lbs|)\s*x\s*(\d+)/i);
+          if (weightRepsMatch) {
+            const weight = parseFloat(weightRepsMatch[1]);
+            const reps = parseInt(weightRepsMatch[2]);
+            currentExercise.sets.push({ reps, weight });
+          }
+        }
+      } else {
+        if (line.toLowerCase() === "warm up" || line.toLowerCase() === "cooldown" || line.toLowerCase() === "cardio") {
+          currentExercise = null;
+          continue;
+        }
+
+        if (currentExercise && currentExercise.sets.length > 0) {
+          exercises.push(currentExercise);
+        }
+
+        currentExercise = {
+          exercise_name: line,
+          sets: []
+        };
+      }
+    }
+
+    if (currentExercise && currentExercise.sets.length > 0) {
+      exercises.push(currentExercise);
+    }
+
+    return {
+      name,
+      date,
+      exercises
+    };
+  };
+
+  const handleImportHevyText = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!hevyText.trim()) return;
+
+    setIsSyncing(true);
+    try {
+      const parsed = parseHevyWorkoutText(hevyText);
+      if (!parsed || parsed.exercises.length === 0) {
+        showToast("Failed to parse workout. Please verify your pasted text.", "error");
+        setIsSyncing(false);
+        return;
+      }
+
+      // Check if workout already exists at that start_time
+      const formattedDate = parsed.date.toISOString();
+      const { data: existing } = await supabase
+        .from("gym_workouts")
+        .select("id")
+        .eq("profile_id", profileId)
+        .eq("start_time", formattedDate)
+        .maybeSingle();
+
+      if (existing) {
+        showToast("This workout has already been imported!", "error");
+        setIsSyncing(false);
+        return;
+      }
+
+      // Insert workout
+      // Assuming a default duration of 60 mins if warmups/durations are not fully calculated
+      const start = parsed.date;
+      const end = new Date(start.getTime() + 60 * 60000); // 60 mins
+
+      const { data: newW, error: wErr } = await supabase
+        .from("gym_workouts")
+        .insert({
+          profile_id: profileId,
+          name: parsed.name || "Hevy Workout",
+          start_time: start.toISOString(),
+          end_time: end.toISOString(),
+          notes: "Imported from Hevy Text Copy"
+        })
+        .select()
+        .single();
+
+      if (wErr || !newW) {
+        console.error("Failed to insert imported workout:", wErr);
+        showToast("Failed to save workout to database.", "error");
+        setIsSyncing(false);
+        return;
+      }
+
+      // Insert exercises
+      for (const ex of parsed.exercises) {
+        await supabase
+          .from("gym_exercises")
+          .insert({
+            workout_id: newW.id,
+            exercise_name: ex.exercise_name,
+            sets: ex.sets.map(s => ({ reps: s.reps, weight: s.weight }))
+          });
+      }
+
+      showToast("🎉 Successfully imported your Hevy workout!");
+      setHevyText("");
+      setShowHevyPasteModal(false);
+      await loadWorkoutsFromDB();
+    } catch (err) {
+      console.error("Hevy text import error:", err);
+      showToast("Failed to parse text. Check set details format.", "error");
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   useEffect(() => {
@@ -525,9 +707,12 @@ export default function WorkoutPage() {
         console.error("Failed to load session user:", err);
       }
       await loadWorkoutsFromDB(activeId);
+      
+      const dayIndex = new Date().getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+      const mappedIndex = Math.min(5, Math.max(0, dayIndex === 0 ? 0 : dayIndex - 1));
+      loadRoutine(mappedIndex);
     }
     getSession();
-    loadRoutine(0);
   }, []);
 
   const formatTimer = (totalSecs: number) => {
@@ -731,58 +916,82 @@ export default function WorkoutPage() {
                     <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
                       <CustomClockIcon className="h-4.5 w-4.5 text-[#6068F0]" />
                       Workout History
+                      <span className={`text-[8px] border font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                        plan === "free" 
+                          ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400" 
+                          : "bg-[#6068F0]/10 border-[#6068F0]/20 text-[#6068F0] dark:text-[#A78BFA]"
+                      }`}>
+                        {plan === "free" ? "Free (Last 3)" : "Pro (1 Month)"}
+                      </span>
                     </CardTitle>
                     <div className="flex gap-2">
-                      <input
-                        type="file"
-                        id="hevy-csv-input"
-                        accept=".csv"
-                        onChange={handleImportCSV}
-                        className="hidden"
-                      />
                       <button
-                        onClick={() => document.getElementById("hevy-csv-input")?.click()}
+                        onClick={() => setShowHevyPasteModal(true)}
                         disabled={isSyncing}
                         className="bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1.5 disabled:opacity-50"
                       >
-                        <RefreshCw className={cn("h-3.5 w-3.5", isSyncing && "animate-spin")} />
-                        {isSyncing ? "Importing..." : "Import CSV"}
+                        <Plus className="h-3.5 w-3.5" />
+                        Paste Hevy Workout
                       </button>
                     </div>
                   </CardHeader>
                   <CardContent className="px-0 space-y-4">
                     {pastWorkouts.length > 0 ? (
-                      pastWorkouts.map((w: any, idx) => (
-                        <div 
-                          key={idx} 
-                          className="p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-2xl hover:border-slate-200 dark:hover:border-white/10 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-all duration-300 space-y-3 shadow-md"
-                        >
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-[#6068F0]/10 border border-[#6068F0]/20 rounded-xl">
-                                <CustomWorkoutIcon className="h-4.5 w-4.5 text-[#6068F0]" />
+                      pastWorkouts.map((w: any, idx) => {
+                        const isExpanded = expandedWorkoutId === w.id;
+                        return (
+                          <div 
+                            key={idx} 
+                            onClick={() => setExpandedWorkoutId(isExpanded ? null : w.id)}
+                            className="p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 rounded-2xl hover:border-slate-200 dark:hover:border-white/10 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-all duration-300 space-y-3 shadow-md cursor-pointer relative"
+                          >
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-[#6068F0]/10 border border-[#6068F0]/20 rounded-xl">
+                                  <CustomWorkoutIcon className="h-4.5 w-4.5 text-[#6068F0]" />
+                                </div>
+                                <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{w.name}</h4>
                               </div>
-                              <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{w.name}</h4>
+                              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                                <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-bold">{w.date}</span>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => handleDeleteWorkout(w.id)}
+                                  className="h-7 w-7 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg p-1.5 transition-all duration-300"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-bold">{w.date}</span>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleDeleteWorkout(w.id)}
-                                className="h-7 w-7 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg p-1.5 transition-all duration-300"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                            <div className="flex gap-6 text-[10px] text-slate-500 dark:text-neutral-400 font-semibold pl-1.5">
+                              <span>Volume: <strong className="text-slate-900 dark:text-white">{w.volume.toLocaleString()} kg</strong></span>
+                              <span>Time: <strong className="text-slate-900 dark:text-white">{w.duration}</strong></span>
+                              <span>Type: <strong className="text-slate-900 dark:text-white">{w.type}</strong></span>
                             </div>
+
+                            {isExpanded && w.exercises && w.exercises.length > 0 && (
+                              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 space-y-3 animate-in fade-in duration-300">
+                                <h5 className="text-[10px] font-extrabold text-[#6068F0] dark:text-[#A78BFA] uppercase tracking-wider pl-1.5">Logged Exercises:</h5>
+                                <div className="space-y-2 pl-1.5">
+                                  {w.exercises.map((ex: any, exIdx: number) => (
+                                    <div key={exIdx} className="text-xs bg-slate-100/50 dark:bg-black/30 p-2.5 rounded-xl border border-slate-200/40 dark:border-white/5">
+                                      <div className="font-bold text-slate-800 dark:text-neutral-200">{ex.exercise_name}</div>
+                                      <div className="mt-1.5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-semibold text-slate-500 dark:text-neutral-400">
+                                        {Array.isArray(ex.sets) && ex.sets.map((set: any, setIdx: number) => (
+                                          <div key={setIdx} className="bg-slate-200/50 dark:bg-white/5 px-2 py-1 rounded-lg">
+                                            Set {setIdx + 1}: {set.weight} kg x {set.reps}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <div className="flex gap-6 text-[10px] text-slate-500 dark:text-neutral-400 font-semibold pl-1.5">
-                            <span>Volume: <strong className="text-slate-900 dark:text-white">{w.volume.toLocaleString()} kg</strong></span>
-                            <span>Time: <strong className="text-slate-900 dark:text-white">{w.duration}</strong></span>
-                            <span>Type: <strong className="text-slate-900 dark:text-white">{w.type}</strong></span>
-                          </div>
-                        </div>
-                      ))
+                        );
+                      })
                     ) : (
                       <p className="text-xs text-slate-400 dark:text-neutral-500 italic py-6 text-center">
                         No completed workouts found. Load a template and finish logging your first session!
@@ -1338,6 +1547,76 @@ export default function WorkoutPage() {
         )}
 
       </div>
+
+      {/* Hevy Paste Modal */}
+      {showHevyPasteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-[#FFFFFF]/95 dark:bg-[#18181C]/95 border border-slate-200 dark:border-white/[0.08] w-full max-w-lg p-6 rounded-3xl space-y-6 relative shadow-xl dark:shadow-2xl">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/5 pb-4">
+              <div>
+                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Import Hevy Workout</h3>
+                <p className="text-[10px] text-slate-500 dark:text-neutral-450 font-bold uppercase tracking-wider mt-1">Copy & paste a workout directly from the Hevy app</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setHevyText("");
+                  setShowHevyPasteModal(false);
+                }}
+                className="text-xs text-slate-500 dark:text-neutral-450 hover:text-slate-800 dark:hover:text-white font-bold transition-colors"
+              >
+                Close
+              </button>
+            </div>
+            
+            <form onSubmit={handleImportHevyText} className="space-y-4">
+              <div className="space-y-2">
+                <textarea
+                  value={hevyText}
+                  onChange={(e) => setHevyText(e.target.value)}
+                  placeholder={`Paste Hevy text here. Example:\n\nPull\nThursday, Jul 23, 2026 at 7:44am\n\nLat Pulldown (Cable)\nSet 1: 30 kg x 15\nSet 2: 58.5 kg x 10`}
+                  rows={10}
+                  className="w-full bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-2xl p-4 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all font-mono"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button 
+                  type="button"
+                  onClick={() => {
+                    setHevyText("");
+                    setShowHevyPasteModal(false);
+                  }}
+                  variant="outline"
+                  className="border-slate-200 dark:border-white/10 text-slate-500 dark:text-neutral-450 rounded-xl text-xs px-5 py-2.5 h-auto"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={isSyncing || !hevyText.trim()}
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl shadow-lg px-6 py-2.5 font-bold text-xs transition-all duration-300 disabled:opacity-50"
+                >
+                  {isSyncing ? "Importing..." : "Import Workout"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Dynamic Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className={`px-4 py-3 rounded-2xl border text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-2xl backdrop-blur-md ${
+            toast.type === "success" 
+              ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-600 dark:text-emerald-400" 
+              : "bg-rose-500/10 border-rose-500/25 text-rose-600 dark:text-rose-400"
+          }`}>
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

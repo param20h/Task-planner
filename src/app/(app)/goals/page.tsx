@@ -14,13 +14,7 @@ const glassCardClass = "bg-slate-100/[var(--glass-opacity,0.7)] dark:bg-[#0d0d0e
 
 export default function GoalsPage() {
   const [profileId, setProfileId] = useState("alex_chen");
-  const [objectives, setObjectives] = useState([
-    { title: "Launch Product V2", percent: 85, days: "24d 12h remaining", milestone: "Beta Testing - Oct 15" },
-    { title: "Achieve 10k Active Users", percent: 62, days: "45d 08h remaining", milestone: "Marketing Campaign - Nov 5" },
-    { title: "Secure Series A Funding", percent: 30, days: "90d 16h remaining", milestone: "Investor Pitch Deck - Dec 20" }
-  ]);
-
-  const [allGoals, setAllGoals] = useState<{ id: string; title: string; cat: string; progress: number; val: string; status: string }[]>([]);
+  const [allGoals, setAllGoals] = useState<{ id: string; title: string; cat: string; progress: number; val: string; status: string; milestone?: string }[]>([]);
   const [timeline, setTimeline] = useState<{ date: string; desc: string }[]>([]);
 
   // Add goal modal states
@@ -58,51 +52,51 @@ export default function GoalsPage() {
         .eq("profile_id", uid);
 
       if (data && !error) {
+        const goalIds = data.map(g => g.id);
+        const milestonesMap: Record<string, string> = {};
+
+        if (goalIds.length > 0) {
+          const { data: milestonesData } = await supabase
+            .from("milestones")
+            .select("goal_id, description, due_date")
+            .in("goal_id", goalIds)
+            .order("created_at", { ascending: true });
+
+          if (milestonesData) {
+            milestonesData.forEach(m => {
+              if (m.goal_id && !milestonesMap[m.goal_id]) {
+                milestonesMap[m.goal_id] = `${m.description} - ${m.due_date || "TBD"}`;
+              }
+            });
+
+            setTimeline(milestonesData.map(m => ({
+              date: m.due_date || "TBD",
+              desc: m.description
+            })));
+          } else {
+            setTimeline([]);
+          }
+        } else {
+          setTimeline([]);
+        }
+
         setAllGoals(data.map(g => ({
           id: g.id,
           title: g.title,
           cat: g.category || "",
           progress: g.progress || 0,
           val: g.value_label || "",
-          status: g.status || "In Progress"
+          status: g.status || "In Progress",
+          milestone: milestonesMap[g.id] || "Complete OKR targets"
         })));
-
-        // Load dynamic milestones from database based on user's active goals
-        const goalIds = data.map(g => g.id);
-        if (goalIds.length > 0) {
-          const { data: milestonesData, error: milestonesError } = await supabase
-            .from("milestones")
-            .select("description, due_date")
-            .in("goal_id", goalIds)
-            .order("created_at", { ascending: true });
-
-          if (milestonesData && !milestonesError && milestonesData.length > 0) {
-            setTimeline(milestonesData.map(m => ({
-              date: m.due_date || "TBD",
-              desc: m.description
-            })));
-          } else {
-            setDefaultTimeline();
-          }
-        } else {
-          setDefaultTimeline();
-        }
       } else {
         setAllGoals([]);
-        setDefaultTimeline();
+        setTimeline([]);
       }
     } catch (err) {
       console.error("Failed to load goals:", err);
-      setDefaultTimeline();
+      setTimeline([]);
     }
-  };
-
-  const setDefaultTimeline = () => {
-    setTimeline([
-      { date: "Oct 15", desc: "Product Beta Testing" },
-      { date: "Nov 5", desc: "Marketing Campaign Launch" },
-      { date: "Dec 20", desc: "Investor Pitch Deck Final" }
-    ]);
   };
 
   const handleCreateGoal = async (e: React.FormEvent) => {
@@ -194,6 +188,8 @@ export default function GoalsPage() {
     }
   };
 
+  const topObjectives = allGoals.slice(0, 3);
+
   return (
     <div className="relative min-h-screen p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto overflow-hidden text-slate-700 dark:text-neutral-300">
       <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="rgba(96,104,240,0.03)" />
@@ -222,45 +218,60 @@ export default function GoalsPage() {
         <div className="lg:col-span-9 space-y-8">
           
           {/* Top 3 Objectives Large Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {objectives.map((obj, i) => (
-              <Card key={i} className={glassCardClass}>
-                <CardContent className="p-6 space-y-6 flex flex-col justify-between h-full">
-                  <div>
-                    <span className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest block mb-2">Key Objective {i + 1}</span>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">{obj.title}</h4>
-                  </div>
-                  
-                  {/* Progress circular indicator */}
-                  <div className="flex items-center gap-4">
-                    <div className="relative w-16 h-16 flex items-center justify-center">
-                      <svg className="w-full h-full transform -rotate-90">
-                        <circle cx="32" cy="32" r="26" stroke="currentColor" className="text-slate-200 dark:text-neutral-800" strokeWidth="4" fill="transparent" />
-                        <circle 
-                          cx="32" cy="32" r="26" 
-                          className="stroke-[#6068F0]" 
-                          strokeWidth="5" 
-                          strokeDasharray={163.28}
-                          strokeDashoffset={163.28 - (163.28 * obj.percent) / 100}
-                          strokeLinecap="round"
-                          fill="transparent" 
-                        />
-                      </svg>
-                      <span className="absolute text-xs font-bold text-slate-900 dark:text-white">{obj.percent}%</span>
-                    </div>
+          {topObjectives.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {topObjectives.map((obj, i) => (
+                <Card key={obj.id} className={glassCardClass}>
+                  <CardContent className="p-6 space-y-6 flex flex-col justify-between h-full">
                     <div>
-                      <span className="text-[10px] text-slate-500 dark:text-neutral-400 font-medium block">{obj.days}</span>
+                      <span className="text-[9px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-widest block mb-2">Key Objective {i + 1}</span>
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">{obj.title}</h4>
                     </div>
-                  </div>
+                    
+                    {/* Progress circular indicator */}
+                    <div className="flex items-center gap-4">
+                      <div className="relative w-16 h-16 flex items-center justify-center">
+                        <svg className="w-full h-full transform -rotate-90">
+                          <circle cx="32" cy="32" r="26" stroke="currentColor" className="text-slate-200 dark:text-neutral-800" strokeWidth="4" fill="transparent" />
+                          <circle 
+                            cx="32" cy="32" r="26" 
+                            className="stroke-[#6068F0]" 
+                            strokeWidth="5" 
+                            strokeDasharray={163.28}
+                            strokeDashoffset={163.28 - (163.28 * obj.progress) / 100}
+                            strokeLinecap="round"
+                            fill="transparent" 
+                          />
+                        </svg>
+                        <span className="absolute text-xs font-bold text-slate-900 dark:text-white">{obj.progress}%</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-[#6068F0] font-black uppercase tracking-wider block">{obj.cat}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-neutral-500 font-medium block mt-1">{obj.status}</span>
+                      </div>
+                    </div>
 
-                  <div className="pt-4 border-t border-slate-100 dark:border-white/5">
-                    <span className="text-[9px] text-slate-400 dark:text-neutral-500 block">Next Milestone:</span>
-                    <span className="text-[10px] font-semibold text-slate-600 dark:text-neutral-300 mt-0.5 block">{obj.milestone}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <div className="pt-4 border-t border-slate-100 dark:border-white/5">
+                      <span className="text-[9px] text-slate-400 dark:text-neutral-500 block">Next Milestone:</span>
+                      <span className="text-[10px] font-semibold text-slate-600 dark:text-neutral-300 mt-0.5 block">{obj.milestone || "Complete OKR targets"}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className={`${glassCardClass} p-8 text-center flex flex-col items-center justify-center space-y-4`}>
+              <div className="p-3 bg-[#6068F0]/10 border border-[#6068F0]/20 rounded-full">
+                <Target className="h-6 w-6 text-[#6068F0]" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">No Active Objectives</h4>
+                <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1.5 max-w-md mx-auto">
+                  Set your first high-level OKR objective using the "Add Goal" button above to populate this board with your live progress.
+                </p>
+              </div>
+            </Card>
+          )}
 
           {/* All Goals List Grid */}
           <div className="space-y-4">

@@ -38,18 +38,6 @@ type StudyLog = {
   created_at: string;
 };
 
-const SUBJECT_PRESETS = [
-  "Mathematics",
-  "Computer Science",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "History",
-  "Languages",
-  "Personal Skills",
-  "Other"
-];
-
 export default function StudyPage() {
   const [profileId, setProfileId] = useState("");
   const [logs, setLogs] = useState<StudyLog[]>([]);
@@ -60,15 +48,19 @@ export default function StudyPage() {
   const [timerDuration, setTimerDuration] = useState(1500);
   const [isRunning, setIsRunning] = useState(false);
   const [timerMode, setTimerMode] = useState<"pomodoro" | "long" | "short" | "custom">("pomodoro");
-  const [customMinutes, setCustomMinutes] = useState("25");
+  
+  // Pomodoro standard durations (secs)
+  const pomodoroDuration = 1500;
+  const shortBreakDuration = 300;
+  const longBreakDuration = 900;
+  const [customMinutes, setCustomMinutes] = useState("");
   
   // Audio settings
   const [isTickMuted, setIsTickMuted] = useState(true);
   const [isAlarmMuted, setIsAlarmMuted] = useState(false);
   
   // Logger states
-  const [subject, setSubject] = useState("Computer Science");
-  const [customSubject, setCustomSubject] = useState("");
+  const [subject, setSubject] = useState("");
   const [notes, setNotes] = useState("");
   const [manualMinutes, setManualMinutes] = useState("");
   
@@ -219,7 +211,7 @@ export default function StudyPage() {
 
     // Auto-populate manual entry log fields with study session details
     const elapsedMinutes = Math.round(timerDuration / 60);
-    const finalSubject = subject === "Other" ? (customSubject || "Other") : subject;
+    const finalSubject = subject.trim() || "Study";
     
     // Automatically submit to database for smooth Pomodoro completion
     api.createStudyLog(finalSubject, elapsedMinutes, `Timer completed: ${notes || "Focused study session."}`).then(() => {
@@ -255,7 +247,7 @@ export default function StudyPage() {
   // Create manual study log
   const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalSubject = subject === "Other" ? (customSubject || "Other") : subject;
+    const finalSubject = subject.trim() || "Study";
     const duration = parseInt(manualMinutes);
 
     if (!finalSubject || isNaN(duration) || duration <= 0) return;
@@ -264,7 +256,6 @@ export default function StudyPage() {
       await api.createStudyLog(finalSubject, duration, notes);
       setNotes("");
       setManualMinutes("");
-      setCustomSubject("");
       refreshLogs();
     } catch (err) {
       console.error("Manual study log error:", err);
@@ -283,18 +274,12 @@ export default function StudyPage() {
     }
   };
 
-  // Calculate subject distribution for chart simulation
-  const subjectTotals = SUBJECT_PRESETS.reduce((acc, preset) => {
-    acc[preset] = 0;
-    return acc;
-  }, {} as Record<string, number>);
+  // Calculate subject distribution dynamically from logged sessions
+  const subjectTotals: Record<string, number> = {};
 
   logs.forEach(log => {
-    if (SUBJECT_PRESETS.includes(log.subject)) {
-      subjectTotals[log.subject] += log.duration_minutes;
-    } else {
-      subjectTotals["Other"] += log.duration_minutes;
-    }
+    const sub = log.subject?.trim() || "Other";
+    subjectTotals[sub] = (subjectTotals[sub] || 0) + log.duration_minutes;
   });
 
   const activeSubjects = Object.entries(subjectTotals)
@@ -495,13 +480,18 @@ export default function StudyPage() {
             </CardHeader>
             <CardContent className="px-0 pt-2">
               <form onSubmit={handleManualSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Select
-                    value={subject}
-                    onChange={(val) => setSubject(val)}
-                    options={SUBJECT_PRESETS}
-                    label="Subject"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-1">Subject Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Computer Science, Mathematics"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#A78BFA] transition-all"
+                      required
+                    />
+                  </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-1">Duration (Mins)</label>
                     <input
@@ -514,20 +504,6 @@ export default function StudyPage() {
                     />
                   </div>
                 </div>
-
-                {subject === "Other" && (
-                  <div className="space-y-1.5 animate-slide-down">
-                    <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-1">Custom Subject Name</label>
-                    <input
-                      type="text"
-                      placeholder="Enter subject name..."
-                      value={customSubject}
-                      onChange={(e) => setCustomSubject(e.target.value)}
-                      className="w-full bg-slate-100 dark:bg-black/60 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#A78BFA] transition-all"
-                      required
-                    />
-                  </div>
-                )}
 
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-1">Topic / Notes</label>

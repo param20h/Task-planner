@@ -752,15 +752,6 @@ export default function PricingPage() {
                         "Upgrade to Pro"
                       )}
                     </button>
-                    {(currencyCode === "INR" || process.env.NODE_ENV === "development") && (
-                      <button
-                        onClick={() => handleUpgrade({ isTest1Rupee: true })}
-                        disabled={upgradeSuccess}
-                        className="w-full bg-transparent hover:bg-slate-100/5 dark:hover:bg-white/[0.04] border border-[#A78BFA]/30 hover:border-[#A78BFA]/60 text-[#A78BFA] py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5"
-                      >
-                        Real API Test (₹1 Charge)
-                      </button>
-                    )}
                   </div>
                 )
               ) : (
@@ -770,13 +761,6 @@ export default function PricingPage() {
                       Get Started
                     </button>
                   </Link>
-                  {(currencyCode === "INR" || process.env.NODE_ENV === "development") && (
-                    <Link href="/register" className="w-full">
-                      <button className="w-full bg-transparent hover:bg-slate-100/5 dark:hover:bg-white/[0.04] border border-[#A78BFA]/30 hover:border-[#A78BFA]/60 text-[#A78BFA] py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5">
-                        Real API Test (₹1 Charge)
-                      </button>
-                    </Link>
-                  )}
                 </div>
               )}
             </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Plus, 
   Trash2, 
+  Settings
 } from "lucide-react";
 import {
   CustomFoodIcon,
@@ -31,6 +32,23 @@ export default function FoodPage() {
   const [caloriesConsumed, setCaloriesConsumed] = useState(0);
   const [macros, setMacros] = useState({ protein: 0, carbs: 0, fats: 0 });
   const [waterIntake, setWaterIntake] = useState(0); // Liters
+
+  const [targets, setTargets] = useState({
+    calories: 2500,
+    protein: 180,
+    carbs: 250,
+    fats: 80,
+    water: 3.0
+  });
+
+  const [showTargetsModal, setShowTargetsModal] = useState(false);
+  const [targetInputs, setTargetInputs] = useState({
+    calories: "2500",
+    protein: "180",
+    carbs: "250",
+    fats: "80",
+    water: "3.0"
+  });
   
   // Custom Food Form states
   const [customName, setCustomName] = useState("");
@@ -78,20 +96,28 @@ export default function FoodPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setProfileId(user.id);
-        }
-        const storedKey = localStorage.getItem("momentum_groq_key");
-        if (storedKey) {
-          setGroqKey(storedKey);
-        } else if (user) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("groq_api_key")
+            .select("groq_api_key, calorie_target, protein_target, carbs_target, fats_target, water_target")
             .eq("id", user.id)
             .single();
-          if (profile && profile.groq_api_key) {
-            setGroqKey(profile.groq_api_key);
-            localStorage.setItem("momentum_groq_key", profile.groq_api_key);
+
+          if (profile) {
+            if (profile.groq_api_key) {
+              setGroqKey(profile.groq_api_key);
+              localStorage.setItem("momentum_groq_key", profile.groq_api_key);
+            }
+            setTargets({
+              calories: profile.calorie_target || 2500,
+              protein: profile.protein_target || 180,
+              carbs: profile.carbs_target || 250,
+              fats: profile.fats_target || 80,
+              water: Number(profile.water_target) || 3.0
+            });
           }
+        } else {
+          const storedKey = localStorage.getItem("momentum_groq_key");
+          if (storedKey) setGroqKey(storedKey);
         }
       } catch (err) {
         console.error("Failed to load session:", err);
@@ -353,6 +379,51 @@ export default function FoodPage() {
     }
   };
 
+  const openTargetsModal = () => {
+    setTargetInputs({
+      calories: String(targets.calories),
+      protein: String(targets.protein),
+      carbs: String(targets.carbs),
+      fats: String(targets.fats),
+      water: String(targets.water)
+    });
+    setShowTargetsModal(true);
+  };
+
+  const handleSaveTargets = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const updated = {
+        calorie_target: parseInt(targetInputs.calories) || 2500,
+        protein_target: parseInt(targetInputs.protein) || 180,
+        carbs_target: parseInt(targetInputs.carbs) || 250,
+        fats_target: parseInt(targetInputs.fats) || 80,
+        water_target: parseFloat(targetInputs.water) || 3.0
+      };
+
+      const { error } = await supabase
+        .from("profiles")
+        .update(updated)
+        .eq("id", profileId);
+
+      if (error) {
+        alert("Failed to update targets: " + error.message);
+        return;
+      }
+
+      setTargets({
+        calories: updated.calorie_target,
+        protein: updated.protein_target,
+        carbs: updated.carbs_target,
+        fats: updated.fats_target,
+        water: updated.water_target
+      });
+      setShowTargetsModal(false);
+    } catch (err) {
+      console.error("Save targets error:", err);
+    }
+  };
+
   const mealCards = [
     { type: "Breakfast", icon: <CustomCoffeeIcon className="h-5 w-5 text-amber-500" />, defaultName: "Oatmeal & Whey Protein", c: 450, p: 35, carb: 50, f: 8 },
     { type: "Lunch", icon: <CustomUtensilsIcon className="h-5 w-5 text-emerald-500" />, defaultName: "Chicken Breast & White Rice", c: 600, p: 50, carb: 70, f: 10 },
@@ -393,10 +464,19 @@ export default function FoodPage() {
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-widest block">Calories Consumed</span>
-                  <span className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1 block">{caloriesConsumed} / 2,500 kcal</span>
+                  <span className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1 block">{caloriesConsumed} / {targets.calories.toLocaleString()} kcal</span>
                 </div>
-                <div className="h-12 w-12 rounded-full border-2 border-dashed border-[#6068F0]/30 flex items-center justify-center">
-                  <CustomFlameIcon className="h-6 w-6 text-[#6068F0]" />
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={openTargetsModal}
+                    className="p-2.5 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+                    title="Adjust Targets"
+                  >
+                    <Settings className="h-4.5 w-4.5" />
+                  </button>
+                  <div className="h-12 w-12 rounded-full border-2 border-dashed border-[#6068F0]/30 flex items-center justify-center">
+                    <CustomFlameIcon className="h-6 w-6 text-[#6068F0]" />
+                  </div>
                 </div>
               </div>
               <div className="space-y-4">
@@ -404,30 +484,30 @@ export default function FoodPage() {
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
                     <span className="font-semibold text-slate-500 dark:text-neutral-400">Protein</span>
-                    <span className="text-slate-900 dark:text-white font-bold">{macros.protein}g / 180g</span>
+                    <span className="text-slate-900 dark:text-white font-bold">{macros.protein}g / {targets.protein}g</span>
                   </div>
                   <div className="h-2 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-amber-500 rounded-full" style={{ width: `${Math.min(100, (macros.protein / 180) * 100)}%` }} />
+                    <div className="h-full bg-amber-500 rounded-full" style={{ width: `${Math.min(100, (macros.protein / targets.protein) * 100)}%` }} />
                   </div>
                 </div>
                 {/* Carbs */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
                     <span className="font-semibold text-slate-500 dark:text-neutral-400">Carbohydrates</span>
-                    <span className="text-slate-900 dark:text-white font-bold">{macros.carbs}g / 250g</span>
+                    <span className="text-slate-900 dark:text-white font-bold">{macros.carbs}g / {targets.carbs}g</span>
                   </div>
                   <div className="h-2 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, (macros.carbs / 250) * 100)}%` }} />
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, (macros.carbs / targets.carbs) * 100)}%` }} />
                   </div>
                 </div>
                 {/* Fats */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
                     <span className="font-semibold text-slate-500 dark:text-neutral-400">Fats</span>
-                    <span className="text-slate-900 dark:text-white font-bold">{macros.fats}g / 80g</span>
+                    <span className="text-slate-900 dark:text-white font-bold">{macros.fats}g / {targets.fats}g</span>
                   </div>
                   <div className="h-2 w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(100, (macros.fats / 80) * 100)}%` }} />
+                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(100, (macros.fats / targets.fats) * 100)}%` }} />
                   </div>
                 </div>
               </div>
@@ -452,12 +532,12 @@ export default function FoodPage() {
               <div className="relative w-full h-32 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden mt-6 shadow-inner">
                 <div 
                   className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#6068F0] to-[#8088ff] transition-all duration-700 ease-out"
-                  style={{ height: `${Math.min(100, (waterIntake / 3.0) * 100)}%` }}
+                  style={{ height: `${Math.min(100, (waterIntake / targets.water) * 100)}%` }}
                 >
                   <div className="absolute top-1 left-0 w-full h-1 bg-white/20 animate-pulse" />
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-neutral-400">
-                  Target: 3.0 Liters
+                  Target: {targets.water.toFixed(1)} Liters
                 </div>
               </div>
             </Card>
@@ -678,6 +758,89 @@ export default function FoodPage() {
         </div>
 
       </div>
+
+      {/* Adjust Targets Modal */}
+      {showTargetsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-[#FFFFFF]/95 dark:bg-[#18181C]/95 border border-slate-200 dark:border-white/[0.08] w-full max-w-md p-6 rounded-3xl space-y-6 relative shadow-xl dark:shadow-2xl">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/5 pb-4">
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Adjust Daily Targets</h3>
+              <button 
+                type="button"
+                onClick={() => setShowTargetsModal(false)}
+                className="text-xs text-slate-500 dark:text-neutral-450 hover:text-slate-800 dark:hover:text-white font-bold transition-colors"
+              >
+                Close
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveTargets} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 uppercase tracking-wider block pl-1">Daily Calories (kcal)</label>
+                <input 
+                  type="number"
+                  value={targetInputs.calories}
+                  onChange={(e) => setTargetInputs(prev => ({ ...prev, calories: e.target.value }))}
+                  className="w-full bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300 font-medium"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 uppercase tracking-wider block pl-1">Protein (g)</label>
+                  <input 
+                    type="number"
+                    value={targetInputs.protein}
+                    onChange={(e) => setTargetInputs(prev => ({ ...prev, protein: e.target.value }))}
+                    className="w-full bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl px-3 py-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300 font-medium"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 uppercase tracking-wider block pl-1">Carbs (g)</label>
+                  <input 
+                    type="number"
+                    value={targetInputs.carbs}
+                    onChange={(e) => setTargetInputs(prev => ({ ...prev, carbs: e.target.value }))}
+                    className="w-full bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl px-3 py-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300 font-medium"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 uppercase tracking-wider block pl-1">Fats (g)</label>
+                  <input 
+                    type="number"
+                    value={targetInputs.fats}
+                    onChange={(e) => setTargetInputs(prev => ({ ...prev, fats: e.target.value }))}
+                    className="w-full bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl px-3 py-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300 font-medium"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 uppercase tracking-wider block pl-1">Daily Water Target (Liters)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={targetInputs.water}
+                  onChange={(e) => setTargetInputs(prev => ({ ...prev, water: e.target.value }))}
+                  className="w-full bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none focus:border-[#6068F0]/50 transition-all duration-300 font-medium"
+                  required
+                />
+              </div>
+
+              <Button 
+                type="submit"
+                className="w-full mt-4 bg-[#6068F0] hover:bg-[#4d55d0] text-white rounded-xl shadow-lg px-4 py-3 font-bold text-xs transition-all duration-300"
+              >
+                Save Targets
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
