@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import { Client } from "pg";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
@@ -26,6 +27,17 @@ const PORT = process.env.PORT || 5000;
 
 // Security headers
 app.use(helmet());
+
+// Rate limiting to prevent abuse & DOS attacks
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 150, // Limit each IP to 150 requests per windowMs
+  message: { error: "Too many requests from this IP, please try again after 15 minutes." },
+  standardHeaders: true, // Return rate limit info in headers
+  legacyHeaders: false, // Disable X-RateLimit headers
+});
+
+app.use("/api/", apiLimiter);
 
 // CORS — allow requests from the Next.js frontend
 const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").replace(/\/$/, "");
