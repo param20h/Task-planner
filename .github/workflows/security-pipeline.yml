@@ -28,23 +28,19 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: momentum/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install Dependencies
         run: npm ci
-        working-directory: momentum
 
       - name: Dependency Vulnerability Audit
         run: npm audit --audit-level=high
-        working-directory: momentum
 
       - name: TypeScript Validation
         run: npx tsc --noEmit
-        working-directory: momentum
 
       - name: Build Next.js Bundle
         run: npm run build
-        working-directory: momentum
 
   # 2. SAST (Static Application Security Testing) via GitHub CodeQL
   sast_codeql:
