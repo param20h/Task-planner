@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   GitBranch, 
@@ -18,10 +18,7 @@ import {
   ArrowRight,
   Sun,
   Moon,
-  Triangle,
-  Play,
-  Check,
-  AlertTriangle
+  ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -60,12 +57,11 @@ export default function AdminDevOpsPage() {
   const [runs, setRuns] = useState<WorkflowRun[]>([]);
   const [activeRun, setActiveRun] = useState<WorkflowRun | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isPolling, setIsPolling] = useState<boolean>(true);
   const [errorLogModal, setErrorLogModal] = useState<string | null>(null);
   const [aiFixing, setAiFixing] = useState<boolean>(false);
   const [aiFixResult, setAiFixResult] = useState<string | null>(null);
 
-  // Default simulated steps representing a standard CI pipeline for GitHub Push
+  // Simulated steps representing standard GitHub Actions CI pipeline execution
   const [steps, setSteps] = useState<StepDetail[]>([
     {
       id: "lint",
@@ -163,8 +159,6 @@ export default function AdminDevOpsPage() {
           setRuns(data.workflow_runs);
           const latest = data.workflow_runs[0];
           setActiveRun(latest);
-          
-          // Map real GitHub status to steps visualizer state
           updateStepsFromGitHubRun(latest);
         }
       }
@@ -241,17 +235,27 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
   return (
     <div className="min-h-screen bg-[#09090B] dark:bg-[#09090B] light:bg-[#FAFAFA] text-[#FAFAFA] dark:text-[#FAFAFA] light:text-[#09090B] font-sans antialiased p-6 md:p-10 transition-colors duration-500">
       
+      {/* ── Navigation back to Admin Overview ── */}
+      <div className="mb-6">
+        <Link 
+          href="/admin" 
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-400 light:text-slate-600 hover:text-white dark:hover:text-white light:hover:text-black transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to Admin Workspace
+        </Link>
+      </div>
+
       {/* ── Top Admin Header ── */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10 pb-6 border-b border-white/10 dark:border-white/10 light:border-slate-200">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#A78BFA] mb-1">
-            <ShieldCheck className="h-4 w-4" /> Admin Control Center
+            <ShieldCheck className="h-4 w-4" /> Admin DevOps Control Center
           </div>
-          <h1 className="text-3xl md:text-4xl font-serif tracking-tight text-white dark:text-white light:text-slate-850">
+          <h1 className="text-3xl md:text-4xl font-serif tracking-tight text-white dark:text-white light:text-slate-900">
             DevOps Pipeline &amp; System Telemetry
           </h1>
-          <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-slate-500 mt-1">
-            Live GitHub Actions execution visualizer reacting strictly to real <code className="text-[#A78BFA] bg-white/5 px-1.5 py-0.5 rounded">git push</code> events.
+          <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-slate-600 mt-1">
+            Live GitHub Actions execution visualizer reacting strictly to real <code className="text-[#A78BFA] bg-black/20 dark:bg-black/20 light:bg-slate-200 px-1.5 py-0.5 rounded font-mono">git push</code> events.
           </p>
         </div>
 
@@ -259,7 +263,7 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
         <div className="flex items-center gap-4">
           <button 
             onClick={fetchGitHubWorkflowRuns}
-            className="flex items-center gap-2 bg-white/5 dark:bg-white/5 light:bg-slate-100 border border-white/10 dark:border-white/10 light:border-slate-200 hover:bg-white/10 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+            className="flex items-center gap-2 bg-white/5 dark:bg-white/5 light:bg-slate-100 border border-white/10 dark:border-white/10 light:border-slate-200 hover:bg-white/10 text-white dark:text-white light:text-slate-800 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
           >
             <RefreshCw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />
             Sync GitHub API
@@ -287,35 +291,35 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
                 className="w-12 h-12 rounded-full border border-white/20 shadow-md" 
               />
               <div>
-                <div className="flex items-center gap-2 text-xs text-neutral-400 dark:text-neutral-400 light:text-slate-500 font-bold uppercase tracking-wider">
+                <div className="flex items-center gap-2 text-xs text-neutral-400 dark:text-neutral-400 light:text-slate-600 font-bold uppercase tracking-wider">
                   <GitCommit className="h-3.5 w-3.5 text-[#A78BFA]" />
-                  <span>Pushed by <strong className="text-white dark:text-white light:text-slate-800">{activeRun.actor.login}</strong></span>
+                  <span>Pushed by <strong className="text-white dark:text-white light:text-slate-900">{activeRun.actor.login}</strong></span>
                   <span>•</span>
-                  <span className="font-mono text-[#F9A8D4]">{activeRun.head_sha.substring(0, 7)}</span>
+                  <span className="font-mono text-[#F9A8D4] dark:text-[#F9A8D4] light:text-purple-700">{activeRun.head_sha.substring(0, 7)}</span>
                 </div>
-                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-850 mt-1">
+                <h3 className="text-lg font-bold text-white dark:text-white light:text-slate-900 mt-1">
                   {activeRun.head_commit?.message || activeRun.name}
                 </h3>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 bg-black/30 dark:bg-black/30 light:bg-slate-100/80 px-4 py-3 rounded-2xl border border-white/5 dark:border-white/5 light:border-slate-200">
+            <div className="flex items-center gap-4 bg-black/30 dark:bg-black/30 light:bg-slate-100 px-4 py-3 rounded-2xl border border-white/5 dark:border-white/5 light:border-slate-200">
               <div className="flex items-center gap-2 text-xs font-semibold">
                 <GitBranch className="h-4 w-4 text-[#A78BFA]" />
-                <span className="font-mono text-white dark:text-white light:text-slate-800">{activeRun.head_branch}</span>
+                <span className="font-mono text-white dark:text-white light:text-slate-900">{activeRun.head_branch}</span>
               </div>
-              <div className="h-4 w-px bg-white/10"></div>
+              <div className="h-4 w-px bg-white/10 dark:bg-white/10 light:bg-slate-300"></div>
               <div className="flex items-center gap-2 text-xs">
                 {activeRun.conclusion === "success" ? (
-                  <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="bg-emerald-500/20 text-emerald-400 dark:text-emerald-400 light:text-emerald-700 border border-emerald-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5">
                     <CheckCircle2 className="h-3.5 w-3.5" /> Passed 🟢
                   </span>
                 ) : activeRun.conclusion === "failure" ? (
-                  <span className="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="bg-rose-500/20 text-rose-400 dark:text-rose-400 light:text-rose-700 border border-rose-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5">
                     <XCircle className="h-3.5 w-3.5" /> Failed 🔴
                   </span>
                 ) : (
-                  <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="bg-amber-500/20 text-amber-300 dark:text-amber-300 light:text-amber-700 border border-amber-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> In Progress 🟡
                   </span>
                 )}
@@ -324,7 +328,7 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
                 href={activeRun.html_url} 
                 target="_blank" 
                 rel="noreferrer"
-                className="text-neutral-400 hover:text-white transition-colors"
+                className="text-neutral-400 dark:text-neutral-400 light:text-slate-600 hover:text-white dark:hover:text-white light:hover:text-black transition-colors"
                 title="View on GitHub"
               >
                 <ExternalLink className="h-4 w-4" />
@@ -337,7 +341,7 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
 
       {/* ── Live Sequential Pipeline Visualizer (GitHub Actions DAG) ── */}
       <section className="mb-12">
-        <h2 className="text-xl font-serif tracking-tight text-white dark:text-white light:text-slate-850 mb-6 flex items-center gap-2">
+        <h2 className="text-xl font-serif tracking-tight text-white dark:text-white light:text-slate-900 mb-6 flex items-center gap-2">
           <Cpu className="h-5 w-5 text-[#A78BFA]" /> Sequential Execution Pipeline
         </h2>
 
@@ -353,54 +357,54 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
                 className={cn(
                   "p-5 rounded-[22px] border transition-all duration-300 flex flex-col justify-between relative overflow-hidden",
                   isRunning && "bg-[#A78BFA]/10 border-[#A78BFA] shadow-[0_0_25px_rgba(167,139,250,0.2)] animate-pulse",
-                  isSuccess && "bg-emerald-950/20 dark:bg-emerald-950/20 light:bg-emerald-50/70 border-emerald-500/40 text-emerald-200",
-                  isFailed && "bg-rose-950/30 dark:bg-rose-950/30 light:bg-rose-50/70 border-rose-500/50 text-rose-200",
-                  step.status === "queued" && "bg-white/[0.02] dark:bg-white/[0.02] light:bg-slate-100/50 border-white/5 dark:border-white/5 light:border-slate-200 text-neutral-500"
+                  isSuccess && "bg-emerald-950/20 dark:bg-emerald-950/20 light:bg-emerald-50 border-emerald-500/40 dark:border-emerald-500/40 light:border-emerald-300 text-emerald-300 dark:text-emerald-300 light:text-emerald-800",
+                  isFailed && "bg-rose-950/30 dark:bg-rose-950/30 light:bg-rose-50 border-rose-500/50 dark:border-rose-500/50 light:border-rose-300 text-rose-300 dark:text-rose-300 light:text-rose-800",
+                  step.status === "queued" && "bg-white/[0.02] dark:bg-white/[0.02] light:bg-slate-100 border-white/5 dark:border-white/5 light:border-slate-200 text-neutral-500"
                 )}
               >
                 {/* Step Header */}
                 <div>
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-400 light:text-slate-500">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-400 light:text-slate-600">
                       Step {idx + 1}
                     </span>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-black/40 border border-white/10">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-black/40 dark:bg-black/40 light:bg-slate-200 text-white dark:text-white light:text-slate-800 border border-white/10 dark:border-white/10 light:border-slate-300">
                       {step.duration}
                     </span>
                   </div>
 
-                  <h4 className="text-sm font-bold text-white dark:text-white light:text-slate-850 mb-3 leading-snug">
+                  <h4 className="text-sm font-bold text-white dark:text-white light:text-slate-900 mb-3 leading-snug">
                     {step.name}
                   </h4>
                 </div>
 
                 {/* Status Indicator */}
-                <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+                <div className="mt-4 pt-3 border-t border-white/5 dark:border-white/5 light:border-slate-200 flex items-center justify-between">
                   {isRunning && (
-                    <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                      <Loader2 className="h-4 w-4 animate-spin text-amber-300" /> Running...
+                    <span className="text-xs font-bold text-amber-300 dark:text-amber-300 light:text-amber-700 flex items-center gap-1.5">
+                      <Loader2 className="h-4 w-4 animate-spin text-amber-300 dark:text-amber-300 light:text-amber-700" /> Running...
                     </span>
                   )}
                   {isSuccess && (
-                    <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Success 🟢
+                    <span className="text-xs font-bold text-emerald-400 dark:text-emerald-400 light:text-emerald-700 flex items-center gap-1.5">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400 dark:text-emerald-400 light:text-emerald-700" /> Success 🟢
                     </span>
                   )}
                   {isFailed && (
                     <div className="w-full flex items-center justify-between">
-                      <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
-                        <XCircle className="h-4 w-4 text-rose-400" /> Failed 🔴
+                      <span className="text-xs font-bold text-rose-400 dark:text-rose-400 light:text-rose-700 flex items-center gap-1.5">
+                        <XCircle className="h-4 w-4 text-rose-400 dark:text-rose-400 light:text-rose-700" /> Failed 🔴
                       </span>
                       <button
                         onClick={() => handleAiAutoFix(step.name, step.logLines)}
-                        className="text-[9px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2.5 py-1 rounded-lg hover:bg-rose-500/40 transition-all flex items-center gap-1"
+                        className="text-[9px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 dark:text-rose-300 light:text-rose-800 border border-rose-500/40 px-2.5 py-1 rounded-lg hover:bg-rose-500/40 transition-all flex items-center gap-1"
                       >
                         <Sparkles className="h-3 w-3" /> AI Fix
                       </button>
                     </div>
                   )}
                   {step.status === "queued" && (
-                    <span className="text-xs font-bold text-neutral-500 flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-neutral-500 light:text-slate-500 flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5" /> Queued
                     </span>
                   )}
@@ -412,11 +416,11 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
         </div>
       </section>
 
-      {/* ── Terminal Live Execution Console ── */}
+      {/* ── Terminal Live Execution Console & Push History ── */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Terminal Log Console */}
-        <div className="lg:col-span-2 bg-[#0C0D12] border border-white/10 rounded-[24px] p-6 shadow-2xl relative overflow-hidden font-mono text-xs text-neutral-300">
+        <div className="lg:col-span-2 bg-[#0C0D12] dark:bg-[#0C0D12] light:bg-slate-900 border border-white/10 rounded-[24px] p-6 shadow-2xl relative overflow-hidden font-mono text-xs text-neutral-300">
           <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/10">
             <div className="flex items-center gap-2">
               <Terminal className="h-4 w-4 text-[#A78BFA]" />
@@ -430,7 +434,7 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
           <div className="space-y-2 h-64 overflow-y-auto pr-2 leading-relaxed">
             {steps.flatMap(s => s.logLines).map((line, i) => (
               <div key={i} className="flex items-start gap-3">
-                <span className="text-neutral-600 select-none text-[10px]">[{String(i + 1).padStart(2, "0")}]</span>
+                <span className="text-neutral-500 select-none text-[10px]">[{String(i + 1).padStart(2, "0")}]</span>
                 <span className={cn(
                   line.includes("✓") || line.includes("PASS") || line.includes("🟢") ? "text-emerald-400 font-semibold" :
                   line.includes("[$]") ? "text-[#A78BFA] font-bold" :
@@ -446,7 +450,7 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
 
         {/* Recent Git Push Runs History */}
         <div className={cn(glassCardClass)}>
-          <h3 className="text-lg font-serif font-bold text-white dark:text-white light:text-slate-850 mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-serif font-bold text-white dark:text-white light:text-slate-900 mb-4 flex items-center gap-2">
             <GitBranch className="h-4 w-4 text-[#A78BFA]" /> Push History
           </h3>
 
@@ -458,22 +462,22 @@ diff --git a/server/src/middleware/auth.ts b/server/src/middleware/auth.ts
                 className={cn(
                   "p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-center text-xs",
                   activeRun?.id === r.id 
-                    ? "bg-white/10 border-[#A78BFA]/50" 
-                    : "bg-white/5 border-white/5 hover:bg-white/10"
+                    ? "bg-white/10 dark:bg-white/10 light:bg-slate-100 border-[#A78BFA]/50" 
+                    : "bg-white/5 dark:bg-white/5 light:bg-slate-50 border-white/5 dark:border-white/5 light:border-slate-200 hover:bg-white/10"
                 )}
               >
                 <div>
-                  <div className="font-bold text-white dark:text-white light:text-slate-800 flex items-center gap-1.5">
-                    <span className="font-mono text-[10px] text-[#F9A8D4]">{r.head_sha.substring(0, 7)}</span>
+                  <div className="font-bold text-white dark:text-white light:text-slate-900 flex items-center gap-1.5">
+                    <span className="font-mono text-[10px] text-[#F9A8D4] dark:text-[#F9A8D4] light:text-purple-700">{r.head_sha.substring(0, 7)}</span>
                     <span className="truncate max-w-[140px]">{r.head_commit?.message || r.name}</span>
                   </div>
-                  <span className="text-[10px] text-neutral-400">{r.actor.login} • {new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className="text-[10px] text-neutral-400 dark:text-neutral-400 light:text-slate-500">{r.actor.login} • {new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
 
                 {r.conclusion === "success" ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 shrink-0" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-rose-400 shrink-0" />
+                  <XCircle className="h-4 w-4 text-rose-400 dark:text-rose-400 light:text-rose-600 shrink-0" />
                 )}
               </div>
             ))}

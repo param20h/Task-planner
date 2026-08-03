@@ -243,10 +243,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const visibleLinks = [...links];
   if (userEmail?.toLowerCase() === "parambrar862@gmail.com") {
     visibleLinks.push({
-      label: "Admin DevOps",
-      title: "DevOps Control Center",
-      href: "/admin/devops",
-      icon: <Shield className="h-5 w-5 shrink-0 text-[#A78BFA] dark:text-[#A78BFA] stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
+      label: "Admin",
+      title: "Admin Workspace",
+      href: "/admin",
+      icon: <Shield className="h-5 w-5 shrink-0 text-slate-500 dark:text-neutral-400 stroke-[1.8px] transition-all duration-300 group-hover/sidebar:scale-110 group-hover/sidebar:text-white" />,
     });
   }
 
