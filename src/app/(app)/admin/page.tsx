@@ -90,17 +90,22 @@ export default function AdminPage() {
     setRefreshing(true);
     setErrorMsg(null);
     try {
-      const [usersData, paymentsData, apiKeysData] = await Promise.all([
+      const results = await Promise.allSettled([
         api.getAdminUsers(),
         api.getAdminPayments(),
         api.getAdminApiKeys()
       ]);
-      setUsers(usersData);
-      setPayments(paymentsData);
-      setApiKeys(apiKeysData || []);
+
+      if (results[0].status === "fulfilled") setUsers(results[0].value || []);
+      if (results[1].status === "fulfilled") setPayments(results[1].value || []);
+      if (results[2].status === "fulfilled") setApiKeys(results[2].value || []);
+
+      const rejected = results.find(r => r.status === "rejected") as PromiseRejectedResult | undefined;
+      if (rejected) {
+        setErrorMsg(rejected.reason?.message || "Backend API server is offline. Please run 'npm run dev' inside zenith-backend.");
+      }
     } catch (err: any) {
-      console.error("Failed to load admin data:", err);
-      setErrorMsg(err.message || "Failed to load dashboard data. Please make sure the backend is running.");
+      setErrorMsg(err.message || "Failed to load dashboard data. Please start the backend server.");
     } finally {
       setLoading(false);
       setRefreshing(false);

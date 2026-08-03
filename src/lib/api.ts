@@ -42,19 +42,26 @@ class ApiClient {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const res = await fetch(url, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    try {
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
 
-    const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-    if (!res.ok) {
-      throw new Error(data.error || `Request failed with status ${res.status}`);
+      if (!res.ok) {
+        throw new Error(data.error || `Request failed with status ${res.status}`);
+      }
+
+      return data;
+    } catch (err: any) {
+      if (err.name === "TypeError" || err.message?.includes("fetch")) {
+        throw new Error("Backend Express API Server is offline. Please start it using 'npm run dev' inside zenith-backend or momentum/server.");
+      }
+      throw err;
     }
-
-    return data;
   }
 
   // ─── Auth ────────────────────────────────────────────
