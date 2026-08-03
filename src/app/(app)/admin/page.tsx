@@ -246,6 +246,34 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Featured DevOps Control Center Launch Card */}
+        <div className="bg-gradient-to-r from-[#18181C] via-[#111114] to-[#1F1829] dark:from-[#18181C] dark:via-[#111114] dark:to-[#1F1829] light:from-white light:via-slate-50 light:to-purple-50/40 border border-[#A78BFA]/30 dark:border-[#A78BFA]/30 light:border-[#A78BFA]/40 rounded-[28px] p-6 shadow-2xl relative overflow-hidden group hover:border-[#A78BFA]/60 transition-all duration-300">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="bg-[#A78BFA]/20 text-[#A78BFA] border border-[#A78BFA]/30 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                  <Zap className="h-3.5 w-3.5" /> DevOps Control Center
+                </span>
+                <span className="bg-emerald-500/10 text-emerald-400 dark:text-emerald-400 light:text-emerald-700 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                  <CheckCircle className="h-3.5 w-3.5" /> GitHub Actions Stream Active
+                </span>
+              </div>
+              <h2 className="text-xl font-bold tracking-tight text-white dark:text-white light:text-slate-900 mt-1">
+                DevOps Pipeline &amp; System Telemetry Dashboard
+              </h2>
+              <p className="text-xs text-neutral-400 dark:text-neutral-400 light:text-slate-600 mt-1">
+                Live GitHub Actions visualizer reacting to real <code className="text-[#A78BFA] bg-black/20 dark:bg-black/20 light:bg-slate-200 px-1.5 py-0.5 rounded font-mono">git push</code> events with streaming stdout/stderr logs.
+              </p>
+            </div>
+            <Link href="/admin/devops" className="w-full md:w-auto">
+              <button className="w-full md:w-auto bg-gradient-to-r from-[#A78BFA] via-[#F9A8D4] to-[#FDBA74] text-black font-bold px-6 py-3 rounded-2xl text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:opacity-95 shadow-md shadow-[#A78BFA]/20">
+                <span>Launch DevOps Dashboard</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </Link>
+          </div>
+        </div>
+
         {/* Overview Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-[#111114]/65 border border-slate-200 dark:border-white/[0.08] p-5 rounded-3xl shadow-sm space-y-3">
