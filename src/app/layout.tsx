@@ -1,23 +1,11 @@
-// ZenithFlow App Layout - Triggering Netlify Rebuild
 import type { Metadata } from "next";
-import { Geist_Mono, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 
-const outfit = Outfit({
-  variable: "--font-serif",
-  subsets: ["latin"],
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Font variables with system fallbacks
+const outfit = { variable: "--font-serif", className: "font-serif" };
+const plusJakartaSans = { variable: "--font-sans", className: "font-sans" };
+const geistMono = { variable: "--font-geist-mono", className: "font-mono" };
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://zenithflow.dev"),
