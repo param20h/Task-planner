@@ -339,6 +339,43 @@ export default function StudyPage() {
     }
   };
 
+  const enterDeskMode = async () => {
+    setIsFlipMode(true);
+    try {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        await elem.requestFullscreen();
+      } else if ((elem as any).webkitRequestFullscreen) {
+        await (elem as any).webkitRequestFullscreen();
+      } else if ((elem as any).mozRequestFullScreen) {
+        await (elem as any).mozRequestFullScreen();
+      } else if ((elem as any).msRequestFullscreen) {
+        await (elem as any).msRequestFullscreen();
+      }
+    } catch (err) {
+      console.warn("Fullscreen request failed:", err);
+    }
+  };
+
+  const exitDeskMode = async () => {
+    setIsFlipMode(false);
+    try {
+      if (document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement || (document as any).msFullscreenElement) {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+      }
+    } catch (err) {
+      console.warn("Exit fullscreen failed:", err);
+    }
+  };
+
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -464,7 +501,7 @@ export default function StudyPage() {
                   <Volume2 className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => setIsFlipMode(true)}
+                  onClick={enterDeskMode}
                   className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-neutral-300 transition-all flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-wider px-2.5"
                   title="Open Flip Screen Desk Timer"
                 >
@@ -702,8 +739,8 @@ export default function StudyPage() {
           
           {/* Close Button in Top Right */}
           <button
-            onClick={() => setIsFlipMode(false)}
-            className="absolute top-6 right-6 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-neutral-450 hover:text-white z-50 transition-all active:scale-95"
+            onClick={exitDeskMode}
+            className="absolute top-6 right-6 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-neutral-455 hover:text-white z-50 transition-all active:scale-95"
             title="Exit Focus Mode"
           >
             <X className="h-5 w-5" />
