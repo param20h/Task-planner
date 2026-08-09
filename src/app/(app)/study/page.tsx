@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Play, 
@@ -41,21 +42,21 @@ type StudyLog = {
 
 const FlipCard = ({ digit }: { digit: string }) => {
   return (
-    <div className="relative w-14 h-20 sm:w-20 sm:h-30 md:w-24 md:h-36 bg-neutral-900 rounded-xl sm:rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.6)] border border-neutral-805 flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative w-11 h-16 xs:w-14 xs:h-20 sm:w-20 sm:h-30 md:w-24 md:h-36 bg-neutral-900 rounded-lg sm:rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.6)] border border-neutral-805 flex flex-col items-center justify-center overflow-hidden">
       {/* Top Half */}
       <div className="absolute top-0 left-0 w-full h-1/2 bg-[#1b1b22] border-b border-black/40 flex items-end justify-center overflow-hidden">
-        <span className="text-4xl sm:text-5xl md:text-6xl font-black text-[#A78BFA] leading-none translate-y-1/2 font-mono">
+        <span className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-black text-[#A78BFA] leading-none translate-y-1/2 font-mono">
           {digit}
         </span>
       </div>
       {/* Bottom Half */}
       <div className="absolute bottom-0 left-0 w-full h-1/2 bg-[#121217] flex items-start justify-center overflow-hidden">
-        <span className="text-4xl sm:text-5xl md:text-6xl font-black text-[#A78BFA] leading-none -translate-y-1/2 font-mono">
+        <span className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-black text-[#A78BFA] leading-none -translate-y-1/2 font-mono">
           {digit}
         </span>
       </div>
       {/* Center Divider Line */}
-      <div className="absolute w-full h-[1.5px] bg-black/90 top-1/2 left-0 z-10 shadow-sm" />
+      <div className="absolute w-full h-[1px] sm:h-[1.5px] bg-black/90 top-1/2 left-0 z-10 shadow-sm" />
       {/* Shadow overlay for depth */}
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/5 via-transparent to-black/25 pointer-events-none" />
     </div>
@@ -73,6 +74,12 @@ export default function StudyPage() {
   const [isFlipMode, setIsFlipMode] = useState(false);
   const [forceLandscape, setForceLandscape] = useState(false);
   const [secondsStudiedToday, setSecondsStudiedToday] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // Load local state on boot (including persisted timer elapsed & daily accumulated focus seconds)
   useEffect(() => {
@@ -678,62 +685,37 @@ export default function StudyPage() {
 
       </div>
 
-      {/* ── Immersive Desk Focus Flip Mode ── */}
-      {isFlipMode && (
+      {/* ── Immersive Desk Focus Flip Mode (Body Portal) ── */}
+      {isFlipMode && mounted && createPortal(
         <div className="fixed inset-0 z-[9999] bg-[#030303] text-white flex flex-col items-center justify-center p-4 select-none w-screen h-screen">
           
           {/* Close Button in Top Right */}
           <button
             onClick={() => setIsFlipMode(false)}
-            className="absolute top-6 right-6 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-neutral-400 hover:text-white z-50"
+            className="absolute top-6 right-6 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-neutral-450 hover:text-white z-50 transition-all active:scale-95"
             title="Exit Focus Mode"
           >
             <X className="h-5 w-5" />
           </button>
 
-          {/* Portrait orientation warning (Mobile Only) */}
-          <div className={cn(
-            "flex flex-col items-center justify-center text-center p-6 transition-all duration-300",
-            forceLandscape ? "hidden" : "landscape:hidden flex md:hidden"
-          )}>
-            <div className="animate-bounce mb-4 bg-white/5 p-4 rounded-full border border-white/10">
-              <svg className="h-10 w-10 text-[#A78BFA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold tracking-tight mb-2">Rotate Your Device</h3>
-            <p className="text-xs text-neutral-400 max-w-xs mb-6 leading-relaxed">
-              Place your phone horizontally on your desk to view the landscape flip clock timer.
-            </p>
-            <button
-              onClick={() => setForceLandscape(true)}
-              className="px-5 py-2.5 bg-[#A78BFA] text-black font-black uppercase tracking-wider text-[10px] rounded-xl shadow-lg transition-all active:scale-95"
-            >
-              Force Preview Mode
-            </button>
-          </div>
-
-          {/* Active Flip Clock layout */}
-          <div className={cn(
-            "w-full flex flex-col items-center justify-center transition-all duration-500",
-            forceLandscape ? "flex" : "portrait:hidden landscape:flex md:flex"
-          )}>
+          {/* Active Flip Clock layout (Fully responsive on portrait/landscape) */}
+          <div className="w-full flex flex-col items-center justify-center">
             
             {/* Screen Content - Pure Aesthetic Clock */}
-            <div className="relative w-full max-w-3xl aspect-[2/1] md:aspect-[2.2/1] bg-[#030303] flex flex-col items-center justify-center p-6 overflow-hidden">
+            <div className="relative w-full max-w-3xl flex flex-col items-center justify-center p-2 sm:p-6 overflow-hidden">
               
               {/* Subtle background glow */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#A78BFA]/5 rounded-full blur-[120px] pointer-events-none" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 sm:w-96 sm:h-96 bg-[#A78BFA]/5 rounded-full blur-[100px] sm:blur-[120px] pointer-events-none" />
 
               {/* Flip Cards Grid */}
-              <div className="flex items-center gap-3 sm:gap-6 scale-110 sm:scale-125 transition-all duration-300">
+              <div className="flex items-center gap-2 sm:gap-6 scale-95 xs:scale-110 sm:scale-125 transition-all duration-300">
                 <FlipCard digit={minutesStr[0]} />
                 <FlipCard digit={minutesStr[1]} />
                 
                 {/* Glowing Colon */}
-                <div className="flex flex-col gap-4 px-2 sm:px-4">
-                  <span className={cn("w-3 h-3 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
-                  <span className={cn("w-3 h-3 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
+                <div className="flex flex-col gap-3 px-1 sm:px-4">
+                  <span className={cn("w-2 h-2 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
+                  <span className={cn("w-2 h-2 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
                 </div>
                 
                 <FlipCard digit={secondsStr[0]} />
@@ -742,7 +724,7 @@ export default function StudyPage() {
             </div>
 
             {/* Immersive Control Pad (Simple overlay) */}
-            <div className="mt-8 flex items-center justify-center gap-6 bg-white/5 border border-white/10 rounded-2xl p-4 shadow-xl backdrop-blur-md max-w-xs w-full">
+            <div className="mt-12 flex items-center justify-center gap-6 bg-white/5 border border-white/10 rounded-2xl p-4 shadow-xl backdrop-blur-md max-w-xs w-full">
               <button
                 onClick={handleToggleTimer}
                 className="p-3 bg-[#A78BFA] text-black hover:bg-[#c084fc] rounded-xl transition-all shadow-md active:scale-95"
@@ -773,7 +755,8 @@ export default function StudyPage() {
 
           </div>
           
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
