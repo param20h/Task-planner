@@ -310,8 +310,19 @@ export default function StudyPage() {
     }
   };
 
-  const handleResetTimer = () => {
+  const handleFinishSession = async () => {
     setIsRunning(false);
+    
+    // Sync final accumulated minutes to Supabase daily log
+    const finalMinutes = Math.ceil(secondsStudiedToday / 60);
+    if (finalMinutes > 0) {
+      await syncDailyStudyLog(finalMinutes);
+      alert(`🎉 Focus session finished! Today's logged total: ${finalMinutes} minutes.`);
+    } else {
+      alert("No study time logged today yet.");
+    }
+    
+    // Reset active session stopwatch to 0
     setSecondsElapsed(0);
     localStorage.setItem("zenith_study_elapsed", "0");
   };
@@ -517,12 +528,12 @@ export default function StudyPage() {
                   {isRunning ? "Pause" : "Start"}
                 </Button>
                 <Button
-                  onClick={handleResetTimer}
+                  onClick={handleFinishSession}
                   variant="outline"
                   className="border-slate-200 dark:border-white/10 text-slate-500 dark:text-neutral-400 px-6 py-4 rounded-xl flex items-center gap-2 bg-transparent hover:bg-white/5"
                 >
-                  <RotateCcw className="h-4 w-4" />
-                  Reset
+                  <CheckCircle className="h-4 w-4" />
+                  Finish
                 </Button>
               </div>
 
@@ -734,11 +745,11 @@ export default function StudyPage() {
               </button>
               
               <button
-                onClick={handleResetTimer}
+                onClick={handleFinishSession}
                 className="p-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-neutral-300 transition-all active:scale-95"
-                title="Reset Focus Clock"
+                title="Finish and Log Session"
               >
-                <RotateCcw className="h-5 w-5" />
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
               </button>
 
               <button
