@@ -38,6 +38,29 @@ type StudyLog = {
   created_at: string;
 };
 
+const FlipCard = ({ digit }: { digit: string }) => {
+  return (
+    <div className="relative w-14 h-20 sm:w-20 sm:h-30 md:w-24 md:h-36 bg-neutral-900 rounded-xl sm:rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.6)] border border-neutral-805 flex flex-col items-center justify-center overflow-hidden">
+      {/* Top Half */}
+      <div className="absolute top-0 left-0 w-full h-1/2 bg-[#1b1b22] border-b border-black/40 flex items-end justify-center overflow-hidden">
+        <span className="text-4xl sm:text-5xl md:text-6xl font-black text-[#A78BFA] leading-none translate-y-1/2 font-mono">
+          {digit}
+        </span>
+      </div>
+      {/* Bottom Half */}
+      <div className="absolute bottom-0 left-0 w-full h-1/2 bg-[#121217] flex items-start justify-center overflow-hidden">
+        <span className="text-4xl sm:text-5xl md:text-6xl font-black text-[#A78BFA] leading-none -translate-y-1/2 font-mono">
+          {digit}
+        </span>
+      </div>
+      {/* Center Divider Line */}
+      <div className="absolute w-full h-[1.5px] bg-black/90 top-1/2 left-0 z-10 shadow-sm" />
+      {/* Shadow overlay for depth */}
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/5 via-transparent to-black/25 pointer-events-none" />
+    </div>
+  );
+};
+
 export default function StudyPage() {
   const [profileId, setProfileId] = useState("");
   const [logs, setLogs] = useState<StudyLog[]>([]);
@@ -48,6 +71,11 @@ export default function StudyPage() {
   const [timerDuration, setTimerDuration] = useState(1500);
   const [isRunning, setIsRunning] = useState(false);
   const [timerMode, setTimerMode] = useState<"pomodoro" | "long" | "short" | "custom">("pomodoro");
+  const [isFlipMode, setIsFlipMode] = useState(false);
+  const [forceLandscape, setForceLandscape] = useState(false);
+  
+  const minutesStr = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const secondsStr = String(timeLeft % 60).padStart(2, "0");
   
   // Pomodoro standard durations (secs)
   const pomodoroDuration = 1500;
@@ -357,10 +385,21 @@ export default function StudyPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setIsTickMuted(!isTickMuted)}
-                  className={cn("p-1 rounded hover:bg-white/5", !isTickMuted && "text-[#A78BFA] bg-[#A78BFA]/10")}
+                  className={cn("p-1.5 rounded hover:bg-slate-200 dark:hover:bg-white/5", !isTickMuted && "text-[#A78BFA] bg-[#A78BFA]/10")}
                   title={isTickMuted ? "Enable Metronome Sound" : "Mute Metronome"}
                 >
                   <Volume2 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setIsFlipMode(true)}
+                  className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-neutral-300 transition-all flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-wider px-2.5"
+                  title="Open Flip Screen Desk Timer"
+                >
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A78BFA] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A78BFA]"></span>
+                  </span>
+                  Desk Mode
                 </button>
               </div>
             </CardHeader>
@@ -625,6 +664,137 @@ export default function StudyPage() {
         </div>
 
       </div>
+
+      {/* ── Immersive Desk Focus Flip Mode ── */}
+      {isFlipMode && (
+        <div className="fixed inset-0 z-50 bg-[#07070a] text-white flex flex-col items-center justify-center p-4 transition-all duration-500 ease-out select-none">
+          
+          {/* Top Controls */}
+          <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-20">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-2 w-2">
+                <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isRunning ? "bg-red-400" : "bg-yellow-400")}></span>
+                <span className={cn("relative inline-flex rounded-full h-2 w-2", isRunning ? "bg-red-500" : "bg-yellow-500")}></span>
+              </span>
+              <span className="text-xs font-bold tracking-widest uppercase text-slate-400 font-mono">
+                {timerMode === "pomodoro" ? "Pomodoro Cycle" : timerMode === "long" ? "Extended Focus" : timerMode === "short" ? "Rest Cycle" : "Custom Block"}
+              </span>
+            </div>
+            
+            <button
+              onClick={() => setIsFlipMode(false)}
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+            >
+              Exit Focus
+            </button>
+          </div>
+
+          {/* Portrait orientation warning (Mobile Only) */}
+          <div className={cn(
+            "flex flex-col items-center justify-center text-center p-6 transition-all duration-300",
+            forceLandscape ? "hidden" : "landscape:hidden flex md:hidden"
+          )}>
+            <div className="animate-bounce mb-4 bg-[#A78BFA]/10 p-4 rounded-full border border-[#A78BFA]/20">
+              <svg className="h-10 w-10 text-[#A78BFA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold tracking-tight mb-2">Rotate Your Device</h3>
+            <p className="text-xs text-neutral-400 max-w-xs mb-6 leading-relaxed">
+              Place your phone horizontally on your desk to view the landscape flip clock timer.
+            </p>
+            <button
+              onClick={() => setForceLandscape(true)}
+              className="px-5 py-2.5 bg-[#A78BFA] text-black font-black uppercase tracking-wider text-[10px] rounded-xl shadow-lg transition-all active:scale-95"
+            >
+              Force Preview Mode
+            </button>
+          </div>
+
+          {/* Active Flip Clock layout */}
+          <div className={cn(
+            "w-full flex-col items-center justify-center transition-all duration-500",
+            forceLandscape ? "flex" : "portrait:hidden landscape:flex md:flex"
+          )}>
+            
+            {/* Devices Frame Wrapper */}
+            <div className="relative w-full max-w-3xl flex items-center justify-center px-4">
+              
+              {/* LAPTOP / TABLET FRAME (Visible on md screens and above) */}
+              <div className="hidden md:block absolute -inset-6 bg-[#16161a] rounded-[2.5rem] border border-neutral-700/30 shadow-[0_30px_70px_rgba(0,0,0,0.8)] pointer-events-none">
+                {/* Web camera dot */}
+                <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#0f0f12] rounded-full border border-neutral-800" />
+              </div>
+              
+              {/* MOBILE HORIZONTAL FRAME (Visible only on mobile in landscape) */}
+              <div className="block md:hidden absolute -inset-4 bg-[#111] rounded-[2rem] border border-neutral-800 shadow-[0_20px_40px_rgba(0,0,0,0.8)] pointer-events-none">
+                {/* Speaker indicator */}
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#222] rounded-full" />
+              </div>
+
+              {/* Screen Content */}
+              <div className="relative w-full aspect-[2/1] md:aspect-[2.2/1] bg-[#09090b] rounded-[1.5rem] md:rounded-[2rem] flex flex-col items-center justify-center p-6 border border-neutral-900 overflow-hidden shadow-inner">
+                
+                {/* Background glow effects */}
+                <div className="absolute -top-1/2 -left-1/4 w-80 h-80 bg-[#A78BFA]/5 rounded-full blur-[100px] pointer-events-none" />
+                <div className="absolute -bottom-1/2 -right-1/4 w-80 h-80 bg-[#F9A8D4]/5 rounded-full blur-[100px] pointer-events-none" />
+
+                {/* Flip Cards Grid */}
+                <div className="flex items-center gap-2 sm:gap-4 md:gap-6 scale-90 sm:scale-100 transition-all duration-300">
+                  <FlipCard digit={minutesStr[0]} />
+                  <FlipCard digit={minutesStr[1]} />
+                  
+                  {/* Glowing Colon */}
+                  <div className="flex flex-col gap-3 px-2 sm:px-4">
+                    <span className={cn("w-3 h-3 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
+                    <span className={cn("w-3 h-3 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
+                  </div>
+                  
+                  <FlipCard digit={secondsStr[0]} />
+                  <FlipCard digit={secondsStr[1]} />
+                </div>
+                
+                {/* Mini Status Indicator on Screen */}
+                <div className="absolute bottom-4 text-[9px] uppercase tracking-widest font-extrabold text-neutral-600 font-mono">
+                  {isRunning ? "Focus session in progress" : "Session paused"}
+                </div>
+              </div>
+            </div>
+
+            {/* Immersive Control Pad (Sits under the screens) */}
+            <div className="mt-10 md:mt-12 flex items-center justify-center gap-6 bg-white/5 border border-white/10 rounded-2xl p-4 shadow-xl backdrop-blur-md max-w-xs w-full">
+              <button
+                onClick={() => setIsRunning(!isRunning)}
+                className="p-3 bg-[#A78BFA] text-black hover:bg-[#c084fc] rounded-xl transition-all shadow-md active:scale-95"
+                title={isRunning ? "Pause Session" : "Start Session"}
+              >
+                {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              </button>
+              
+              <button
+                onClick={() => handleTimerModeChange(timerMode, timerDuration)}
+                className="p-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-neutral-300 transition-all active:scale-95"
+                title="Reset Focus Clock"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </button>
+
+              <button
+                onClick={() => setIsTickMuted(!isTickMuted)}
+                className={cn(
+                  "p-3 rounded-xl border transition-all active:scale-95",
+                  !isTickMuted ? "bg-[#A78BFA]/25 border-[#A78BFA]/30 text-[#A78BFA]" : "bg-white/10 border-white/10 text-neutral-400"
+                )}
+                title={isTickMuted ? "Unmute Ticking" : "Mute Ticking"}
+              >
+                <Volume2 className="h-5 w-5" />
+              </button>
+            </div>
+
+          </div>
+          
+        </div>
+      )}
 
     </div>
   );
