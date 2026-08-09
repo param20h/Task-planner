@@ -13,7 +13,8 @@ import {
   Volume2,
   VolumeX,
   CheckCircle,
-  FileText
+  FileText,
+  X
 } from "lucide-react";
 import {
   CustomClockIcon,
@@ -73,7 +74,40 @@ export default function StudyPage() {
   const [timerMode, setTimerMode] = useState<"pomodoro" | "long" | "short" | "custom">("pomodoro");
   const [isFlipMode, setIsFlipMode] = useState(false);
   const [forceLandscape, setForceLandscape] = useState(false);
-  
+  const [secondsStudiedToday, setSecondsStudiedToday] = useState(0);
+
+  // Load local state on boot (including persisted timer state & daily accumulated focus seconds)
+  useEffect(() => {
+    const storedDate = localStorage.getItem("zenith_study_date");
+    const todayStr = new Date().toISOString().split("T")[0];
+    
+    if (storedDate === todayStr) {
+      const storedSecs = localStorage.getItem("zenith_study_secs");
+      if (storedSecs) {
+        setSecondsStudiedToday(parseInt(storedSecs));
+      }
+      const storedTimeLeft = localStorage.getItem("zenith_study_time_left");
+      if (storedTimeLeft) {
+        setTimeLeft(parseInt(storedTimeLeft));
+      }
+      const storedDuration = localStorage.getItem("zenith_study_duration");
+      if (storedDuration) {
+        setTimerDuration(parseInt(storedDuration));
+      }
+      const storedMode = localStorage.getItem("zenith_study_mode");
+      if (storedMode) {
+        setTimerMode(storedMode as any);
+      }
+    } else {
+      localStorage.setItem("zenith_study_date", todayStr);
+      localStorage.setItem("zenith_study_secs", "0");
+      localStorage.removeItem("zenith_study_log_id");
+      localStorage.removeItem("zenith_study_time_left");
+      localStorage.removeItem("zenith_study_duration");
+      localStorage.removeItem("zenith_study_mode");
+    }
+  }, []);
+
   const minutesStr = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const secondsStr = String(timeLeft % 60).padStart(2, "0");
   
@@ -232,23 +266,59 @@ export default function StudyPage() {
     };
   }, [isRunning, isTickMuted]);
 
+  const syncDailyStudyLog = async (minutes: number) => {
+    if (!profileId) return;
+    
+    const todayStr = new Date().toISOString().split("T")[0];
+    const logId = localStorage.getItem("zenith_study_log_id");
+    const activeSubject = subject.trim() || "Daily Focus";
+    
+    try {
+      if (logId) {
+        // Update existing daily log entry in Supabase
+        await supabase
+          .from("study_logs")
+          .update({ 
+            duration_minutes: minutes,
+            notes: notes.trim() || "Consolidated daily focus log."
+          })
+          .eq("id", logId);
+      } else {
+        // Create new daily log entry for today
+        const { data } = await supabase
+          .from("study_logs")
+          .insert({
+            profile_id: profileId,
+            subject: activeSubject,
+            duration_minutes: minutes,
+            notes: notes.trim() || "Consolidated daily focus log."
+          })
+          .select("id")
+          .single();
+          
+        if (data?.id) {
+          localStorage.setItem("zenith_study_log_id", data.id);
+          localStorage.setItem("zenith_study_date", todayStr);
+        }
+      }
+      refreshLogs();
+    } catch (err) {
+      console.error("Failed to auto-sync study log:", err);
+    }
+  };
+
   // Handle countdown complete
   const handleTimerComplete = () => {
     setIsRunning(false);
     playChimeSound();
-
-    // Auto-populate manual entry log fields with study session details
-    const elapsedMinutes = Math.round(timerDuration / 60);
-    const finalSubject = subject.trim() || "Study";
     
-    // Automatically submit to database for smooth Pomodoro completion
-    api.createStudyLog(finalSubject, elapsedMinutes, `Timer completed: ${notes || "Focused study session."}`).then(() => {
-      refreshLogs();
-      setNotes("");
-      alert(`🎉 Focus Session Complete! Logged ${elapsedMinutes} minutes of ${finalSubject}.`);
-    }).catch(err => {
-      console.error("Auto log study session failed:", err);
-    });
+    // Auto-save final accumulated minutes
+    const minutes = Math.floor(secondsStudiedToday / 60);
+    if (minutes > 0) {
+      syncDailyStudyLog(minutes);
+    }
+    
+    alert("🎉 Daily focus target reached! Great job today.");
   };
 
   const handleTimerModeChange = (mode: "pomodoro" | "long" | "short" | "custom", secs: number) => {
@@ -256,6 +326,25 @@ export default function StudyPage() {
     setTimerMode(mode);
     setTimeLeft(secs);
     setTimerDuration(secs);
+    
+    // Persist target settings in localStorage
+    const todayStr = new Date().toISOString().split("T")[0];
+    localStorage.setItem("zenith_study_date", todayStr);
+    localStorage.setItem("zenith_study_time_left", String(secs));
+    localStorage.setItem("zenith_study_duration", String(secs));
+    localStorage.setItem("zenith_study_mode", mode);
+  };
+
+  const handleToggleTimer = () => {
+    if (isRunning) {
+      setIsRunning(false);
+      const minutes = Math.ceil(secondsStudiedToday / 60); // Save up to the current active minute when pausing
+      if (minutes > 0) {
+        syncDailyStudyLog(minutes);
+      }
+    } else {
+      setIsRunning(true);
+    }
   };
 
   const handleCustomTimeSubmit = (e: React.FormEvent) => {
@@ -470,7 +559,7 @@ export default function StudyPage() {
               {/* Controls */}
               <div className="flex gap-4 mb-6">
                 <Button
-                  onClick={() => setIsRunning(!isRunning)}
+                  onClick={handleToggleTimer}
                   className="bg-[#A78BFA]/10 border border-[#A78BFA]/20 text-[#A78BFA] hover:bg-[#A78BFA]/20 px-8 py-4 rounded-xl flex items-center gap-2"
                 >
                   {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -683,9 +772,10 @@ export default function StudyPage() {
             
             <button
               onClick={() => setIsFlipMode(false)}
-              className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+              className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-neutral-400 hover:text-white"
+              title="Close Desk Mode"
             >
-              Exit Focus
+              <X className="h-4 w-4" />
             </button>
           </div>
 
@@ -762,33 +852,71 @@ export default function StudyPage() {
             </div>
 
             {/* Immersive Control Pad (Sits under the screens) */}
-            <div className="mt-10 md:mt-12 flex items-center justify-center gap-6 bg-white/5 border border-white/10 rounded-2xl p-4 shadow-xl backdrop-blur-md max-w-xs w-full">
-              <button
-                onClick={() => setIsRunning(!isRunning)}
-                className="p-3 bg-[#A78BFA] text-black hover:bg-[#c084fc] rounded-xl transition-all shadow-md active:scale-95"
-                title={isRunning ? "Pause Session" : "Start Session"}
-              >
-                {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-              </button>
+            <div className="mt-8 flex flex-col items-center gap-4 w-full max-w-sm px-4">
               
-              <button
-                onClick={() => handleTimerModeChange(timerMode, timerDuration)}
-                className="p-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-neutral-300 transition-all active:scale-95"
-                title="Reset Focus Clock"
-              >
-                <RotateCcw className="h-5 w-5" />
-              </button>
+              {/* Presets Selector in Desk Mode */}
+              <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/10 w-full justify-center">
+                <button
+                  onClick={() => handleTimerModeChange("pomodoro", 1500)}
+                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "pomodoro" ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
+                >
+                  25m
+                </button>
+                <button
+                  onClick={() => handleTimerModeChange("long", 3000)}
+                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "long" ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
+                >
+                  50m
+                </button>
+                <button
+                  onClick={() => handleTimerModeChange("custom", 3600)}
+                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "custom" && timerDuration === 3600 ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
+                >
+                  1h
+                </button>
+                <button
+                  onClick={() => handleTimerModeChange("custom", 7200)}
+                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "custom" && timerDuration === 7200 ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
+                >
+                  2h
+                </button>
+                <button
+                  onClick={() => handleTimerModeChange("custom", 14400)}
+                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "custom" && timerDuration === 14400 ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
+                >
+                  4h
+                </button>
+              </div>
 
-              <button
-                onClick={() => setIsTickMuted(!isTickMuted)}
-                className={cn(
-                  "p-3 rounded-xl border transition-all active:scale-95",
-                  !isTickMuted ? "bg-[#A78BFA]/25 border-[#A78BFA]/30 text-[#A78BFA]" : "bg-white/10 border-white/10 text-neutral-400"
-                )}
-                title={isTickMuted ? "Unmute Ticking" : "Mute Ticking"}
-              >
-                <Volume2 className="h-5 w-5" />
-              </button>
+              {/* Action Buttons Row */}
+              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-4 shadow-xl backdrop-blur-md w-full justify-center">
+                <button
+                  onClick={handleToggleTimer}
+                  className="p-3 bg-[#A78BFA] text-black hover:bg-[#c084fc] rounded-xl transition-all shadow-md active:scale-95"
+                  title={isRunning ? "Pause Session" : "Start Session"}
+                >
+                  {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                </button>
+                
+                <button
+                  onClick={() => handleTimerModeChange(timerMode, timerDuration)}
+                  className="p-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-neutral-300 transition-all active:scale-95"
+                  title="Reset Focus Clock"
+                >
+                  <RotateCcw className="h-5 w-5" />
+                </button>
+
+                <button
+                  onClick={() => setIsTickMuted(!isTickMuted)}
+                  className={cn(
+                    "p-3 rounded-xl border transition-all active:scale-95",
+                    !isTickMuted ? "bg-[#A78BFA]/25 border-[#A78BFA]/30 text-[#A78BFA]" : "bg-white/10 border-white/10 text-neutral-400"
+                  )}
+                  title={isTickMuted ? "Unmute Ticking" : "Mute Ticking"}
+                >
+                  <Volume2 className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
           </div>
