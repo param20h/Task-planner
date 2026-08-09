@@ -68,15 +68,13 @@ export default function StudyPage() {
   const [loading, setLoading] = useState(true);
   
   // Timer states
-  const [timeLeft, setTimeLeft] = useState(1500); // 25 mins default
-  const [timerDuration, setTimerDuration] = useState(1500);
+  const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [timerMode, setTimerMode] = useState<"pomodoro" | "long" | "short" | "custom">("pomodoro");
   const [isFlipMode, setIsFlipMode] = useState(false);
   const [forceLandscape, setForceLandscape] = useState(false);
   const [secondsStudiedToday, setSecondsStudiedToday] = useState(0);
 
-  // Load local state on boot (including persisted timer state & daily accumulated focus seconds)
+  // Load local state on boot (including persisted timer elapsed & daily accumulated focus seconds)
   useEffect(() => {
     const storedDate = localStorage.getItem("zenith_study_date");
     const todayStr = new Date().toISOString().split("T")[0];
@@ -86,36 +84,20 @@ export default function StudyPage() {
       if (storedSecs) {
         setSecondsStudiedToday(parseInt(storedSecs));
       }
-      const storedTimeLeft = localStorage.getItem("zenith_study_time_left");
-      if (storedTimeLeft) {
-        setTimeLeft(parseInt(storedTimeLeft));
-      }
-      const storedDuration = localStorage.getItem("zenith_study_duration");
-      if (storedDuration) {
-        setTimerDuration(parseInt(storedDuration));
-      }
-      const storedMode = localStorage.getItem("zenith_study_mode");
-      if (storedMode) {
-        setTimerMode(storedMode as any);
+      const storedElapsed = localStorage.getItem("zenith_study_elapsed");
+      if (storedElapsed) {
+        setSecondsElapsed(parseInt(storedElapsed));
       }
     } else {
       localStorage.setItem("zenith_study_date", todayStr);
       localStorage.setItem("zenith_study_secs", "0");
+      localStorage.setItem("zenith_study_elapsed", "0");
       localStorage.removeItem("zenith_study_log_id");
-      localStorage.removeItem("zenith_study_time_left");
-      localStorage.removeItem("zenith_study_duration");
-      localStorage.removeItem("zenith_study_mode");
     }
   }, []);
 
-  const minutesStr = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-  const secondsStr = String(timeLeft % 60).padStart(2, "0");
-  
-  // Pomodoro standard durations (secs)
-  const pomodoroDuration = 1500;
-  const shortBreakDuration = 300;
-  const longBreakDuration = 900;
-  const [customMinutes, setCustomMinutes] = useState("");
+  const minutesStr = String(Math.floor(secondsElapsed / 60)).padStart(2, "0");
+  const secondsStr = String(secondsElapsed % 60).padStart(2, "0");
   
   // Audio settings
   const [isTickMuted, setIsTickMuted] = useState(true);
@@ -240,18 +222,32 @@ export default function StudyPage() {
     }
   };
 
-  // Timer tick effect
+  // Timer tick effect with persistence & daily logging auto-sync (count-up session timer)
   useEffect(() => {
     if (isRunning) {
       timerIntervalRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            handleTimerComplete();
-            return 0;
-          }
-          playTickSound();
-          return prev - 1;
+        // Increment session elapsed seconds
+        setSecondsElapsed(prev => {
+          const nextElapsed = prev + 1;
+          localStorage.setItem("zenith_study_elapsed", String(nextElapsed));
+          return nextElapsed;
         });
+
+        // Track and increment total accumulated focus seconds today
+        setSecondsStudiedToday(secs => {
+          const nextSecs = secs + 1;
+          localStorage.setItem("zenith_study_secs", String(nextSecs));
+          
+          // Every 60 seconds (1 minute), auto-sync to Supabase daily log!
+          if (nextSecs % 60 === 0) {
+            const minutes = Math.floor(nextSecs / 60);
+            syncDailyStudyLog(minutes);
+          }
+          
+          return nextSecs;
+        });
+
+        playTickSound();
       }, 1000);
     } else {
       if (timerIntervalRef.current) {
@@ -264,7 +260,7 @@ export default function StudyPage() {
         clearInterval(timerIntervalRef.current);
       }
     };
-  }, [isRunning, isTickMuted]);
+  }, [isRunning, isTickMuted, profileId, subject]);
 
   const syncDailyStudyLog = async (minutes: number) => {
     if (!profileId) return;
@@ -307,32 +303,10 @@ export default function StudyPage() {
     }
   };
 
-  // Handle countdown complete
-  const handleTimerComplete = () => {
+  const handleResetTimer = () => {
     setIsRunning(false);
-    playChimeSound();
-    
-    // Auto-save final accumulated minutes
-    const minutes = Math.floor(secondsStudiedToday / 60);
-    if (minutes > 0) {
-      syncDailyStudyLog(minutes);
-    }
-    
-    alert("🎉 Daily focus target reached! Great job today.");
-  };
-
-  const handleTimerModeChange = (mode: "pomodoro" | "long" | "short" | "custom", secs: number) => {
-    setIsRunning(false);
-    setTimerMode(mode);
-    setTimeLeft(secs);
-    setTimerDuration(secs);
-    
-    // Persist target settings in localStorage
-    const todayStr = new Date().toISOString().split("T")[0];
-    localStorage.setItem("zenith_study_date", todayStr);
-    localStorage.setItem("zenith_study_time_left", String(secs));
-    localStorage.setItem("zenith_study_duration", String(secs));
-    localStorage.setItem("zenith_study_mode", mode);
+    setSecondsElapsed(0);
+    localStorage.setItem("zenith_study_elapsed", "0");
   };
 
   const handleToggleTimer = () => {
@@ -344,14 +318,6 @@ export default function StudyPage() {
       }
     } else {
       setIsRunning(true);
-    }
-  };
-
-  const handleCustomTimeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const mins = parseInt(customMinutes);
-    if (!isNaN(mins) && mins > 0) {
-      handleTimerModeChange("custom", mins * 60);
     }
   };
 
@@ -495,28 +461,6 @@ export default function StudyPage() {
             
             <CardContent className="flex flex-col items-center w-full px-0">
               
-              {/* Presets Row */}
-              <div className="flex gap-2 mb-8 bg-slate-100 dark:bg-black/35 p-1 rounded-xl border border-slate-200/50 dark:border-white/5">
-                <button
-                  onClick={() => handleTimerModeChange("pomodoro", 1500)}
-                  className={cn("text-[10px] uppercase font-bold tracking-wider px-3.5 py-1.5 rounded-lg transition-all", timerMode === "pomodoro" ? "bg-white dark:bg-white/5 text-slate-800 dark:text-white shadow" : "text-neutral-500")}
-                >
-                  Pomodoro (25m)
-                </button>
-                <button
-                  onClick={() => handleTimerModeChange("long", 3000)}
-                  className={cn("text-[10px] uppercase font-bold tracking-wider px-3.5 py-1.5 rounded-lg transition-all", timerMode === "long" ? "bg-white dark:bg-white/5 text-slate-800 dark:text-white shadow" : "text-neutral-500")}
-                >
-                  Focus (50m)
-                </button>
-                <button
-                  onClick={() => handleTimerModeChange("short", 300)}
-                  className={cn("text-[10px] uppercase font-bold tracking-wider px-3.5 py-1.5 rounded-lg transition-all", timerMode === "short" ? "bg-white dark:bg-white/5 text-slate-800 dark:text-white shadow" : "text-neutral-500")}
-                >
-                  Break (5m)
-                </button>
-              </div>
-
               {/* Progress Circle & Timer Text */}
               <div className="relative h-56 w-56 flex items-center justify-center mb-8">
                 {/* SVG Progress Circle Background */}
@@ -537,7 +481,7 @@ export default function StudyPage() {
                     strokeWidth="8" 
                     fill="transparent" 
                     strokeDasharray={603}
-                    strokeDashoffset={603 - (603 * timeLeft) / timerDuration}
+                    strokeDashoffset={603 - (603 * (secondsElapsed % 3600)) / 3600}
                     strokeLinecap="round"
                     className="transition-all duration-300"
                   />
@@ -551,13 +495,13 @@ export default function StudyPage() {
                 
                 {/* Timer text */}
                 <div className="z-10 flex flex-col items-center">
-                  <span className="text-4xl font-black text-slate-900 dark:text-white font-mono tracking-wider">{formatTime(timeLeft)}</span>
-                  <span className="text-[9px] uppercase tracking-widest font-bold text-slate-400 dark:text-neutral-500 mt-1">Remaining</span>
+                  <span className="text-4xl font-black text-slate-900 dark:text-white font-mono tracking-wider">{formatTime(secondsElapsed)}</span>
+                  <span className="text-[9px] uppercase tracking-widest font-bold text-slate-400 dark:text-neutral-500 mt-1">Elapsed</span>
                 </div>
               </div>
 
               {/* Controls */}
-              <div className="flex gap-4 mb-6">
+              <div className="flex gap-4 mb-2">
                 <Button
                   onClick={handleToggleTimer}
                   className="bg-[#A78BFA]/10 border border-[#A78BFA]/20 text-[#A78BFA] hover:bg-[#A78BFA]/20 px-8 py-4 rounded-xl flex items-center gap-2"
@@ -566,7 +510,7 @@ export default function StudyPage() {
                   {isRunning ? "Pause" : "Start"}
                 </Button>
                 <Button
-                  onClick={() => handleTimerModeChange(timerMode, timerDuration)}
+                  onClick={handleResetTimer}
                   variant="outline"
                   className="border-slate-200 dark:border-white/10 text-slate-500 dark:text-neutral-400 px-6 py-4 rounded-xl flex items-center gap-2 bg-transparent hover:bg-white/5"
                 >
@@ -574,26 +518,6 @@ export default function StudyPage() {
                   Reset
                 </Button>
               </div>
-
-              {/* Custom Minutes Input */}
-              <form onSubmit={handleCustomTimeSubmit} className="flex gap-2 items-center w-full max-w-xs justify-center pt-4 border-t border-slate-200 dark:border-white/5">
-                <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Custom Mins:</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="180"
-                  value={customMinutes}
-                  onChange={(e) => setCustomMinutes(e.target.value)}
-                  className="w-16 bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-[#A78BFA]"
-                />
-                <Button 
-                  type="submit" 
-                  size="sm"
-                  className="bg-[#A78BFA] text-black font-bold uppercase tracking-wider px-3 text-[9px] h-7 rounded-lg"
-                >
-                  Set
-                </Button>
-              </form>
 
             </CardContent>
           </Card>
@@ -756,35 +680,23 @@ export default function StudyPage() {
 
       {/* ── Immersive Desk Focus Flip Mode ── */}
       {isFlipMode && (
-        <div className="fixed inset-0 z-50 bg-[#07070a] text-white flex flex-col items-center justify-center p-4 transition-all duration-500 ease-out select-none">
+        <div className="fixed inset-0 z-[9999] bg-[#030303] text-white flex flex-col items-center justify-center p-4 select-none w-screen h-screen">
           
-          {/* Top Controls */}
-          <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-20">
-            <div className="flex items-center gap-3">
-              <span className="relative flex h-2 w-2">
-                <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isRunning ? "bg-red-400" : "bg-yellow-400")}></span>
-                <span className={cn("relative inline-flex rounded-full h-2 w-2", isRunning ? "bg-red-500" : "bg-yellow-500")}></span>
-              </span>
-              <span className="text-xs font-bold tracking-widest uppercase text-slate-400 font-mono">
-                {timerMode === "pomodoro" ? "Pomodoro Cycle" : timerMode === "long" ? "Extended Focus" : timerMode === "short" ? "Rest Cycle" : "Custom Block"}
-              </span>
-            </div>
-            
-            <button
-              onClick={() => setIsFlipMode(false)}
-              className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-neutral-400 hover:text-white"
-              title="Close Desk Mode"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          {/* Close Button in Top Right */}
+          <button
+            onClick={() => setIsFlipMode(false)}
+            className="absolute top-6 right-6 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all text-neutral-400 hover:text-white z-50"
+            title="Exit Focus Mode"
+          >
+            <X className="h-5 w-5" />
+          </button>
 
           {/* Portrait orientation warning (Mobile Only) */}
           <div className={cn(
             "flex flex-col items-center justify-center text-center p-6 transition-all duration-300",
             forceLandscape ? "hidden" : "landscape:hidden flex md:hidden"
           )}>
-            <div className="animate-bounce mb-4 bg-[#A78BFA]/10 p-4 rounded-full border border-[#A78BFA]/20">
+            <div className="animate-bounce mb-4 bg-white/5 p-4 rounded-full border border-white/10">
               <svg className="h-10 w-10 text-[#A78BFA]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
@@ -803,120 +715,60 @@ export default function StudyPage() {
 
           {/* Active Flip Clock layout */}
           <div className={cn(
-            "w-full flex-col items-center justify-center transition-all duration-500",
+            "w-full flex flex-col items-center justify-center transition-all duration-500",
             forceLandscape ? "flex" : "portrait:hidden landscape:flex md:flex"
           )}>
             
-            {/* Devices Frame Wrapper */}
-            <div className="relative w-full max-w-3xl flex items-center justify-center px-4">
+            {/* Screen Content - Pure Aesthetic Clock */}
+            <div className="relative w-full max-w-3xl aspect-[2/1] md:aspect-[2.2/1] bg-[#030303] flex flex-col items-center justify-center p-6 overflow-hidden">
               
-              {/* LAPTOP / TABLET FRAME (Visible on md screens and above) */}
-              <div className="hidden md:block absolute -inset-6 bg-[#16161a] rounded-[2.5rem] border border-neutral-700/30 shadow-[0_30px_70px_rgba(0,0,0,0.8)] pointer-events-none">
-                {/* Web camera dot */}
-                <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#0f0f12] rounded-full border border-neutral-800" />
-              </div>
-              
-              {/* MOBILE HORIZONTAL FRAME (Visible only on mobile in landscape) */}
-              <div className="block md:hidden absolute -inset-4 bg-[#111] rounded-[2rem] border border-neutral-800 shadow-[0_20px_40px_rgba(0,0,0,0.8)] pointer-events-none">
-                {/* Speaker indicator */}
-                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#222] rounded-full" />
-              </div>
+              {/* Subtle background glow */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#A78BFA]/5 rounded-full blur-[120px] pointer-events-none" />
 
-              {/* Screen Content */}
-              <div className="relative w-full aspect-[2/1] md:aspect-[2.2/1] bg-[#09090b] rounded-[1.5rem] md:rounded-[2rem] flex flex-col items-center justify-center p-6 border border-neutral-900 overflow-hidden shadow-inner">
+              {/* Flip Cards Grid */}
+              <div className="flex items-center gap-3 sm:gap-6 scale-110 sm:scale-125 transition-all duration-300">
+                <FlipCard digit={minutesStr[0]} />
+                <FlipCard digit={minutesStr[1]} />
                 
-                {/* Background glow effects */}
-                <div className="absolute -top-1/2 -left-1/4 w-80 h-80 bg-[#A78BFA]/5 rounded-full blur-[100px] pointer-events-none" />
-                <div className="absolute -bottom-1/2 -right-1/4 w-80 h-80 bg-[#F9A8D4]/5 rounded-full blur-[100px] pointer-events-none" />
-
-                {/* Flip Cards Grid */}
-                <div className="flex items-center gap-2 sm:gap-4 md:gap-6 scale-90 sm:scale-100 transition-all duration-300">
-                  <FlipCard digit={minutesStr[0]} />
-                  <FlipCard digit={minutesStr[1]} />
-                  
-                  {/* Glowing Colon */}
-                  <div className="flex flex-col gap-3 px-2 sm:px-4">
-                    <span className={cn("w-3 h-3 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
-                    <span className={cn("w-3 h-3 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
-                  </div>
-                  
-                  <FlipCard digit={secondsStr[0]} />
-                  <FlipCard digit={secondsStr[1]} />
+                {/* Glowing Colon */}
+                <div className="flex flex-col gap-4 px-2 sm:px-4">
+                  <span className={cn("w-3 h-3 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
+                  <span className={cn("w-3 h-3 sm:w-4 sm:h-4 bg-[#A78BFA] rounded-full shadow-[0_0_15px_#A78BFA] transition-opacity duration-500", isRunning && "animate-pulse")} />
                 </div>
                 
-                {/* Mini Status Indicator on Screen */}
-                <div className="absolute bottom-4 text-[9px] uppercase tracking-widest font-extrabold text-neutral-600 font-mono">
-                  {isRunning ? "Focus session in progress" : "Session paused"}
-                </div>
+                <FlipCard digit={secondsStr[0]} />
+                <FlipCard digit={secondsStr[1]} />
               </div>
             </div>
 
-            {/* Immersive Control Pad (Sits under the screens) */}
-            <div className="mt-8 flex flex-col items-center gap-4 w-full max-w-sm px-4">
+            {/* Immersive Control Pad (Simple overlay) */}
+            <div className="mt-8 flex items-center justify-center gap-6 bg-white/5 border border-white/10 rounded-2xl p-4 shadow-xl backdrop-blur-md max-w-xs w-full">
+              <button
+                onClick={handleToggleTimer}
+                className="p-3 bg-[#A78BFA] text-black hover:bg-[#c084fc] rounded-xl transition-all shadow-md active:scale-95"
+                title={isRunning ? "Pause Session" : "Start Session"}
+              >
+                {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              </button>
               
-              {/* Presets Selector in Desk Mode */}
-              <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/10 w-full justify-center">
-                <button
-                  onClick={() => handleTimerModeChange("pomodoro", 1500)}
-                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "pomodoro" ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
-                >
-                  25m
-                </button>
-                <button
-                  onClick={() => handleTimerModeChange("long", 3000)}
-                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "long" ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
-                >
-                  50m
-                </button>
-                <button
-                  onClick={() => handleTimerModeChange("custom", 3600)}
-                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "custom" && timerDuration === 3600 ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
-                >
-                  1h
-                </button>
-                <button
-                  onClick={() => handleTimerModeChange("custom", 7200)}
-                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "custom" && timerDuration === 7200 ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
-                >
-                  2h
-                </button>
-                <button
-                  onClick={() => handleTimerModeChange("custom", 14400)}
-                  className={cn("text-[9px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-lg transition-all", timerMode === "custom" && timerDuration === 14400 ? "bg-white/15 text-white shadow" : "text-neutral-400 hover:text-white")}
-                >
-                  4h
-                </button>
-              </div>
+              <button
+                onClick={handleResetTimer}
+                className="p-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-neutral-300 transition-all active:scale-95"
+                title="Reset Focus Clock"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </button>
 
-              {/* Action Buttons Row */}
-              <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-4 shadow-xl backdrop-blur-md w-full justify-center">
-                <button
-                  onClick={handleToggleTimer}
-                  className="p-3 bg-[#A78BFA] text-black hover:bg-[#c084fc] rounded-xl transition-all shadow-md active:scale-95"
-                  title={isRunning ? "Pause Session" : "Start Session"}
-                >
-                  {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-                </button>
-                
-                <button
-                  onClick={() => handleTimerModeChange(timerMode, timerDuration)}
-                  className="p-3 bg-white/10 hover:bg-white/15 border border-white/10 rounded-xl text-neutral-300 transition-all active:scale-95"
-                  title="Reset Focus Clock"
-                >
-                  <RotateCcw className="h-5 w-5" />
-                </button>
-
-                <button
-                  onClick={() => setIsTickMuted(!isTickMuted)}
-                  className={cn(
-                    "p-3 rounded-xl border transition-all active:scale-95",
-                    !isTickMuted ? "bg-[#A78BFA]/25 border-[#A78BFA]/30 text-[#A78BFA]" : "bg-white/10 border-white/10 text-neutral-400"
-                  )}
-                  title={isTickMuted ? "Unmute Ticking" : "Mute Ticking"}
-                >
-                  <Volume2 className="h-5 w-5" />
-                </button>
-              </div>
+              <button
+                onClick={() => setIsTickMuted(!isTickMuted)}
+                className={cn(
+                  "p-3 rounded-xl border transition-all active:scale-95",
+                  !isTickMuted ? "bg-[#A78BFA]/25 border-[#A78BFA]/30 text-[#A78BFA]" : "bg-white/10 border-white/10 text-neutral-400"
+                )}
+                title={isTickMuted ? "Unmute Ticking" : "Mute Ticking"}
+              >
+                <Volume2 className="h-5 w-5" />
+              </button>
             </div>
 
           </div>
